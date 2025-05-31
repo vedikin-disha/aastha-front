@@ -1,0 +1,97 @@
+<?php include 'common/header.php'; ?>
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Edit Circle</h3>
+  </div>
+  <div class="card-body">
+  <form method="post" id="circleForm">
+      
+      <div class="form-group mb-3">
+        <label for="circle_name" class="form-label">Circle Name</label>
+        <div class="input-group">
+          <input type="text" name="circle_name" id="circle_name" class="form-control">
+          <div class="input-group-append">
+            <span class="input-group-text"><i class="fas fa-check"></i></span>
+          </div>
+        </div>
+      </div>
+      <div class="mt-3">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a href="circle-list" class="btn btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+   
+    // add nav-link active class to id = circle
+    $('#circle a').addClass('active');
+    $('#circle a').addClass('nav-link');
+</script>
+
+<script>
+  // call /circle api to get individual circle by id
+  $(document).ready(function() {
+    $.ajax({
+      url: '<?php echo API_URL; ?>circle',
+      type: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify({
+        circle_id: <?php echo $_GET['id']; ?>, 
+        access_token: "<?php echo $_SESSION['access_token']; ?>"
+      }),
+      success: function(response) {
+        // Handle the actual response structure from the API
+        if (Array.isArray(response) && response.length > 0) {
+          // If response is an array, get the first item
+          var circle = response[0];
+          $('#circle_name').val(circle.circle_name);
+        } else if (response && typeof response === 'object' && response.circle_name) {
+          // If response is a direct object
+          $('#circle_name').val(response.circle_name);
+        } else {
+          showToast('Failed to load circle data', false);
+        }
+      },
+      error: function(response) {
+        showToast('Error loading circle data', false);
+      }
+    });
+  });
+</script>
+
+<script>
+  $(document).ready(function() {
+    $('#circleForm').submit(function(e) {
+      e.preventDefault();
+      var circle_name = $('#circle_name').val();
+      
+      if (!circle_name) {
+        showToast('Please enter circle name', false);
+        return;
+      }
+      
+      $.ajax({
+        url: '<?php echo API_URL; ?>update-circle',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+          circle_name: circle_name, 
+          access_token: "<?php echo $_SESSION['access_token']; ?>",
+          circle_id: <?php echo $_GET['id']; ?>
+        }),
+        success: function(response) {
+          showToast('Circle updated successfully');
+          window.location.href = "<?php echo BASE_URL; ?>circle-list";
+        },
+        error: function(response) {
+          showToast('Failed to update circle', false);
+          console.error('API error:', response);
+        }
+      });
+    });
+  });
+</script>
+
+<?php include 'common/footer.php'; ?>
