@@ -6613,18 +6613,26 @@ function loadProjectAttachments() {
                         return;
                     }
 
+                    // Helper to choose icon based on extension
+                    function iconByExt(path){
+                        const ext = path.split('.').pop().toLowerCase().split('?')[0];
+                        if(['pdf'].includes(ext)) return 'fas fa-file-pdf text-danger';
+                        if(['doc','docx'].includes(ext)) return 'fas fa-file-word text-primary';
+                        if(['xls','xlsx','csv'].includes(ext)) return 'fas fa-file-excel text-success';
+                        if(['png','jpg','jpeg','gif','bmp','webp'].includes(ext)) return 'fas fa-file-image text-info';
+                        return 'fas fa-file text-secondary';
+                    }
+
                     // Create and append each attachment as a table row
                     attachments.forEach(function(attachment) {
+                        const icon = iconByExt(attachment.file_path);
                         const attachmentHtml = `
     <tr>
         <td>${attachment.attachment_name}</td>
         <td>${attachment.description}</td>
         <td>
-            <img src="${attachment.file_path}" alt="${attachment.attachment_name}" style="max-width: 80px; max-height: 80px;" />
+            <a href="${attachment.file_path}" target="_blank"><i class="${icon} fa-2x"></i></a>
         </td>
-
-        
-       
         <td>
            <button class="btn btn-danger btn-sm" onclick="deleteAttachment(${attachment.attachment_id})"><i class="fas fa-trash"> </i> Delete </button>
         </td>

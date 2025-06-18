@@ -198,6 +198,49 @@ if (!$project_id) {
                                     <div class="col-md-12">
                                         <div class="form-group">
                                             <label for="status" class="required-label">Status:</label>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- DTP Section File -->
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label>DTP Section File:</label>
+                                            <input type="hidden" id="dtp_section_uuid" name="dtp_section_uuid">
+                                            <input type="file" class="form-control-file" id="dtp_section_file" accept="pdf,.doc,.docx,.jpg,.jpeg,.png.csv">
+                                            <button type="button" id="dtp_section_delete" class="btn btn-sm btn-danger mt-2 d-none">  <i class="far fa-trash-alt"></i></button>
+                                            <div id="dtp_section_container" class="mt-2"></div>
+                                            <small class="form-text text-muted">Upload a new file to update the existing one</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Technical Section File -->
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label>Technical Section File:</label>
+                                            <input type="hidden" id="technical_section_uuid" name="technical_section_uuid">
+                                            <input type="file" class="form-control-file" id="technical_section_file" accept="pdf,.doc,.docx,.jpg,.jpeg,.png.csv">
+                                            <button type="button" id="technical_section_delete" class="btn btn-sm btn-danger mt-2 d-none">  <i class="far fa-trash-alt"></i></button>
+                                            <div id="technical_section_container" class="mt-2"></div>
+                                            <small class="form-text text-muted">Upload a new file to update the existing one</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Administrative Approval File -->
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label>Administrative Approval File:</label>
+                                            <input type="hidden" id="administrative_approval_uuid" name="administrative_approval_uuid">
+                                            <input type="file" class="form-control-file" id="administrative_approval_file" accept="pdf,.doc,.docx,.jpg,.jpeg,.png.csv">
+                                            <button type="button" id="administrative_approval_delete" class="btn btn-sm btn-danger mt-2 d-none"><i class="far fa-trash-alt"></i></button>
+                                            <div id="administrative_approval_container" class="mt-2"></div>
+                                            <small class="form-text text-muted">Upload a new file to update the existing one</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Status -->
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="status" class="required-label">Status:</label>
                                             <select id="status" name="status" class="form-control" required>
                                                 <option value="">-- Select Status --</option>
                                                 <option value="Pending">Pending</option>
@@ -922,7 +965,30 @@ function loadProjectData() {
     $('#formResult').removeClass('alert-danger alert-success').addClass('alert-info')
         .html('<i class="fas fa-spinner fa-spin"></i> Loading project data...').show();
     
-    // Make API request to get project data
+    // Create FormData object for file uploads
+    const formData = new FormData();
+    
+    // Add all request data to FormData
+    const requestData = {
+        access_token: "<?php echo $_SESSION['access_token']; ?>",
+        project_id: decodedId,
+        // Add other request data here...
+    };
+    
+    Object.keys(requestData).forEach(key => {
+        formData.append(key, requestData[key]);
+    });
+    
+    // Add files if they exist
+    const dtpFile = $('#dtp_section_file')[0].files[0];
+    const techFile = $('#technical_section_file')[0].files[0];
+    const adminFile = $('#administrative_approval_file')[0].files[0];
+    
+    if (dtpFile) formData.append('dtp_section_file', dtpFile);
+    if (techFile) formData.append('technical_section_file', techFile);
+    if (adminFile) formData.append('administrative_approval_file', adminFile);
+    
+    // Make API request to update project with file uploads
     $.ajax({
         url: '<?php echo API_URL; ?>project-edit',
         type: 'POST',
@@ -1255,6 +1321,87 @@ function populateFormFields(data) {
     
     // Display assigned employees if any
     displayAssignedEmployees(data.assigned_employees || []);
+
+    // Populate file download links
+    const createDownloadLink = (url, label) => {
+        if (!url) return '';
+        const fileName = url.split('/').pop();
+        return `<a href="${url}" download="${fileName}" class="btn btn-sm btn-outline-primary mr-2">
+                    <i class=\"fas fa-download\"></i> ${label}
+                </a><small>${fileName}</small>`;
+    };
+
+    $('#dtp_section_container').html(createDownloadLink(data.dtp_section, 'Download DTP'));
+    $('#technical_section_container').html(createDownloadLink(data.technical_section, 'Download Technical'));
+    $('#administrative_approval_container').html(createDownloadLink(data.administrative_approval, 'Download Admin Approval'));
+
+    // ---------- existing attachment handling ----------
+    function applyExisting(section, url){
+        const uuidInput = $(`#${section}_uuid`);
+        const fileInput = $(`#${section}_file`);
+        const deleteBtn = $(`#${section}_delete`);
+        if(url){
+            const filename = url.split('/').pop();
+            uuidInput.val(filename); // store UUID for update
+            fileInput.addClass('d-none');
+            deleteBtn.removeClass('d-none');
+        }else{
+            uuidInput.val('');
+            fileInput.removeClass('d-none');
+            deleteBtn.addClass('d-none');
+        }
+    }
+    applyExisting('dtp_section', data.dtp_section);
+    applyExisting('technical_section', data.technical_section);
+    applyExisting('administrative_approval', data.administrative_approval);
+
+    
+    // Show file links if they exist
+    // Helper to pick icon based on file extension
+    function iconByExt(url){
+        const ext = url.split('.').pop().toLowerCase().split('?')[0];
+        if(['pdf'].includes(ext)) return 'fas fa-file-pdf text-danger';
+        if(['doc','docx'].includes(ext)) return 'fas fa-file-word text-primary';
+        if(['xls','xlsx','csv'].includes(ext)) return 'fas fa-file-excel text-success';
+        if(['jpg','jpeg','png','gif','bmp','webp'].includes(ext)) return 'fas fa-file-image text-info';
+        return 'fas fa-file text-secondary';
+    }
+
+    // Function to create file actions dropdown
+    function createFileActions(url, label) {
+        const fileName = url.split('/').pop();
+        const isImage = /\.(jpg|jpeg|png|gif)$/i.test(url);
+        
+        return `
+            <div class="dropdown d-inline-block">
+                <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" 
+                        id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="${iconByExt(url)}"></i> ${label}
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <a class="dropdown-item" href="${url}" target="_blank">
+                        <i class="fas fa-eye mr-2"></i> View ${isImage ? 'Image' : 'File'}
+                    </a>
+                    <a class="dropdown-item" href="#" onclick="forceDownload('${url}')">
+                        <i class="fas fa-download mr-2"></i> Download
+                    </a>
+                </div>
+            </div>
+        `;
+    }
+
+    // Apply to each file section
+    if (data.dtp_section) {
+        $('#dtp_section_container').html(createFileActions(data.dtp_section, 'DTP Section'));
+    }
+    
+    if (data.technical_section) {
+        $('#technical_section_container').html(createFileActions(data.technical_section, 'Technical Section'));
+    }
+    
+    if (data.administrative_approval) {
+        $('#administrative_approval_container').html(createFileActions(data.administrative_approval, 'Admin Approval'));
+    }
 }
 
 // Function to load departments
@@ -1317,7 +1464,71 @@ $(function() {
     loadCircles();
     loadDepartments(); // Load departments for dropdowns
     loadProjectData(); // Load project data for editing
+
+    // ------------ Attachment upload logic ------------
+    function initAttachmentUpload(section){
+        const fileInput = $(`#${section}_file`);
+        const uuidInput = $(`#${section}_uuid`);
+        const container = $(`#${section}_container`);
+        const deleteBtn = $(`#${section}_delete`);
+
+        // Upload handler
+        fileInput.on('change', function(){
+            if(!this.files.length) return;
+            const formData = new FormData();
+            formData.append('access_token', "<?php echo $_SESSION['access_token']; ?>");
+            const urlParams = new URLSearchParams(window.location.search);
+            formData.append('project_id', atob(urlParams.get('id')));
+            formData.append('attachment', this.files[0]);
+
+            $.ajax({
+                url: '<?php echo API_URL; ?>attachment-add',
+                type: 'POST',
+                processData: false,
+                contentType: false,
+                data: formData,
+                success: function(res){
+                    if(res.is_successful==='1' && res.data && res.data.attachments && res.data.attachments.length){
+                        const uuid = res.data.attachments[0].UUID;
+                        uuidInput.val(uuid);
+                        const icon = iconByExt(this.files[0].name);
+                    container.html(`<i class='${icon}'></i> <small>${this.files[0].name}</small>`);
+                        fileInput.addClass('d-none');
+                        deleteBtn.removeClass('d-none');
+                    }else{
+                        Swal.fire('Upload Failed', 'Unable to upload file.','error');
+                        fileInput.val('');
+                    }
+                },
+                error:function(){
+                    Swal.fire('Error','Upload failed.','error');
+                    fileInput.val('');
+                }
+            });
+        });
+
+        // Delete handler
+        deleteBtn.on('click', function(){
+            uuidInput.val('');
+            container.empty();
+            fileInput.val('').removeClass('d-none');
+            deleteBtn.addClass('d-none');
+        });
+    }
+
+    ['dtp_section','technical_section','administrative_approval'].forEach(initAttachmentUpload);
 });
+
+// Function to force file download
+function forceDownload(url) {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = url.split('/').pop();
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    return false;
+}
 
 // Function to format date for API
 function formatDateForAPI(dateString) {
@@ -1450,10 +1661,28 @@ function updateProject() {
             requestData.dept5_due_date = dept5DueDate;
         }
     }
-    
+    // Attach uploaded attachment UUIDs (if any) to request
+    requestData.administrative_approval = $('#administrative_approval_uuid').val() || '';
+    requestData.dtp_section = $('#dtp_section_uuid').val() || '';
+    requestData.technical_section = $('#technical_section_uuid').val() || '';
+
+    // Log request data for debugging
     console.log('Sending update request:', requestData);
-    
-    // Make API request to update project
+
+    // ------- Handle file uploads -------
+    const formData = new FormData();
+    // Append all scalar values
+    Object.keys(requestData).forEach(key => formData.append(key, requestData[key]));
+
+    // Append files if chosen
+    const dtpFile = $('#dtp_section_file')[0].files[0];
+    const techFile = $('#technical_section_file')[0].files[0];
+    const adminFile = $('#administrative_approval_file')[0].files[0];
+    if (dtpFile) formData.append('dtp_section_file', dtpFile);
+    if (techFile) formData.append('technical_section_file', techFile);
+    if (adminFile) formData.append('administrative_approval_file', adminFile);
+
+    // ---------- Submit update ----------
     $.ajax({
         url: '<?php echo API_URL; ?>project-update',
         type: 'POST',

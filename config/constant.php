@@ -2,7 +2,7 @@
 if (!defined('BASE_URL')) {
     // define('BASE_URL', 'https://dev.thcitsolutions.com/aastha-pms/');
     // define('BASE_URL', 'http://localhost/git/aastha-combined/html project/');
-     define('BASE_URL', 'http://localhost/git/htmlproject/');
+     define('BASE_URL', 'http://localhost/git/astha-front/');
 }
 
 if (!defined('API_URL')) {

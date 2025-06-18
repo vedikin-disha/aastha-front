@@ -39,7 +39,8 @@ function isActivePage($menu_item, $current_page) {
         ($menu_item === 'project' && in_array($current_page, ['projects', 'add-project', 'edit-project', "view-project"])) ||
         ($menu_item === 'project-template' && in_array($current_page, ['project-template-add', 'project-template-edit'])) ||
         ($menu_item === 'proposed-work' && in_array($current_page, ['proposed-work-add', 'proposed-work-edit'])) || 
-        ($menu_item === 'report' && in_array($current_page, ['department-wise-summary', 'report-job-wise-status']))
+        ($menu_item === 'report' && in_array($current_page, ['department-wise-summary', 'report-job-wise-status', 'dept-wise-report', 'employee-wise-report']))
+        
         || ($menu_item === 'change-password' && in_array($current_page, ['change-password']))
         ) {
         return true;
@@ -142,6 +143,24 @@ function isActivePage($menu_item, $current_page) {
                   <p>Job Wise Status</p>
                 </a>
               </li>
+              <li class="nav-item">
+                <a href="dept-wise-report" class="nav-link">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Dept Wise Report</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="employee-wise-report" class="nav-link">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Employee Wise Report</p>
+                </a>
+              </li>
+              <!-- <li class="nav-item">
+                <a href="report-job-wise-status" class="nav-link">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Job Wise Status</p>
+                </a>
+              </li> -->
             </ul>
           </li>
           <?php endif; ?>

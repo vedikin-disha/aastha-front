@@ -118,6 +118,24 @@ function shouldShowMenu($menu_id, $allowed_menus) {
                   <p>Job Wise Status</p>
                 </a>
               </li>
+              <li class="nav-item">
+                <a href="dept-wise-report" class="nav-link">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Dept Wise Report</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="employee-wise-report" class="nav-link">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Employee Wise Report</p>
+                </a>
+              </li>
+              <!-- <li class="nav-item">
+                <a href="report-job-wise-status" class="nav-link">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Job Wise Status</p>
+                </a>
+              </li> -->
             </ul>
           </li>
           <?php endif; ?>

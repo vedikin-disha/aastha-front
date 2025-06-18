@@ -67,7 +67,7 @@
                 </div>
                 <div id="new-report-job-wise" class="col-md-4 d-flex align-items-end">
                     <div class="d-flex" style="gap:10px;">
-                        <button type="submit" class="btn btn-primary" style="background-color: #30b8b9;border:none;">Search</button>
+                        <!-- <button type="submit" class="btn btn-primary" style="background-color: #30b8b9;border:none;">Search</button> -->
                         <a href="report-job-wise-status" class="btn btn-outline-secondary">Reset</a>
                     </div>
                 </div>
@@ -83,6 +83,9 @@
                         <th>Project Name</th>
                         <th>Project Status</th>
                         <th>Current Department</th>
+                        <th>DTP Section</th>
+                        <th>Technical Section</th>
+                        <th>Administrative Approval</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -125,10 +128,80 @@
 var jobTable;
 
 $(document).ready(function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialJob = urlParams.get('job_no') || '';
+const initialProjectParam = (urlParams.get('project_name') || '').toLowerCase();
+    const initialProject = urlParams.get('project_name') || '';
+
+    if(initialJob){ $('#id_job_no').val(initialJob); }
+
     // Initialize Select2
     $('.select2').select2({
         theme: 'bootstrap4'
     });
+
+    // ---------------- Load Projects -----------------
+    function loadProjects(){
+        $.ajax({
+            url: '<?php echo API_URL; ?>project-listing',
+            type: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            data: JSON.stringify({ access_token: "<?php echo $_SESSION['access_token']; ?>" }),
+            success: function(response){
+                var projectSelect = $('#projectName');
+                projectSelect.empty().append('<option value="">All Projects</option>');
+                if(response.is_successful==='1' && response.data && response.data.projects){
+                    response.data.projects.forEach(function(pr){
+                        projectSelect.append(new Option(pr.project_name, pr.project_name));
+                    });
+                }
+                projectSelect.trigger('change');
+            },
+            error:function(){
+                $(document).Toasts('create', {
+                    class: 'bg-danger',
+                    title: 'Error',
+                    position: 'bottomRight',
+                    body: 'Failed to load projects. Please try again.',
+                    autohide: true,
+                    delay: 3000
+                });
+            }
+        });
+    }
+
+    loadProjects();
+
+    // --------- Client-side table filtering ---------
+    function applyFilters(){
+        var jobFilter = $('#id_job_no').val().toLowerCase();
+        var projectFilter = $('#projectName').val().toLowerCase();
+        jobTable.rows().every(function(){
+            var d = this.data();
+            var match = true;
+            if(jobFilter && (!d.job_no || d.job_no.toLowerCase().indexOf(jobFilter)===-1)){
+                match = false;
+            }
+            if(projectFilter && (!d.project_name || d.project_name.toLowerCase()!==projectFilter)){
+                match = false;
+            }
+            $(this.node()).toggle(match);
+        });
+    }
+
+    $('#id_job_no').on('keyup change', applyFilters);
+    $('#projectName').on('change', applyFilters);
+
+    // Helper to return download link with appropriate icon based on file type
+    function fileIcon(url){
+        const ext = url.split('.').pop().toLowerCase().split('?')[0];
+        let icon = 'fas fa-file', color = 'text-secondary';
+        if(['pdf'].includes(ext)){ icon='fas fa-file-pdf'; color='text-danger'; }
+        else if(['doc','docx'].includes(ext)){ icon='fas fa-file-word'; color='text-primary'; }
+        else if(['xls','xlsx','csv'].includes(ext)){ icon='fas fa-file-excel'; color='text-success'; }
+        else if(['png','jpg','jpeg','gif','bmp','webp'].includes(ext)){ icon='fas fa-file-image'; color='text-info'; }
+        return `<a href="${url}" target="_blank"style="font-size: 20px"><i class="${icon} ${color}" style='font-size:30px'></i></a>`;
+    }
     
     // Load Circles
     $.ajax({
@@ -169,7 +242,11 @@ $(document).ready(function() {
                                 job_no: item.job_no || '-',
                                 project_name: item.project_name || '-',
                                 project_status: item.project_status ? item.project_status.charAt(0).toUpperCase() + item.project_status.slice(1) : '-',
-                                current_department: item.current_department || '-'
+                                current_department: item.current_department || '-',
+                                dtp_section: item.dtp_section,
+                                technical_section: item.technical_section,
+                                administrative_approval: item.administrative_approval,
+                                project_id: item.project_id || ''
                             });
                         });
                         
@@ -348,9 +425,24 @@ $(document).ready(function() {
         ],
         "columns": [
             { "data": "job_no" },
-            { "data": "project_name" },
+            { "data": "project_name", "render": function(data, type, row){
+                    var encoded = btoa(row.project_id || '');
+                    return `<a href=\"view-project.php?id=${encoded}\" target=\"_blank\">${data || '-'}</a>`;
+            }},
             { "data": "project_status" },
-            { "data": "current_department" }
+            { "data": "current_department" },
+            { "data": "dtp_section", "render": function(data){
+                    if(!data) return '-';
+                    return fileIcon(data);
+            } },
+            { "data": "technical_section", "render": function(data){
+                    if(!data) return '-';
+                    return fileIcon(data);
+            } },
+            { "data": "administrative_approval", "render": function(data){
+                    if(!data) return '-';
+                    return fileIcon(data);
+            } }
         ],
         
     });

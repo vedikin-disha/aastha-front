@@ -67,6 +67,9 @@ if (!defined('API_URL')) {
         </div>
         <div class="card-body">
             <form id="addProjectForm">
+  
+  
+  
             <div class="row">
                     <!-- Basic Information Section -->
                     <div class="col-md-6">
@@ -168,6 +171,7 @@ if (!defined('API_URL')) {
                     
                     <!-- Location & Duration Section -->
                     <div class="col-md-6">
+
                         <div class="card mb-4 h-100">
                             <div class="card-header bg-light">
                                 <h5 class="mb-0">Location & Duration</h5>
@@ -245,14 +249,8 @@ if (!defined('API_URL')) {
                             </div>
                         </div>
                     </div>
-                </div>
-                
-                <!-- Remove duplicate date fields -->
-                <div class="d-none">
-                    <input type="date" id="end_date_duplicate" name="end_date_duplicate">
-                    <input type="date" id="start_date_duplicate" name="start_date_duplicate">
-                </div>
 
+</div>
                 <!-- Estimated Amount In lakhs and Metadata Section -->
                 <div class="row" style="margin-top: 20px;">
                     <!-- Estimated Amount In lakhs -->
@@ -306,11 +304,57 @@ if (!defined('API_URL')) {
                             </div>
                         </div>
                     </div>
+                        
                     
-                   
-                </div>
+                    <!-- Administrative Attachments Section -->
+                    <div class="col-md -6">
+                        <div class="card">
+                            <div class="card-header" >
+                                <h5 class="mb-0">Administrative Attachments</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <!-- Administrative Approval -->
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label>Administrative Approval:</label>
+                                            <div class="custom-file">
+                                                <input type="file" class="custom-file-input" id="administrative_approval" name="administrative_approval" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png.csv.xls,.xlsx">
+                                                <label class="custom-file-label" for="administrative_approval">Choose file</label>
+                                            </div>
+                                            <div id="administrative_approval_uploaded"></div>
+                                        </div>
+                                    </div>
 
-              
+                                    <!-- DTP Section -->
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label>DTP Section:</label>
+                                            <div class="custom-file">
+                                                <input type="file" class="custom-file-input" id="dtp_section" name="dtp_section" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png.csv.xls,.xlsx">
+                                                <label class="custom-file-label" for="dtp_section">Choose file</label>
+                                            </div>
+                                            <div id="dtp_section_uploaded"></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Technical Section -->
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label>Technical Section:</label>
+                                            <div class="custom-file">
+                                                <input type="file" class="custom-file-input" id="technical_section" name="technical_section" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png.csv.xls,.xlsx">
+                                                <label class="custom-file-label" for="technical_section">Choose file</label>
+                                            </div>
+                                            <div id="technical_section_uploaded"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div >
 
                 <div class="row mt-4">
                     <div class="col-12">
@@ -320,9 +364,11 @@ if (!defined('API_URL')) {
                         <a href="projects.php" class="btn btn-secondary ml-2">Cancel</a>
                     </div>
                 </div>
-            </form>
-        </div>
-    </div>
+            
+                </form>
+
+</div>
+</div>
 </div>
 
 <!-- Required JS files -->
@@ -594,22 +640,24 @@ function showToast(type, title, message) {
     });
 }
 
+// Update file input labels when files are selected
+$(document).on('change', '.custom-file-input', function() {
+    const fileName = $(this).val().split('\\').pop();
+    if (fileName) {
+        $(this).siblings('.custom-file-label')
+            .addClass('selected')
+            .html(fileName);
+    }
+});
+
 function loadEmployees() {
-    // Implementation if needed later
     console.log('Loading employees...');
 }
 
-// Function to submit the project form
 function submitProjectForm() {
-    // Clear previous errors
-    $('.error-feedback').text('');
-    
-    // Get date values directly from the input (they're already in YYYY-MM-DD format)
-    var formattedStartDate = $('#start_date').val();
-    var formattedEndDate = $('#end_date').val();
-    
-    // Get form data
-    const formData = {
+    $('#saveProject').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Saving...');
+
+    const projectData = {
         access_token: '<?php echo $_SESSION["access_token"]; ?>',
         project_type_id: $('#project_type_id').val(),
         proposed_work_id: $('#proposed_work_id').val(),
@@ -627,72 +675,186 @@ function submitProjectForm() {
         estimated_amount: $('#estimated_amount').val() || '0.00',
         length: $('#length').val() || '0.00',
         status: 'Pending',
-        priority: $('#priority').val()
+        priority: $('#priority').val(),
     };
-    
-    console.log('Submitting project data:', formData);
-    
-    // Submit form data as JSON
+
+    console.log('Submitting project data:', projectData);
+
     $.ajax({
         url: API_URL + 'project-add',
         type: 'POST',
         contentType: 'application/json',
-        data: JSON.stringify(formData),
-        beforeSend: function() {
-            // Disable submit button and show loading state
-            $('#saveProject').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Saving...');
-        },
+        data: JSON.stringify(projectData),
         success: function(response) {
-            console.log('API Response:', response);
+            console.log('Project API Response:', response);
             if (response.is_successful === "1") {
-                // Show success toast message
-                $(document).Toasts('create', {
+                const projectId = response.data.project_id;
+                $('#project_id').val(projectId);
+
+                uploadAttachments(projectId, function(uploadedUUIDs) {
+                    updateProjectWithAttachments(projectId, uploadedUUIDs);
+                    $(document).Toasts('create', {
                     class: 'bg-success',
-                    title: 'Success',
-                    position: 'bottomRight',
-                    body: 'Project added successfully!',
+                    title: 'success',
+                    body: response.success_message,
                     autohide: true,
-                    delay: 2000
+                    delay: 3000
                 });
-                
-                // Clear form
-                $('#addProjectForm')[0].reset();
-                $('.select2').val(null).trigger('change');
-                
-                // Redirect to projects page after a delay
-                setTimeout(function() {
-                    window.location.href = 'projects.php';
-                }, 2000);
+                    setTimeout(() => {
+                        window.location.href = 'projects.php';
+                    }, 10000);
+                });
+
             } else {
-                // Show validation errors
-                $('#formResult').removeClass('alert-success').addClass('alert-danger')
-                    .html('Failed to add project. Please check the form and try again.').show();
-                
-                if (response.errors) {
-                    // Display field-specific errors
-                    for (const field in response.errors) {
-                        $('#' + field + '_error').text(response.errors[field].join(', '));
-                    }
-                }
+                throw new Error(response.errors || 'Failed to save project');
             }
         },
         error: function(xhr, status, error) {
-            // Show error message
-            $('#formResult').removeClass('alert-success').addClass('alert-danger')
-                .html('An error occurred. Please try again later.').show();
-            console.error('API Error:', error);
-            console.error('Response:', xhr.responseText);
-        },
-        complete: function() {
-            // Re-enable submit button
+            console.error('Error saving project:', error);
             $('#saveProject').prop('disabled', false).html('<i class="fas fa-save"></i> Save Project');
+            $(document).Toasts('create', {
+                    class: 'bg-denger',
+                    title: 'denger',
+                    body: response.success_message,
+                    autohide: true,
+                    delay: 3000
+                });
+                  
+
+
+            // showToast('danger', 'Error', 'Failed to save project. Please try again.');
         }
     });
 }
 
+function uploadAttachments(projectId, callback) {
+    const fileInputs = [
+        { id: 'administrative_approval' },
+        { id: 'dtp_section' },
+        { id: 'technical_section' }
+    ];
+
+    let uploadsCompleted = 0;
+    const totalUploads = fileInputs.length;
+    const uploadedUUIDs = {};
+
+    fileInputs.forEach(function(fileInput) {
+        const input = document.getElementById(fileInput.id);
+        if (input.files && input.files[0]) {
+            const formData = new FormData();
+            formData.append('access_token', "<?php echo $_SESSION['access_token']; ?>");
+            formData.append('project_id', projectId);
+            formData.append('attachment', input.files[0]);
+
+            $(`#${fileInput.id}_uploaded`).html('<i class="fas fa-spinner fa-spin"></i> Uploading...');
+
+            $.ajax({
+                url: API_URL + 'attachment-add',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.is_successful === "1") {
+                        const file = response.data.attachments[0];
+                        const fileUUID = file.uuid || file.UUID || file.attachment_id;
+uploadedUUIDs[fileInput.id] = fileUUID;
+                        $(`#${fileInput.id}_uploaded`).html(`
+                            <div class="alert alert-success p-2 mt-2">
+                                <i class="fas fa-check-circle"></i> Uploaded
+                            </div>
+                        `);
+                    } else {
+                        $(`#${fileInput.id}_uploaded`).html(`<div class="alert alert-danger">Upload failed</div>`);
+                        console.error('Upload failed:', response.errors);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    $(`#${fileInput.id}_uploaded`).html(`<div class="alert alert-danger">Error</div>`);
+                    console.error('Upload error:', error);
+                },
+                complete: function() {
+                    uploadsCompleted++;
+                    if (uploadsCompleted >= totalUploads && typeof callback === 'function') {
+                        callback(uploadedUUIDs);
+                    }
+                }
+            });
+        } else {
+            uploadsCompleted++;
+            if (uploadsCompleted >= totalUploads && typeof callback === 'function') {
+                callback(uploadedUUIDs);
+            }
+        }
+    });
+}
+
+function updateProjectWithAttachments(projectId, uploadedUUIDs) {
+    const updatedProjectData = {
+        access_token: '<?php echo $_SESSION["access_token"]; ?>',
+        project_type_id: $('#project_type_id').val(),
+        proposed_work_id: $('#proposed_work_id').val(),
+        project_name: $('#project_name').val(),
+        job_no: $('#job_no').val(),
+        job_no_reference_date: $('#job_no_reference_date').val() || null,
+        client_name: $('#client_name').val(),
+        description: $('#description').val(),
+        start_date: $('#start_date').val() || null,
+        end_date: $('#end_date').val() || null,
+        circle_id: $('#id_circle').val(),
+        division_id: $('#id_division').val(),
+        sub_id: $('#id_sub').val(),
+        taluka_id: $('#id_taluka').val(),
+        estimated_amount: $('#estimated_amount').val() || '0.00',
+        length: $('#length').val() || '0.00',
+        status: 'Pending',
+        priority: $('#priority').val(),
+        project_id: projectId,
+        administrative_approval: uploadedUUIDs['administrative_approval'] || '',
+        dtp_section: uploadedUUIDs['dtp_section'] || '',
+        technical_section: uploadedUUIDs['technical_section'] || ''
+    };
+
+    console.log('Updating project with attachments:', updatedProjectData);
+
+    $.ajax({
+        url: API_URL + 'project-update',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(updatedProjectData),
+        success: function(response) {
+            if (response.is_successful === "1") {
+                console.log('Project updated with attachments');
+            } else {
+                showToast('danger', 'Error', 'Failed to update project with attachments');
+            }
+        },
+        error: function(xhr, status, error) {
+            showToast('danger', 'Error', 'Error during project update: ' + error);
+        }
+    });
+}
+
+
+
+
 // Main document ready function
 $(document).ready(function() {
     console.log('jQuery loaded, initializing components');
+    
+    // Initialize file input change handlers
+    $('input[type="file"]').on('change', function() {
+        const type = $(this).attr('id');
+        if (this.files && this.files[0]) {
+            uploadFile(this, type);
+        }
+    });
+    
+    // Update file input label to show selected file name
+    $('.custom-file-input').on('change', function() {
+        let fileName = $(this).val().split('\\').pop();
+        $(this).next('.custom-file-label').addClass("selected").html(fileName);
+    });
     
     // Initialize Select2 Elements
     $('.select2').select2({
