@@ -24,7 +24,7 @@ if (isset($_SESSION['access_token'])) {
         <!-- Configuration fields will be loaded here -->
       </div>
       <div class="mt-4">
-        <button type="submit" class="btn btn-primary">Update</button>
+        <button type="submit" class="btn btn-primary" style="background-color: #30b8b9;border:none;">Update</button>
       </div>
     </form>
   </div>

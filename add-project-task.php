@@ -8,9 +8,9 @@
 <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
 
 <div class="container-fluid">
-  <div class="card card-primary">
-    <div class="card-header">
-      <h3 class="card-title">Add Project Task</h3>
+  <div class="card card-primary" >
+    <div class="card-header" style="background-color: transparent;color: #212529;border-bottom: 1px solid rgba(0, 0, 0, .125);border-top: 3px solid #30b8b9;">
+      <h3 class="card-title" >Add Project Task</h3>
     </div>
     <div class="card-body">
       <form id="projectTaskForm" method="POST" action="">
@@ -54,27 +54,49 @@
           <div class="invalid-feedback" style="display: none;"></div>
         </div>
 
-        <!-- Task Status -->
         <div class="form-group mb-3">
-          <label for="id_task_status" class="form-label">Task Status</label>
+          <label for="id_assign" class="form-label">Assign To</label>
           <div class="input-group">
-            <select class="form-select" id="id_task_status" name="task_status" required>
-              <option value="">-- Select Status --</option>
-              <option value="pending">Pending</option>
-              <option value="in_progress">In Progress</option>
-              <option value="completed">Completed</option>
+            <select class="form-select" id="id_assign" name="id_assign" style="width: 97%;" required>
+              <option value="">Select an Employee</option>
             </select>
             <div class="input-group-append">
-              <span class="input-group-text"><i class="fas fa-info-circle"></i></span>
+              <span class="input-group-text"><i class="fas fa-user"></i></span>
             </div>
           </div>
           <div class="invalid-feedback" style="display: none;"></div>
         </div>
 
+        <!-- Start Date -->
+        <div class='row'>
+        <div class="form-group mb-3 col-md-6">
+          <label for="start_date" class="form-label">Start Date</label>
+          <div class="input-group">
+            <input type="date" class="form-control" id="start_date" name="start_date" required>
+              <!-- <div class="input-group-append">
+            
+              </div> -->
+          </div>
+          <div class="invalid-feedback" style="display: none;"></div>
+        </div>
+
+        <!-- End Date -->
+        <div class="form-group mb-3 col-md-6">
+          <label for="end_date" class="form-label">End Date</label>
+          <div class="input-group">
+            <input type="date" class="form-control" id="end_date" name="end_date" required>
+            <!-- <div class="input-group-append">
+             
+            </div> -->
+          </div>
+          <div class="invalid-feedback" style="display: none;"></div>
+        </div>
+        </div>
+
         <div class="mt-3">
-          <div class="col-12">
-            <button type="submit" class="btn btn-primary">Save</button>
-            <a href="project-task-list.php" class="btn btn-secondary">Cancel</a>
+          <div class="col-12 pl-0">
+            <button type="submit" class="btn btn-primary m-0" style="background-color: #30b8b9;border:1px solid #30b8b9;">Save</button>
+            <a href="project-task-list" class="btn btn-secondary">Cancel</a>
           </div>
         </div>
       </form>
@@ -89,7 +111,7 @@
 <script>
 $(document).ready(function() {
   // Initialize Select2 for dropdowns
-  $('#id_project, #id_dept, #id_task_status').select2({
+  $('#id_project, #id_dept,#id_assign').select2({
     theme: 'bootstrap-5',
     width: '80%',
     dropdownParent: $('#projectTaskForm')
@@ -98,16 +120,41 @@ $(document).ready(function() {
   // Add active class to navigation
   $('#project-task a').addClass('active nav-link');
 
+  // Date validation function
+  function validateDates() {
+    var startDate = new Date($('#start_date').val());
+    var endDate = new Date($('#end_date').val());
+    
+    if (endDate <= startDate) {
+      $('#end_date').addClass('is-invalid');
+      $('<div class="invalid-feedback">End date must be greater than start date</div>').insertAfter($('#end_date').parent());
+      return false;
+    }
+    return true;
+  }
+
   // Handle form submission
   $('#projectTaskForm').on('submit', function(e) {
     e.preventDefault();
+    
+    // Reset validation
+    $('.is-invalid').removeClass('is-invalid');
+    $('.invalid-feedback').remove();
+    
+    // Validate dates
+    if (!validateDates()) {
+      return false;
+    }
     
     var formData = {
       access_token: '<?php echo $_SESSION["access_token"]; ?>',
       project_id: $('#id_project').val(),
       dept_id: $('#id_dept').val(),
       task_name: $('#task_name').val(),
-      task_status: $('#id_task_status').val()
+      assigned_emp_id: $('#id_assign').val(),
+      start_date: $('#start_date').val(),
+      end_date: $('#end_date').val(),
+      task_status: 0
     };
 
     $.ajax({
@@ -128,7 +175,7 @@ $(document).ready(function() {
             delay: 3000
           });
           setTimeout(function() {
-            window.location.href = 'project-task-list.php';
+            window.location.href = 'project-task-list';
           }, 1000);
         } else {
           $(document).Toasts('create', {
@@ -142,7 +189,6 @@ $(document).ready(function() {
         }
       },
       error: function(xhr, status, error) {
-        console.error('Error adding task:', error);
         $(document).Toasts('create', {
           class: 'bg-danger',
           title: 'Error',
@@ -173,7 +219,6 @@ $(document).ready(function() {
         });
         projectSelect.trigger('change');
       } else {
-        console.error('Error loading projects:', response.errors);
         $(document).Toasts('create', {
           class: 'bg-danger',
           title: 'Error',
@@ -185,7 +230,6 @@ $(document).ready(function() {
       }
     },
     error: function(xhr, status, error) {
-      console.error('Error loading projects:', error);
       $(document).Toasts('create', {
         class: 'bg-danger',
         title: 'Error',
@@ -215,7 +259,6 @@ $(document).ready(function() {
         });
         deptSelect.trigger('change');
       } else {
-        console.error('Error loading projects:', response.errors);
         $(document).Toasts('create', {
           class: 'bg-danger',
           title: 'Error',
@@ -227,7 +270,6 @@ $(document).ready(function() {
       }
     },
     error: function(xhr, status, error) {
-      console.error('Error loading projects:', error);
       $(document).Toasts('create', {
         class: 'bg-danger',
         title: 'Error',
@@ -239,6 +281,89 @@ $(document).ready(function() {
     }
   });
 });
+
+function loadEmployees() {
+    var apiUrl = '<?php echo API_URL; ?>user';
+    var accessToken = "<?php echo $_SESSION['access_token']; ?>";
+
+    // Show loading state
+    var $select = $('#id_assign');
+    $select.prop('disabled', true).empty().append('<option value="">Loading employees...</option>').trigger('change');
+
+    $.ajax({
+      url: apiUrl,
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      data: JSON.stringify({ 
+        access_token: accessToken,
+        dept_id: <?php echo $_SESSION['dept_id']; ?>
+      }),
+      success: function (response) {
+        $select.empty().append('<option value="">Select an Employee</option>');
+
+        if (response.is_successful === "1" && Array.isArray(response.data)) {
+          response.data.forEach(function (emp) {
+            if (emp.emp_status == 1) {
+              $select.append(new Option(emp.emp_name, emp.emp_id));
+            }
+          });
+          $select.prop('disabled', false);
+        } else {
+          $select.append('<option value="">No employees available</option>');
+          $(document).Toasts('create', {
+            class: 'bg-warning',
+            title: 'No Employees',
+            position: 'bottomRight',
+            body: 'No active employees found',
+            autohide: true,
+            delay: 3000
+          });
+        }
+        $select.trigger('change');
+      },
+      error: function (xhr, status, error) {
+        $select.empty().append('<option value="">Error loading employees</option>');
+        $(document).Toasts('create', {
+          class: 'bg-danger',
+          title: 'Error',
+          position: 'bottomRight',
+          body: 'Failed to load employees. Please try again.',
+          autohide: true,
+          delay: 3000
+        });
+        console.error("Failed to load employees:", error);
+      }
+    });
+  }
+  
+  // Reload employees when department changes
+  $('#id_dept').on('change', function() {
+    loadEmployees();
+  });
+  
+  // Update end date min attribute when start date changes
+  $('#start_date').on('change', function() {
+    var startDate = $(this).val();
+    if (startDate) {
+      var nextDay = new Date(startDate);
+      nextDay.setDate(nextDay.getDate() + 1);
+      var nextDayFormatted = nextDay.toISOString().split('T')[0];
+      $('#end_date').attr('min', nextDayFormatted);
+      
+      // If end date is before or equal to start date, update it to next day
+      var endDate = $('#end_date').val();
+      if (endDate && new Date(endDate) <= new Date(startDate)) {
+        $('#end_date').val(nextDayFormatted);
+      }
+    }
+  });
+  
+  // Validate end date when it changes
+  $('#end_date').on('change', function() {
+    validateDates();
+  });
 </script>
 
 <style>
@@ -317,20 +442,22 @@ $(document).ready(function() {
     font-size: 0.875rem;
     margin-top: 0.25rem;
   }
+  /* Custom Select2 highlight and selected color */
+.select2-container--bootstrap-5 .select2-results__option--highlighted {
+  background-color:rgb(236, 236, 236) !important;
+}
+.select2-container--bootstrap-5 .select2-results__option--highlighted.select2-results__option--selectable,
+.select2-container--bootstrap-5 .select2-results__option--selected {
+  background-color: #30b8b9 !important;
+  color: #fff !important;
+}
+ 
+/* Style for selected item in the dropdown */
+.select2-container--bootstrap-5 .select2-results__option[aria-selected=true] {
+  background-color: #30b8b9 !important;
+  color: #fff !important;
+}
 </style>
 
 
-<script>
-$(document).ready(function() {
-    $(document).Toasts('create', {
-        class: 'bg-success',
-        title: 'Success',
-        position: 'bottomRight',
-        body: 'Project Task added successfully',
-        autohide: true,
-        delay: 5000
-    });
-  
-});
-</script>
 <?php include 'common/footer.php'; ?>

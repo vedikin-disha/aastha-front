@@ -1,62 +1,48 @@
-<?php include 'common/header.php'; ?>
 <?php
-// API call to fetch project templates
-$url = API_URL . 'template-listing';
-$request_data = [
-    'access_token' => 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc0ODQyNTU4OCwianRpIjoiMmE0NjIzOTUtY2YwZi00NzY3LTlkYzgtMzA1ZTlkODMzMDZkIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6ImplbnNpLmNoYW5nYW5pQHZlZGlraW4uY29tIiwibmJmIjoxNzQ4NDI1NTg4LCJjc3JmIjoiZTVmOGJlNzgtZTQ0Ny00NjRlLWI5M2EtODljNzY5YmE1MDZkIiwiZXhwIjoxNzQ4NTExOTg4fQ.OZ94UxHkpdiNORfT3EB5sCqeKQi0oH_qgvmec6NJ_9M'
-    // Uncomment these if needed:
-    // 'circle_id' => 1,
-    // 'division_id' => 2,
-    // 'sub_division_id' => 3,
-    // 'taluka_id' => 4
-];
+include 'config/constant.php';
+include 'common/header.php';
 
-$ch = curl_init($url);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_POST, true);
-curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($request_data));
-curl_setopt($ch, CURLOPT_HTTPHEADER, [
-    'Content-Type: application/json'
-]);
-
-// SSL settings
-curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-
-$response = curl_exec($ch);
-
-if ($response === false) {
-    echo '<div class="alert alert-danger">cURL Error: ' . curl_error($ch) . '</div>';
-} else {
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    
-    // Debug information
-    echo '<!-- Debug Info: ' . 
-         'HTTP Code: ' . $httpCode . 
-         ', Response: ' . htmlspecialchars($response) . 
-         ' -->';
-    
-    $templates = [];
-    if ($httpCode === 200) {
-        $result = json_decode($response, true);
-        if ($result && isset($result['is_successful']) && $result['is_successful'] === '1') {
-            $templates = $result['data'];
-        } else {
-            $error = isset($result['errors']) ? $result['errors'] : 'Unknown error occurred';
-            echo '<div class="alert alert-danger">API Error: ' . htmlspecialchars($error) . '</div>';
-        }
-    } else {
-        echo '<div class="alert alert-danger">Server returned code ' . $httpCode . '</div>';
-    }
+// Display success message if set
+if (isset($_SESSION['success_message'])) {
+    echo "<script>
+        $(document).ready(function() {
+            showToast('{$_SESSION['success_message']}', true);
+        });
+    </script>";
+    unset($_SESSION['success_message']);
 }
-
-curl_close($ch);
 ?>
 
+<!-- Debug Info -->
+<?php
+echo '<!-- Debug: API_URL = ' . API_URL . ' -->';
+echo '<!-- Debug: Session token exists = ' . (isset($_SESSION['access_token']) ? 'yes' : 'no') . ' -->';
+?>
+
+<script>
+const API_URL = '<?php echo API_URL; ?>';
+const ACCESS_TOKEN = '<?php echo $_SESSION['access_token']; ?>';
+</script>
+
 <!-- SweetAlert2 CSS -->
-<link rel="stylesheet" href="css/sweetalert2.min.css">
+<link href="
+https://cdn.jsdelivr.net/npm/sweetalert2@11.22.0/dist/sweetalert2.min.css
+" rel="stylesheet">
+
+<style>
+    @media (max-width:593px) {
+
+        #new-editbtn-ap {
+            margin-bottom: 5px;       
+        }
+    }
+</style>
 <!-- SweetAlert2 JS -->
-<script src="js/sweetalert2.all.min.js"></script>
+<script src="
+https://cdn.jsdelivr.net/npm/sweetalert2@11.22.0/dist/sweetalert2.all.min.js
+"></script>
+<!-- Common JS with showToast function -->
+<script src="js/common.js"></script>
 
 <div class="card card-primary card-outline">
   <div class="card-header">
@@ -69,117 +55,22 @@ curl_close($ch);
   </div>
 
   <div class="card-body">
-    <table id="templateTable" class="table table-bordered table-hover">
-      <thead>
-        <tr>
-          <th width="20%">Project Type ID</th>
-          <th width="50%">Type Name</th>
-          <th width="30%">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-      <?php 
-      if (!empty($templates) && is_array($templates)): 
-        foreach ($templates as $template): 
-          if (isset($template['project_type_id']) && isset($template['type_name'])): 
-      ?>
-        <tr>
-          <td><?php echo htmlspecialchars($template['project_type_id']); ?></td>
-          <td><?php echo htmlspecialchars($template['type_name']); ?></td>
-          <td>
-            <a href="project-template-edit?id=<?php echo htmlspecialchars($template['project_type_id']); ?>" class="btn btn-sm btn-primary">
-              <i class="fas fa-edit"></i> Edit
-            </a>
-            <button onclick="confirmDelete('<?php echo htmlspecialchars($template['type_name']); ?>', '<?php echo htmlspecialchars($template['project_type_id']); ?>')" class="btn btn-sm btn-danger">
-              <i class="fas fa-trash"></i> Delete
-            </button>
-          </td>
-        </tr>
-        <?php 
-          endif;
-        endforeach; 
-      else: 
-      ?>
-        <tr>
-          <td colspan="3" class="text-center">No project templates found.</td>
-        </tr>
-      <?php endif; ?>
-      </tbody>
-    </table>
+    <div class="new-pms-ap">
+        <table id="templateTable" class="table table-bordered table-hover">
+        <thead>
+            <tr>
+            <th width="20%">Project Type ID</th>
+            <th width="50%">Type Name</th>
+            <th width="30%">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        <!-- Table data will be populated by JavaScript -->
+        </tbody>
+        </table>
+    </div>
   </div>
 </div>
-
-<script>
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
-
-function confirmDelete(templateName, templateId) {
-    Swal.fire({
-        title: 'Delete Project Template?',
-        text: `Are you sure you want to delete "${templateName}"? This action cannot be undone.`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#dc3545',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Yes, delete it!',
-        cancelButtonText: 'Cancel'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Send DELETE request to your API endpoint
-            fetch(API_URL + 'template-delete', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    access_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc0ODQyNTU4OCwianRpIjoiMmE0NjIzOTUtY2YwZi00NzY3LTlkYzgtMzA1ZTlkODMzMDZkIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6ImplbnNpLmNoYW5nYW5pQHZlZGlraW4uY29tIiwibmJmIjoxNzQ4NDI1NTg4LCJjc3JmIjoiZTVmOGJlNzgtZTQ0Ny00NjRlLWI5M2EtODljNzY5YmE1MDZkIiwiZXhwIjoxNzQ4NTExOTg4fQ.OZ94UxHkpdiNORfT3EB5sCqeKQi0oH_qgvmec6NJ_9M',
-                    project_type_id: templateId
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.is_successful === '1') {
-                    // Show success message and reload
-                    Swal.fire(
-                        'Deleted!',
-                        'Project template has been deleted.',
-                        'success'
-                    ).then(() => {
-                        window.location.reload();
-                    });
-                } else {
-                    // Show error message
-                    Swal.fire(
-                        'Error!',
-                        data.errors || 'Failed to delete project template.',
-                        'error'
-                    );
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                Swal.fire(
-                    'Error!',
-                    'An error occurred while deleting the template.',
-                    'error'
-                );
-            });
-        }
-    });
-}
-</script>
 
 <!-- DataTables CSS -->
 <link rel="stylesheet" type="text/css" href="css/dataTables.bootstrap4.min.css">
@@ -201,19 +92,138 @@ $(document).ready(function() {
             "info": true,
             "autoWidth": false,
             "responsive": true,
+            "dom": "<'row'<'col-sm-12 col-md-6'B><'col-sm-12 col-md-6'f>>" +
+               "<'row'<'col-sm-12'tr>>" +
+               "<'row'<'col-12'i><'col-12'p>>",
             "language": {
-                "search": "_INPUT_",
-                "searchPlaceholder": "Search..."
+                "search": "Search:",
+               
             },
             "columnDefs": [
                 { "orderable": false, "targets": 2 } // Disable sorting on Actions column
+            ],
+            "ajax": {
+                "url": API_URL + 'template-listing',
+                "type": "POST",
+                "contentType": "application/json",
+                "processData": false,
+                "data": function() {
+                    return JSON.stringify({
+                        "access_token": ACCESS_TOKEN
+                    });
+                },
+                "error": function(xhr, error, thrown) {
+                    showToast('Error loading data: ' + error, false);
+                },
+                "dataSrc": function(response) {
+                    if (response && response.is_successful === '1' && response.data) {
+                        return response.data;
+                    } else {
+                        showToast(response?.errors || 'Failed to fetch templates', false);
+                        return [];
+                    }
+                }
+            },
+            "order": [[0, "desc"]],
+            "columns": [
+                { "data": "project_type_id" },
+                { 
+                    "data": "project_type_name",
+                    "type": "string"
+                },
+                { 
+                    "data": null,
+                    "render": function(data, type, row) {
+                        // Encode the project_type_id using base64 for the URL
+                        const encodedId = btoa(row.project_type_id);
+                        return `
+                            <a href="project-template-edit?id=${(encodedId)}" id="new-editbtn-ap" class="btn btn-sm btn-primary" style="background-color: #30b8b9;border:none;">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                        `;
+                    }
+                }
             ]
         });
-        console.log('DataTable initialized successfully');
     } catch (error) {
-        console.error('Error initializing DataTable:', error);
+        showToast('Error initializing table: ' + error.message, false);
     }
 });
+
+// <button onclick="confirmDelete('${row.project_type_name.replace(/'/g, "\\'")}', '${row.project_type_id}')" class="btn btn-sm btn-danger">
+//                                 <i class="fas fa-trash"></i> Delete
+//                             </button>
+</script>
+
+<script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// function confirmDelete(templateName, templateId) {
+//     Swal.fire({
+//         title: 'Delete Project Template?',
+//         text: `Are you sure you want to delete "${templateName}"? This action cannot be undone.`,
+//         icon: 'warning',
+//         showCancelButton: true,
+//         confirmButtonColor: '#dc3545',
+//         cancelButtonColor: '#6c757d',
+//         confirmButtonText: 'Yes, delete it!',
+//         cancelButtonText: 'Cancel'
+//     }).then((result) => {
+//         if (result.isConfirmed) {
+//             // Send DELETE request to your API endpoint
+//             fetch(API_URL + 'template-delete', {
+//                 method: 'POST',
+//                 headers: {
+//                     'Content-Type': 'application/json'
+//                 },
+//                 body: JSON.stringify({
+//                     access_token: getCookie('access_token'),
+//                     project_type_id: templateId
+//                 })
+//             })
+//             .then(response => response.json())
+//             .then(data => {
+//                 if (data.is_successful === '1') {
+//                     // Show success message and reload
+//                     Swal.fire(
+//                         'Deleted!',
+//                         'Project template has been deleted.',
+//                         'success'
+//                     ).then(() => {
+//                         window.location.reload();
+//                     });
+//                 } else {
+//                     // Show error message
+//                     Swal.fire(
+//                         'Error!',
+//                         data.errors || 'Failed to delete project template.',
+//                         'error'
+//                     );
+//                 }
+//             })
+//             .catch(error => {
+//                 Swal.fire(
+//                     'Error!',
+//                     'An error occurred while deleting the template.',
+//                     'error'
+//                 );
+//             });
+//         }
+//     });
+// }
 </script>
 
 <script>
@@ -222,7 +232,7 @@ $(document).ready(function() {
 </script>
 
 
-<script>
+<!-- <script>
   $(document).ready(function() {
       $(document).Toasts('create', {
         class: 'bg-success',
@@ -233,5 +243,5 @@ $(document).ready(function() {
         delay: 3000
       });
   });
-</script>
+</script> -->
 <?php include 'common/footer.php'; ?>

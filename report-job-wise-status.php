@@ -1,4 +1,26 @@
 <?php include 'common/header.php'; ?>
+
+<style>
+    @media (max-width: 767px) {
+        
+        #new-report-job-wise{
+         margin-top: 10px;
+        }
+    }
+    .new-pms-ap {
+
+        width: 100% !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+    }
+
+    .select2-results__option .select2-results__option--highlighted {
+        background-color: #ececec !important;
+        color: #212529 !important;
+    }
+    
+</style>
+
 <div class="card card-primary card-outline">
     <div class="card-header">
         <h3 class="card-title">Job Wise Status</h3>
@@ -43,9 +65,9 @@
                         <option value="">All Projects</option>
                     </select>
                 </div>
-                <div class="col-md-4 d-flex align-items-end">
+                <div id="new-report-job-wise" class="col-md-4 d-flex align-items-end">
                     <div class="d-flex" style="gap:10px;">
-                        <button type="submit" class="btn btn-success">Search</button>
+                        <button type="submit" class="btn btn-primary" style="background-color: #30b8b9;border:none;">Search</button>
                         <a href="report-job-wise-status" class="btn btn-outline-secondary">Reset</a>
                     </div>
                 </div>
@@ -53,19 +75,21 @@
         </div>
 
         <!-- Job Table -->
-        <table id="jobStatusTable" class="table table-bordered table-hover">
-            <thead>
-                <tr>
-                    <th>Job No.</th>
-                    <th>Project Name</th>
-                    <th>Project Status</th>
-                    <th>Current Department</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- data table data -->
-            </tbody>
-        </table>
+         <div class="new-pms-ap">
+            <table id="jobStatusTable" class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>Job No.</th>
+                        <th>Project Name</th>
+                        <th>Project Status</th>
+                        <th>Current Department</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- data table data -->
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -77,7 +101,7 @@
 <link rel="stylesheet" href="css/responsive.bootstrap4.min.css">
 <link rel="stylesheet" href="css/select2-bootstrap4.min.css">
 <!-- JS Dependencies -->
-<script src="{% static 'js/jquery.min.js' %}"></script>
+<!-- <script src="{% static 'js/jquery.min.js' %}"></script>
 <script src="{% static 'js/select2.full.min.js' %}"></script>
 <script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
 <script src="{% static 'js/dataTables.bootstrap4.min.js' %}"></script>
@@ -90,7 +114,7 @@
 <script src="{% static 'js/vfs_fonts.js' %}"></script>
 <script src="{% static 'js/buttons.html5.min.js' %}"></script>
 <script src="{% static 'js/buttons.print.min.js' %}"></script>
-<script src="{% static 'js/buttons.colVis.min.js' %}"></script>
+<script src="{% static 'js/buttons.colVis.min.js' %}"></script> -->
 
 <!-- Select2 CSS and JS -->
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -189,6 +213,7 @@ $(document).ready(function() {
         var circleId = $(this).val();
         var divisionSelect = $('#id_division');
         
+        
         // Clear existing options
         divisionSelect.empty().append('<option value="">All Divisions</option>');
         
@@ -227,6 +252,7 @@ $(document).ready(function() {
     $('#id_division').on('change', function() {
         var divisionId = $(this).val();
         var subDivisionSelect = $('#id_sub_division');
+        loadJobData();
         
         // Clear existing options
         subDivisionSelect.empty().append('<option value="">All Sub Divisions</option>');
@@ -268,6 +294,7 @@ $(document).ready(function() {
     $('#id_sub_division').on('change', function() {
         var subId = $(this).val();
         var talukaSelect = $('#id_taluka');
+        loadJobData();
         
         // Clear existing options
         talukaSelect.empty().append('<option value="">All Talukas</option>');
@@ -340,6 +367,13 @@ jobTable.draw();
         var divisionId = $('#id_division').val() || '';
         var subDivisionId = $('#id_sub_division').val() || '';
         var talukaId = $('#id_taluka').val() || '';
+        var jobNo = $('#id_job_no').val().trim();
+        var projectName = $('#projectName').val();
+        // globaley serch then project name in going to request
+        
+        jobTable.column(0).search(jobNo);
+        jobTable.column(1).search(projectName);
+        jobTable.draw();
 
         // Prepare request data
         var requestData = {
@@ -351,6 +385,9 @@ jobTable.draw();
         if (divisionId) requestData.division_id = divisionId;
         if (subDivisionId) requestData.sub_division_id = subDivisionId;
         if (talukaId) requestData.taluka_id = talukaId;
+        if (jobNo) requestData.job_no = jobNo;
+        if (projectName) requestData.project_name = projectName;
+        
 
         $.ajax({
             url: '<?php echo API_URL; ?>jobwise',
@@ -418,6 +455,7 @@ jobTable.draw();
         e.preventDefault();
         var jobNo = $('#id_job_no').val().trim();
         var projectName = $('#projectName').val();
+        loadJobData();
 
         // Apply filters to DataTable
         jobTable.column(0).search(jobNo);

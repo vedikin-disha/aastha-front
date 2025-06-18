@@ -1,12 +1,30 @@
-<?php include 'common/header.php'; ?>
+<?php 
+include 'common/header.php';
+
+// Get and decode the sub_id from URL parameter
+$encoded_id = isset($_GET['id']) ? $_GET['id'] : '';
+$sub_id = '';
+
+if ($encoded_id) {
+    $sub_id = base64_decode($encoded_id);
+    if (!$sub_id || !is_numeric($sub_id)) {
+        echo "<script>showToast('Invalid subdivision ID', false); setTimeout(() => { window.location.href = 'subdivision-list'; }, 2000);</script>";
+        exit();
+    }
+} else {
+    echo "<script>showToast('No subdivision ID provided', false); setTimeout(() => { window.location.href = 'subdivision-list'; }, 2000);</script>";
+    exit();
+}
+?>
 
 <!-- Select2 CSS -->
 <link href="css/select2.min.css" rel="stylesheet" />
 <!-- Select2 Bootstrap Theme -->
-<link href="css/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+<!-- <link href="css/select2-bootstrap-5-theme.min.css" rel="stylesheet" /> -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2-bootstrap-5-theme/1.3.0/select2-bootstrap-5-theme.min.css" integrity="sha512-z/90a5SWiu4MWVelb5+ny7sAayYUfMmdXKEAbpj27PfdkamNdyI3hcjxPxkOPbrXoKIm7r9V2mElt5f1OtVhqA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
 <div class="card">
-  <div class="card-header">
+  <div class="card-header" style="border-top: 3px solid #30b8b9; border-bottom: 1px solid rgba(0, 0, 0, .125);">
     <h3 class="card-title">Edit Subdivision</h3>
   </div>
   <div class="card-body">
@@ -38,7 +56,7 @@
 
       <!-- Subdivision Name -->
       <div class="form-group mb-3">
-        <label for="subdivision_name" class="form-label">Subdivision Name</label>
+        <label for="subdivision_name" class="form-label">Subdivision</label>
         <div class="input-group">
           <input type="text" name="subdivision_name" id="subdivision_name" class="form-control">
           <div class="input-group-append">
@@ -48,7 +66,7 @@
       </div>
 
       <div class="mt-3">
-        <button type="submit" class="btn btn-primary">Update</button>
+        <button type="submit" class="btn btn-primary" style="background-color: #30b8b9;border: 1px solid #30b8b9;">Update</button>
         <a href="subdivision-list" class="btn btn-secondary">Cancel</a>
       </div>
     </form>
@@ -71,11 +89,11 @@
     type: 'POST',
     contentType: 'application/json',
     data: JSON.stringify({
-      sub_id: <?php echo $_GET['id']; ?>,
+      sub_id: <?php echo $sub_id; ?>,
       access_token: "<?php echo $_SESSION['access_token']; ?>"
     }),
     success: function(response) {
-      console.log('Subdivision API response:', response);
+    
       // Handle the actual response structure from the API
       if (response) {
         // The API returns the data directly in the response object
@@ -85,16 +103,16 @@
         $('#circle_name').val(response.circle_name);
         // Store circle_id in a hidden variable
         $('#circle_id').val(response.circle_id);
-        console.log('Set division_id to:', response.division_id);
-        console.log('Set circle_id to:', response.circle_id);
+      
+      
       } else {
         showToast('Failed to load subdivision data', false);
-        console.error('Invalid API response structure:', response);
+      
       }
     },
     error: function(response) {
       showToast('Error loading subdivision data', false);
-      console.error('API error:', response);
+    
     }
   });
 </script>
@@ -116,7 +134,7 @@
         return;
       }
       
-      console.log('Submitting with division_id:', division_id);
+    
       
       $.ajax({
         url: '<?php echo API_URL; ?>update-subdivision',
@@ -127,10 +145,10 @@
           division_id: division_id,
           circle_id: $('#circle_id').val(),
           access_token: "<?php echo $_SESSION['access_token']; ?>",
-          sub_id: <?php echo $_GET['id']; ?>
+          sub_id: <?php echo $sub_id; ?>
         }),
         success: function(response) {
-          console.log('Update response:', response);
+        
           if (response.is_successful === "1") {
             showToast(response.success_message || 'Subdivision updated successfully');
             window.location.href = "<?php echo BASE_URL; ?>subdivision-list";
@@ -143,7 +161,7 @@
           }
         },
         error: function(response) {
-          console.error('Update error:', response);
+        
           showToast('Error updating subdivision', false);
         }
       });

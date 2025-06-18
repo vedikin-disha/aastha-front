@@ -86,8 +86,10 @@ if ($result === FALSE) {
         <div class="card-body box-profile">
           <div class="text-center mb-3">
             <img class="profile-user-img img-fluid img-circle"
-                 src="https://ui-avatars.com/api/?name=<?php echo htmlspecialchars($user['emp_name'] ?? 'User'); ?>&background=007bff&color=fff&size=128"
-                 alt="User profile picture">
+                 style="width: 150px; height: 150px; object-fit: cover; border: 3px solid #30b8b9;"
+                 src="<?php echo !empty($user['profile_picture']) ? htmlspecialchars($user['profile_picture']) : 'https://ui-avatars.com/api/?name=' . urlencode($user['emp_name'] ?? 'User') . '&background=30b8b9&color=fff&size=150'; ?>"
+                 alt="User profile picture"
+                 id="profilePictureDisplay">
           </div>
           <h3 class="profile-username text-center"><?php echo htmlspecialchars($user['emp_name'] ?? 'User'); ?></h3>
           <p class="text-muted text-center"><?php echo htmlspecialchars($user['emp_role_name'] ?? ''); ?></p>
@@ -103,7 +105,7 @@ if ($result === FALSE) {
           </ul>
         </div>
         <div class="text-center mb-3">
-          <a href="profile-edit" class="btn btn-primary">Edit Profile</a>
+          <a href="profile-edit" class="btn btn-primary" style="background-color: #30b8b9;border:none;">Edit Profile</a>
         </div>
       </div>
     </div>

@@ -1,6 +1,6 @@
-RewriteEngine On
-
-# If the request does not contain a file extension
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteCond %{REQUEST_FILENAME}\.php -f
-RewriteRule ^([a-zA-Z0-9_-]+)/?$ $1.php [L]
+RewriteEngine On
+
+# If the request does not contain a file extension
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}\.php -f
+RewriteRule ^([a-zA-Z0-9_-]+)/?$ $1.php [L]

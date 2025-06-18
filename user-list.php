@@ -1,7 +1,8 @@
 <?php include 'common/header.php'; ?>
 
 <link rel="stylesheet" href="css/dataTables.bootstrap4.min.css">
-<link rel="stylesheet" href="css/bootstrap.min.css">
+<!-- <link rel="stylesheet" href="css/bootstrap.min.css"> -->
+ 
 
 
 <div class="card card-primary card-outline">
@@ -15,10 +16,11 @@
   </div>
 
   <div class="card-body">
+    <div class="new-pms-ap">
     <table id="userTable" class="table table-bordered table-hover">
       <thead>
         <tr>
-          <th>TblEmployee ID</th>
+          <th>Employee ID</th>
           <th>Name</th>
           <th>Email</th>
           <th>Phone Number</th>
@@ -29,10 +31,11 @@
           <th>Action</th>
         </tr>
       </thead>
-      <tbody>
-      <!-- data table data -->
-      </tbody>
-    </table>
+        <tbody>
+          <!-- data table data -->
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 
@@ -48,6 +51,7 @@
       "lengthChange": false,
       "searching": true,
       "ordering": true,
+      "order": [[1, "asc"]],
       "autoWidth": false,
       "responsive": true,
       "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"],
@@ -95,8 +99,10 @@
         {
           "data": null,
           "render": function(data) {
-            return `<a href="user-edit?id=${data.emp_id}" class="btn btn-primary btn-sm" title="Edit User">
-                      <i class="fas fa-edit"></i>
+            // Encode the emp_id using base64 for the URL
+            const encodedId = btoa(data.emp_id);
+            return `<a href="user-edit?id=${encodedId}" class="btn btn-primary btn-sm" title="Edit User" style="background-color: #30b8b9;border:none;">
+                      <i class="fas fa-edit"></i> Edit
                     </a>`;
           }
         }

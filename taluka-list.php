@@ -3,7 +3,8 @@
 
 <!-- DataTables Bootstrap4 CSS -->
 <link rel="stylesheet" href="css/dataTables.bootstrap4.min.css">
-<link rel="stylesheet" href="css/jquery.dataTables.min.css">
+<!-- <link rel="stylesheet" href="css/jquery.dataTables.min.css"> -->
+
 <link rel="stylesheet" href="css/buttons.bootstrap4.min.css">
 
 
@@ -19,20 +20,23 @@
 
   <div class="card-body">
     <div id="talukaTable_wrapper" class="dataTables_wrapper dt-bootstrap4"> </div>
-    <table id="talukaTable" class="table table-bordered table-hover">
-      <thead>
-        <tr>
-          <th>Taluka Name</th>
-          <th>Subdivision</th>
-          <th>Division</th>
-          <th>Circle</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- datatable data -->
-      </tbody>
-    </table>
+    <div class="new-pms-ap">
+
+      <table id="talukaTable" class="table table-bordered table-hover">
+        <thead>
+          <tr>
+            <th>Taluka</th>
+            <th>Subdivision</th>
+            <th>Division</th>
+            <th>Circle</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- datatable data -->
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 
@@ -69,8 +73,10 @@
             { "data": "taluka_id" }
           ],
           "createdRow": function (row, data, dataIndex) {
+            // Encode the taluka_id using base64 for the URL
+            const encodedId = btoa(data.taluka_id);
             $(row).find('td:eq(4)').html(
-              '<a href="<?php echo BASE_URL; ?>taluka-edit?id=' + data.taluka_id + '" class="btn btn-primary btn-sm">Edit</a>'
+              '<a href="<?php echo BASE_URL; ?>taluka-edit?id=' + encodedId + '" class="btn btn-primary btn-sm" style="background-color: #30b8b9;border:none;"><i class="fas fa-edit"></i> Edit</a>'
             );
           }
         })

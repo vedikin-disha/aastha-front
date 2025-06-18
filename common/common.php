@@ -1,6 +1,11 @@
 <!-- restrict user to directly go to any page -->
 <?php
 function isUserLoggedIn() {
+    // Start session if it hasn't been started yet
+    if (session_status() == PHP_SESSION_NONE) {
+        session_start();
+    }
+    
     if (!isset($_SESSION['access_token'])) {
         header("Location: ".BASE_URL . "login");
         exit();
@@ -19,12 +24,17 @@ function isUserLoggedIn() {
 }
 
 function isUserHasRights($page) {
-session_start();
+// Start session if it hasn't been started yet
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+
 // check key is set or not
 if (!isset($_SESSION['emp_role_id'])) {
     header("Location: " . BASE_URL . "login");
     exit();
 }
+
     if ($_SESSION['emp_role_id'] == 1) {
         return true;
     }
@@ -70,6 +80,11 @@ if (!isset($_SESSION['emp_role_id'])) {
         $access_rights[2][] = "add-project";
         $access_rights[2][] = "edit-project";
         $access_rights[2][] = "view-project";
+        $access_rights[2][] = "change-password";
+        $access_rights[2][] = "proposed-work-edit";
+        $access_rights[2][] = "proposed-work-add";
+        $access_rights[2][] = "proposed-work-list";
+        $access_rights[2][] = "view-all-notifications";
 
     $access_rights[3] = array();
     $access_rights[3][] = "dashboard-user";
@@ -78,9 +93,11 @@ if (!isset($_SESSION['emp_role_id'])) {
     $access_rights[3][] = "profile-edit";
     $access_rights[3][] = "profile";
     $access_rights[3][] = "project-task-list";
+    $access_rights[3][] = "add-project-task";
     $access_rights[3][] = "projects";
-
     $access_rights[3][] = "view-project";
+    $access_rights[3][] = "change-password";
+    $access_rights[3][] = "view-all-notifications";
 
     $access_rights[4] = array();
     $access_rights[4][] = "dashboard-user";
@@ -91,6 +108,8 @@ if (!isset($_SESSION['emp_role_id'])) {
     $access_rights[4][] = "project-task-list";
     $access_rights[4][] = "projects"; 
     $access_rights[4][] = "view-project";
+    $access_rights[4][] = "change-password";    
+    $access_rights[4][] = "view-all-notifications";
 
     if (in_array($page, $access_rights[$_SESSION['emp_role_id']])) {
         return true;

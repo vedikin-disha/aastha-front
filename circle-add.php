@@ -1,23 +1,23 @@
 <?php include 'common/header.php'; ?>
 
 <div class="card">
-  <div class="card-header">
+  <div class="card-header" style="border-top: 3px solid #30b8b9; border-bottom: 1px solid rgba(0, 0, 0, .125);">
     <h3 class="card-title">Add Circle</h3>
   </div>
   <div class="card-body">
   <form method="post" id="circleForm">
       
       <div class="form-group mb-3">
-        <label for="circle_name" class="form-label">Circle Name</label>
+        <label for="circle_name" class="form-label">Circle</label>
         <div class="input-group">
-          <input type="text" name="circle_name" id="circle_name" class="form-control">
+          <input type="text" name="circle_name" id="circle_name" class="form-control" required>
           <div class="input-group-append">
-            <span class="input-group-text"><i class="fas fa-check"></i></span>
+            <span class="input-group-text"><i class="fas fa-circle"></i></span>
           </div>
         </div>
       </div>
       <div class="mt-3">
-        <button type="submit" class="btn btn-primary">Save</button>
+        <button type="submit" class="btn btn-primary" style="background-color: #30b8b9;border: 1px solid #30b8b9;">Save</button>
         <a href="circle-list" class="btn btn-secondary">Cancel</a>
       </div>
     </form>

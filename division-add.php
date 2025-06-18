@@ -5,10 +5,28 @@
 <!-- Select2 CSS -->
 <link href="css/select2.min.css" rel="stylesheet" />
 <!-- Select2 Bootstrap Theme -->
-<link href="css/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+<!-- <link href="css/select2-bootstrap-5-theme.min.css" rel="stylesheet" /> -->
+
+<style>
+/* Custom Select2 highlight and selected color */
+.select2-container--bootstrap-5 .select2-results__option--highlighted {
+  background-color:rgb(236, 236, 236) !important;
+}
+.select2-container--bootstrap-5 .select2-results__option--highlighted.select2-results__option--selectable,
+.select2-container--bootstrap-5 .select2-results__option--selected {
+  background-color: #30b8b9 !important;
+  color: #fff !important;
+}
+
+/* Style for selected item in the dropdown */
+.select2-container--bootstrap-5 .select2-results__option[aria-selected=true] {
+  background-color: #30b8b9 !important;
+  color: #fff !important;
+}
+</style>
 
 <div class="card">
-  <div class="card-header">
+  <div class="card-header" style="border-top: 3px solid #30b8b9; border-bottom: 1px solid rgba(0, 0, 0, .125);">
     <h3 class="card-title">Add Division</h3>
   </div>
   <div class="card-body">
@@ -17,32 +35,32 @@
       
       <!-- Circle Selection -->
       <div class="form-group mb-3">
-        <label for="id_circle" class="form-label">Select Circle</label>
+        <label for="id_circle" class="form-label">Circle</label>
         <div class="input-group">
-          <div class="input-group-append">
-            <span class="input-group-text"><i class="fas fa-circle"></i></span>
-          </div>
           <select name="circle_id" id="id_circle" class="form-control select2">
             <option value="">Select Circle</option>
             <!-- Circle options will be populated via API -->
           </select>
+          <div class="input-group-append">
+            <span class="input-group-text"><i class="fas fa-circle"></i></span>
+          </div>
         </div>
       </div>
 
       <!-- Division Name -->
       <div class="form-group mb-3">
-        <label for="id_division_name" class="form-label">Division Name</label>
+        <label for="id_division_name" class="form-label">Division</label>
         <div class="input-group">
-        <div class="input-group-append">
-            <span class="input-group-text"><i class="fas fa-circle"></i></span>
-          </div>
           <input type="text" name="division_name" id="id_division_name" class="form-control">
+          <div class="input-group-append">
+            <span class="input-group-text"><i class="fas fa-building"></i></span>
+          </div>
           
         </div>
       </div>
 
       <div class="mt-3">
-        <button type="submit" class="btn btn-primary">Save</button>
+        <button type="submit" class="btn btn-primary" style="background-color: #30b8b9;border: 1px solid #30b8b9;">Save</button>
         <a href="division-list" class="btn btn-secondary">Cancel</a>
       </div>
     </form>

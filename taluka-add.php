@@ -3,10 +3,11 @@
 <!-- Select2 CSS -->
 <link href="css/select2.min.css" rel="stylesheet" />
 <!-- Select2 Bootstrap Theme -->
-<link href="css/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+<!-- <link href="css/select2-bootstrap-5-theme.min.css" rel="stylesheet" /> -->
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
 
 <div class="card">
-  <div class="card-header">
+  <div class="card-header" style="border-top: 3px solid #30b8b9; border-bottom: 1px solid rgba(0, 0, 0, .125);">
     <h3 class="card-title">Add Taluka</h3>
   </div>
   <div class="card-body">
@@ -14,8 +15,8 @@
       
       <!-- Circle Selection -->
       <div class="form-group mb-3">
-        <label for="id_circle" class="form-label">Select Circle</label>
-        <div class="input-group">
+        <label for="id_circle" class="form-label">Circle</label>
+        <div class="input-group flex-nowrap">
           <select name="circle_id" id="id_circle" class="form-control select2">
             <option value="">Select Circle</option>
             <!-- Circle options will be populated via API -->
@@ -28,8 +29,8 @@
 
       <!-- Division Selection -->
       <div class="form-group mb-3">
-        <label for="id_division" class="form-label">Select Division</label>
-        <div class="input-group">
+        <label for="id_division" class="form-label">Division</label>
+        <div class="input-group flex-nowrap">
           <select name="division_id" id="id_division" class="form-control select2">
             <option value="">Select Division</option>
             <!-- Division options will be populated via API based on selected circle -->
@@ -42,8 +43,8 @@
 
       <!-- Subdivision Selection -->
       <div class="form-group mb-3">
-        <label for="id_subdivision" class="form-label">Select Subdivision</label>
-        <div class="input-group">
+        <label for="id_subdivision" class="form-label">Subdivision</label>
+        <div class="input-group flex-nowrap">
           <select name="sub_id" id="id_subdivision" class="form-control select2">
             <option value="">Select Subdivision</option>
             <!-- Subdivision options will be populated via API based on selected division -->
@@ -56,7 +57,7 @@
 
       <!-- Taluka Name -->
       <div class="form-group mb-3">
-        <label for="id_taluka_name" class="form-label">Taluka Name</label>
+        <label for="id_taluka_name" class="form-label">Taluka</label>
         <div class="input-group">
           <input type="text" name="taluka_name" id="id_taluka_name" class="form-control">
           <div class="input-group-append">
@@ -66,7 +67,7 @@
       </div>
 
       <div class="mt-3">
-        <button type="submit" class="btn btn-primary">Save</button>
+        <button type="submit" class="btn btn-primary" style="background-color: #30b8b9;border: 1px solid #30b8b9;">Save</button>
         <a href="taluka-list" class="btn btn-secondary">Cancel</a>
       </div>
     </form>
@@ -262,6 +263,22 @@ $(document).ready(function() {
     padding: 10px;
     border-radius: 4px;
   }
+
+  /* Custom Select2 highlight and selected color */
+.select2-container--bootstrap-5 .select2-results__option--highlighted {
+  background-color:rgb(236, 236, 236) !important;
+}
+.select2-container--bootstrap-5 .select2-results__option--highlighted.select2-results__option--selectable,
+.select2-container--bootstrap-5 .select2-results__option--selected {
+  background-color: #30b8b9 !important;
+  color: #fff !important;
+}
+
+/* Style for selected item in the dropdown */
+.select2-container--bootstrap-5 .select2-results__option[aria-selected=true] {
+  background-color: #30b8b9 !important;
+  color: #fff !important;
+}
 </style>
 
 <?php include 'common/footer.php'; ?>

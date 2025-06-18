@@ -1,102 +1,11 @@
 <?php
-
 include 'common/header.php'; 
 
 $redirect_to = '';
 // Handle form submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Prepare template data
-    $template_data = [
-        'access_token' => $_SESSION['access_token'],
-        'project_type_name' => $_POST['type_name']
-    ];
+// Form will be handled via AJAX
 
-    // Process each department's data
-    for ($i = 1; $i <= 5; $i++) {
-        $dept_id = $_POST["dept{$i}_id"] ?? '';
-        if (!empty($dept_id)) {
-            $template_data["dept{$i}_id"] = $dept_id;
-            $template_data["dept{$i}_assigned_days"] = $_POST["dept{$i}_assigned_days"] ?? 0;
-        }
-    }
-
-    // Process tasks
-    $tasks = [];
-    for ($i = 1; $i <= 5; $i++) {
-        $dept_tasks = $_POST["dept{$i}_task"] ?? [];
-        $dept_id = $_POST["dept{$i}_id"] ?? '';
-        
-        if (!empty($dept_id) && !empty($dept_tasks)) {
-            foreach ($dept_tasks as $task_name) {
-                if (!empty($task_name)) {
-                    $tasks[] = [
-                        'task_name' => $task_name,
-                        'dept_id' => $dept_id
-                    ];
-                }
-            }
-        }
-    }
-    $template_data['tasks'] = $tasks;
-
-    // Send data to API
-    $url = API_URL . 'add-template';
-    $ch = curl_init($url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($template_data));
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Content-Type: application/json'
-    ]);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-
-    $response = curl_exec($ch);
-    
-    if ($response === false) {
-        $error_message = 'cURL Error: ' . curl_error($ch);
-    } else {
-        $result = json_decode($response, true);
-        if (isset($result['is_successful']) && $result['is_successful'] === '1') {
-            // Set redirect flag instead of immediate redirect
-            $redirect_to = 'project-template-list.php';
-        } else {
-            $error_message = $result['errors'] ?? 'Failed to add template';
-        }
-    }
-    curl_close($ch);
-}
-
-// API call to fetch departments
-$url = '<?php echo API_URL; ?>department';
-$request_data = [
-    'access_token' => $_SESSION['access_token']
-];
-
-$ch = curl_init($url);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_POST, true);
-curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($request_data));
-curl_setopt($ch, CURLOPT_HTTPHEADER, [
-    'Content-Type: application/json'
-]);
-
-// SSL settings
-curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-
-$response = curl_exec($ch);
-$departments = [];
-
-if ($response === false) {
-    $error_message = 'cURL Error: ' . curl_error($ch);
-} else {    
-    $result = json_decode($response, true);
-    if (isset($result['is_successful']) && $result['is_successful'] === '1' && !empty($result['data'])) {
-        $departments = $result['data'];
-    }
-}
-curl_close($ch);
+// Departments will be loaded via AJAX
 ?>
 <style>
   .input-group {
@@ -113,14 +22,30 @@ curl_close($ch);
   .task-item {
     margin-bottom: 0.5rem;
   }
+
+  /* Custom Select2 highlight and selected color */
+.select2-container--bootstrap-5 .select2-results__option--highlighted {
+  background-color:rgb(236, 236, 236) !important;
+}
+.select2-container--bootstrap-5 .select2-results__option--highlighted.select2-results__option--selectable,
+.select2-container--bootstrap-5 .select2-results__option--selected {
+  background-color: #30b8b9 !important;
+  color: #fff !important;
+}
+
+/* Style for selected item in the dropdown */
+.select2-container--bootstrap-5 .select2-results__option[aria-selected=true] {
+  background-color: #30b8b9 !important;
+  color: #fff !important;
+}
 </style>
 
 <div class="card card-primary">
-    <div class="card-header">
+    <div class="card-header" style="background-color:transparent !important;border-bottom: 1px solid rgba(0, 0, 0, .125) !important; border-top: 3px solid #30b8b9 !important; color: #212529 !important;">
         <h3 class="card-title">Add Project Template</h3>
     </div>
     <div class="card-body">
-
+        <form id="templateForm" method="POST" onsubmit="return handleSubmit(event)">
             
 <?php if (isset($messages)): ?>
     <?php foreach ($messages as $message): ?>
@@ -134,12 +59,14 @@ curl_close($ch);
         </div>
     <?php endforeach; ?>
 <?php endif; ?>
-<form method="post" id="templateForm">
+<form method="post" id="templateForm" onsubmit="return handleSubmit(event)" novalidate>
 <input type="hidden" name="" value="" />
-<?php if (isset($validation_errors)): ?>
-    <div class="alert alert-danger">
-        <?php echo $validation_errors; ?>
-    </div>
+<?php if (isset($error_message)): ?>
+    <script>
+        $(document).ready(function() {
+            showToast('<?php echo addslashes($error_message); ?>', false);
+        });
+    </script>
 <?php endif; ?>
 
 <!-- Project Type -->
@@ -152,7 +79,7 @@ curl_close($ch);
                 id="type_name" 
                 class="form-control" 
                 placeholder="Enter project type name"
-                required>
+>
         </div>
     </div>
 
@@ -166,10 +93,10 @@ curl_close($ch);
 <div class="card-body">
   <!-- Department Selection -->
   <div class="form-group">
-    <label for="dept<?php echo $i; ?>_id">Department <?php if ($i == 1): ?><span class="text-danger">*</span><?php endif; ?></label>
+    <label for="dept<?php echo $i; ?>_id">Department <?php if ($i === 1): ?><span class="text-danger">*</span><?php endif; ?></label>
     <div class="input-group">
       <span class="input-group-text"><i class="fas fa-building"></i></span>
-      <select name="dept<?php echo $i; ?>_id" id="dept<?php echo $i; ?>_id" class="form-control select2" data-placeholder="-- Select Department --" <?php if ($i == 1): ?>required<?php endif; ?>>
+      <select name="dept<?php echo $i; ?>_id" id="dept<?php echo $i; ?>_id" class="form-control select2" data-placeholder="-- Select Department --">
         <option value=""></option>
         <?php foreach ($departments as $dept): ?>
           <option value="<?php echo $dept['dept_id']; ?>"><?php echo $dept['dept_name']; ?></option>
@@ -180,15 +107,14 @@ curl_close($ch);
 
   <!-- Assigned Days -->
   <div class="form-group">
-    <label for="dept<?php echo $i; ?>_days">Assigned Days <?php if ($i == 1): ?><span class="text-danger">*</span><?php endif; ?></label>
+    <label for="dept<?php echo $i; ?>_days">Assigned Days <?php if ($i === 1): ?><span class="text-danger">*</span><?php endif; ?></label>
     <div class="input-group">
       <span class="input-group-text"><i class="fas fa-calendar-day"></i></span>
       <input type="number" 
              name="dept<?php echo $i; ?>_assigned_days" 
              id="dept<?php echo $i; ?>_assigned_days" 
              class="form-control" 
-             min="0"
-             <?php if ($i == 1): ?>required<?php endif; ?>>
+             min="1">
     </div>
   </div>
 
@@ -216,10 +142,11 @@ curl_close($ch);
 
 <!-- Submit Buttons -->
 <div class="form-group mt-4">
-<button type="submit" class="btn btn-primary">
+<button type="submit" class="btn btn-primary" style="background-color: #30b8b9;border:none;">
   <i class="fas fa-save"></i> Save Template
 </button>
-<a href="project-template-list" class="btn btn-secondary">
+</form>
+<a href="project-template-list.php" class="btn btn-secondary">
   <i class="fas fa-times"></i> Cancel
 </a>
 </div>
@@ -231,10 +158,12 @@ curl_close($ch);
 
 <!-- Select2 CSS -->
 <link href="css/select2.min.css" rel="stylesheet" />
-<link href="css/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
 <!-- Select2 JS -->
 <script src="js/select2.full.min.js"></script>
 <script src="js/vfs_fonts.js"></script>
+<!-- Common JS with showToast function -->
+<script src="js/common.js"></script>
 
 <style>
 .select2-container--bootstrap-5 .select2-selection {
@@ -260,13 +189,157 @@ curl_close($ch);
 </style>
 
 <script>
+// Form validation and submission handling
+function handleSubmit(event) {
+    event.preventDefault();
+    
+    // Validate project type name
+    const projectTypeName = $('#type_name').val().trim();
+    if (!projectTypeName) {
+        showToast('Please enter Project Type name', false);
+        return false;
+    }
+    
+    // Validate Department 1 (required)
+    const dept1Id = $('#dept1_id').val();
+    const dept1Days = $('#dept1_assigned_days').val();
+    
+    if (!dept1Id) {
+        showToast('Please select Department 1', false);
+        return false;
+    }
+    
+    if (!dept1Days) {
+        showToast('Please enter Assigned Days for Department 1', false);
+        return false;
+    }
+    
+    if (parseInt(dept1Days) <= 0) {
+        showToast('Assigned Days for Department 1 must be greater than 0', false);
+        return false;
+    }
+    
+    // Validate other departments only if they are filled (optional)
+    for (let i = 2; i <= 5; i++) {
+        const deptId = $(`#dept${i}_id`).val();
+        const assignedDays = $(`#dept${i}_assigned_days`).val();
+        
+        // Only validate if either field is filled
+        if (deptId || assignedDays) {
+            // Check if one field is filled but not the other
+            if (!deptId) {
+                showToast(`Please select Department ${i}`, false);
+                return false;
+            } else if (!assignedDays) {
+                showToast(`Please enter Assigned Days for Department ${i}`, false);
+                return false;
+            } else if (parseInt(assignedDays) <= 0) {
+                showToast(`Assigned Days for Department ${i} must be greater than 0`, false);
+                return false;
+            }
+        }
+    }
+    
+    // Prepare template data
+    const templateData = {
+        access_token: '<?php echo $_SESSION["access_token"]; ?>',
+        project_type_name: projectTypeName
+    };
+
+    // Process each department's data
+    for (let i = 1; i <= 5; i++) {
+        const deptId = $(`#dept${i}_id`).val();
+        const assignedDays = $(`#dept${i}_assigned_days`).val();
+        
+        if (deptId) {
+            templateData[`dept${i}_id`] = deptId;
+            templateData[`dept${i}_assigned_days`] = assignedDays || 0;
+        }
+    }
+
+    // Process tasks
+    const tasks = [];
+    for (let i = 1; i <= 5; i++) {
+        const deptId = $(`#dept${i}_id`).val();
+        if (deptId) {
+            $(`#taskContainer${i} input[type="text"]`).each(function() {
+                const taskName = $(this).val().trim();
+                if (taskName) {
+                    tasks.push({
+                        task_name: taskName,
+                        dept_id: deptId
+                    });
+                }
+            });
+        }
+    }
+    templateData.tasks = tasks;
+
+    // Send data via AJAX
+    $.ajax({
+        url: API_URL + 'add-template',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(templateData),
+        success: function(response) {
+            if (response.is_successful === '1') {
+                showToast('Project template added successfully!', true);
+                setTimeout(() => {
+                    window.location.href = 'project-template-list.php';
+                }, 1000);
+            } else {
+                showToast(response.errors || 'Failed to add template', false);
+            }
+        },
+        error: function() {
+            showToast('Failed to add template. Please try again.', false);
+        }
+    });
+
+    return false;
+}
+
+// Define API URL for JavaScript
+const API_URL = '<?php echo API_URL; ?>';
+
 $(document).ready(function() {
-    // Initialize Select2
-    $('.select2').select2({
-        theme: 'bootstrap-5',
-        width: '100%',
-        placeholder: '-- Select Department --',
-        allowClear: true
+    // Fetch departments via AJAX
+    $.ajax({
+        url: API_URL + '/department',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            access_token: '<?php echo $_SESSION["access_token"]; ?>'
+        }),
+        success: function(response) {
+            if (response.is_successful === '1' && response.data) {
+                // Sort departments alphabetically
+                response.data.sort((a, b) => a.dept_name.localeCompare(b.dept_name));
+                
+                // Populate all department dropdowns
+                const departments = response.data;
+                const options = departments.map(dept => 
+                    `<option value="${dept.dept_id}">${dept.dept_name}</option>`
+                ).join('');
+                
+                // Add default option and update all department selects
+                const defaultOption = '<option value="">-- Select Department --</option>';
+                $('select[id^="dept"]').html(defaultOption + options);
+                
+                // Initialize Select2
+                $('.select2').select2({
+                    theme: 'bootstrap-5',
+                    width: '100%',
+                    placeholder: '-- Select Department --',
+                    allowClear: true
+                });
+            } else {
+                showToast('Failed to load departments: ' + (response.message || 'Unknown error'), false);
+            }
+        },
+        error: function(xhr, status, error) {
+            showToast('Failed to load departments: ' + error, false);
+        }
     });
 
     // Handle adding new task fields
@@ -335,6 +408,4 @@ $(document).ready(function() {
 
 <?php 
 include 'common/footer.php'; 
-
-
 ?>

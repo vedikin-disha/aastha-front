@@ -1,7 +1,7 @@
 <?php include 'common/header.php'; ?>
 
 <link rel="stylesheet" href="css/dataTables.bootstrap4.min.css">
-<link rel="stylesheet" href="css/bootstrap.min.css">
+
 
 
 <div class="card card-primary card-outline">
@@ -16,11 +16,13 @@
 
   <div class="card-body">
     <div id="divisionTable_wrapper" class="dataTables_wrapper dt-bootstrap4"> </div>
-    <table id="divisionTable" class="table table-bordered table-hover">
-      <thead>
-        <tr>
-          <th>Division Name</th>
-          <th>Circle</th>
+    <div class="new-pms-ap">
+
+      <table id="divisionTable" class="table table-bordered table-hover">
+        <thead>
+          <tr>
+            <th>Division</th>
+            <th>Circle</th>
           <th>Action</th>
         </tr>
       </thead>
@@ -29,11 +31,13 @@
       </tbody>
     </table>
   </div>
+  </div>
 </div>
 
 <script src="js/jquery-3.5.1.min.js"></script>
 <script src="js/jquery.dataTables.min.js"></script>
 <script src="js/dataTables.bootstrap4.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.min.js" integrity="sha512-ykZ1QQr0Jy/4ZkvKuqWn4iF3lqPZyij9iRv6sGqLRdTPkY69YX6+7wvVGmsdBbiIfN/8OdsI7HABjvEok6ZopQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
 <!-- DataTable Initialization -->
 <script>
@@ -66,8 +70,10 @@
               { "data": "division_id" },
             ],
             "createdRow": function (row, data, dataIndex) {
+              // Encode the division_id using base64 for the URL
+              const encodedId = btoa(data.division_id);
               $(row).find('td:eq(2)').html(
-                '<a href="<?php echo BASE_URL; ?>division-edit?id=' + data.division_id + '" class="btn btn-primary btn-sm">Edit</a>'
+                '<a href="<?php echo BASE_URL; ?>division-edit?id=' + encodedId + '" class="btn btn-primary btn-sm" style="background-color: #30b8b9;border:none;"><i class="fas fa-edit"></i> Edit</a>'
               );
             }
           });

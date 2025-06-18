@@ -61,21 +61,13 @@
       white-space: nowrap;
   }
   
-.select2-results__option {
-  padding-left: 20px !important;
-  position: relative;
-}
-.select2-results__option::before {
-  content: "✔";
-  position: absolute;
-  left: 4px;
-  top: 4px;
-  display: none;
-}
-.select2-results__option[aria-selected=true]::before {
-  display: block;
-}
+  .dropdown-item.active {
+        background-color: #30b8b9 !important;
+    }
 
+    .dropdown-item:active {
+        background-color: #30b8b9 !important;
+    }
 </style>
 <!-- jQuery -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
@@ -87,10 +79,25 @@
 
 <!-- DataTables CSS -->
 <link rel="stylesheet" href="css/dataTables.bootstrap4.min.css">
+<!-- DataTables Buttons CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.0.1/css/buttons.bootstrap4.min.css">
 
 <!-- DataTables JS -->
 <script src="js/jquery.dataTables.min.js"></script>
 <script src="js/dataTables.bootstrap4.min.js"></script>
+<!-- DataTables Buttons -->
+<script src="https://cdn.datatables.net/buttons/2.0.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.0.1/js/buttons.bootstrap4.min.js"></script>
+<!-- JSZip for Excel export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<!-- PDFMake for PDF export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.70/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.70/vfs_fonts.js"></script>
+<!-- Buttons HTML5 -->
+<script src="https://cdn.datatables.net/buttons/2.0.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.0.1/js/buttons.print.min.js"></script>
+<!-- Buttons ColVis -->
+<script src="https://cdn.datatables.net/buttons/2.0.1/js/buttons.colVis.min.js"></script>
 
 <div class="container-fluid">
     <div class="card card-primary card-outline">
@@ -99,7 +106,7 @@
                 <h3 class="card-title">Project List</h3>
                 <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2): ?>
                 <div class="card-tools">
-                    <a href="add-project.php" class="btn btn-success">+ Add Project</a>
+                    <a href="add-project" class="btn btn-success"><i class="fas fa-plus"></i> Add Project</a>
                 </div>
                 <?php endif; ?>
             </div>
@@ -110,6 +117,7 @@
                 <div class="col-md-3">
                     <label for="id_circle" class="form-label">Circle</label>
                     <select name="circle_id" id="id_circle" class="form-control select2" style="width: 100%;" data-placeholder="Select Circle">
+                        
                         <option value="">All Circles</option>
                     </select>
                 </div>
@@ -142,39 +150,63 @@
                 <div class="col-md-3">
                     <label for="id_assing" class="form-label">Assign</label>
                     <div class="input-group">
-                        <select name="taluka_id[]" id="id_assing" class="form-control select2 checkbox" style="width: 100%;" data-placeholder="Select current department">
+                        <select name="taluka_id[]" id="id_assing" class="form-control select2 checkbox" style="width: 100%;" data-placeholder="Select Assign Employee">
                             <option value="">All assignments</option>
                         </select>
                         <div class="invalid-feedback" style="display: none;"></div>
                     </div>
                 </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <div class="input-group">
+                        <button type="button" id="resetFilters" class="btn btn-secondary">
+                            <i class="fas fa-undo"></i> Reset
+                        </button>
+                    </div>
+                </div>
             </form>
             <?php endif; ?>
-            </form>
         </div>
-            <table id="projectTable" class="table table-bordered table-hover">
-                <thead>
-                    <tr>
-                        <th>Project Name</th>
-                        <th>Job No</th>
-                        <th>Client Name</th>
-                        <th>Project Duration</th>
-                        <th>Location</th>
-                        <th>Department</th>
-                        <th>Assigned Employees</th>
-                        <th>Status</th>
-                        <?php if ($_SESSION['emp_role_id'] != 1 && $_SESSION['emp_role_id'] != 2): ?>
-                        <th>View</th>
-                        <?php endif; ?>
-                        <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2): ?>
-                        <th>Actions</th>
-                        <?php endif; ?>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Data will be loaded dynamically by DataTables -->
-                </tbody>
-            </table>
+        <script>
+        $(document).ready(function() {
+            // Reset button click handler
+            $('#resetFilters').click(function() {
+                // Reset all select2 dropdowns to their default first option
+                $('.select2').val('').trigger('change');
+                // If you want to submit the form after resetting, uncomment the next line
+                // $('form').submit();
+            });
+        });
+        </script>
+        <div class="card-body">
+            <div class="new-pms-ap">
+                <div class="table-responsive">
+                    <table id="projectTable" class="table table-bordered table-hover w-100">
+                        <thead>
+                            <tr>
+                                <th>Project Name</th>
+                                <th>Job No.</th>
+                                <th>Client Name</th>
+                                <th>Project Duration</th>
+                                <th>Probable Date of Completion</th>
+                                <th>Location</th>
+                                <th>Department</th>
+                                <th>Assigned Employees</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <?php if ($_SESSION['emp_role_id'] != 1 && $_SESSION['emp_role_id'] != 2): ?>
+                                <th>View</th>
+                                <?php endif; ?>
+                                <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2): ?>
+                                <th>Actions</th>
+                                <?php endif; ?>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Data will be loaded dynamically by DataTables -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -225,241 +257,6 @@ $(document).ready(function() {
         width: '100%',
         allowClear: true,
         placeholder: 'Select an option'
-    });
-
-    // Initialize DataTable
-    var projectTable = $('#projectTable').DataTable({
-        "processing": true,
-        "serverSide": true,
-        "pageLength": 10,
-        "autoWidth": false,
-        "responsive": true,
-        "pagingType": "full_numbers",
-        "dom": '<"row mb-3"<"col-md-6"l><"col-md-6"f>>rt<"row"<"col-md-6"i><"col-md-6"p>>',
-        "displayStart": <?php echo (isset($_GET['page']) ? ((int)$_GET['page'] - 1) * (isset($_GET['limit']) ? (int)$_GET['limit'] : 10) : 0); ?>,
-        "pageLength": <?php echo isset($_GET['limit']) ? (int)$_GET['limit'] : 10; ?>,
-        "drawCallback": function(settings) {
-            // Update URL with current page information without reloading
-            var api = this.api();
-            var pageInfo = api.page.info();
-            var pageNum = pageInfo.page + 1;
-            var currentUrl = new URL(window.location.href);
-            currentUrl.searchParams.set('page', pageNum);
-            currentUrl.searchParams.set('limit', pageInfo.length);
-            window.history.replaceState({}, '', currentUrl.toString());
-            
-            console.log('Draw callback - Page info:', pageInfo);
-            console.log('Total records:', pageInfo.recordsTotal);
-            console.log('Records per page:', pageInfo.length);
-            console.log('Current page:', pageInfo.page);
-        },
-        "columns": [
-            { "data": "project_name", "name": "project_name" },
-            { "data": "job_no", "name": "job_no" },
-            { "data": "client_name", "name": "client_name" },
-            { "data": "project_duration", "name": "project_duration" },
-            { "data": "location", "name": "location" },
-            { "data": "current_dept_name", "name": "current_dept_name" },
-            {   
-                "data": "assigned_emp_names",
-                "render": function(data, type, row) {
-                    if (Array.isArray(data) && data.length > 0) {
-                        return data.join(', ');
-                    }
-                    return 'Not Assigned';
-                }
-            },
-            { 
-                "data": "status",
-                "render": function(data, type, row) {
-                    return '<span class="badge badge-' + data + '">' + data.charAt(0).toUpperCase() + data.slice(1) + '</span>';
-                }
-            },
-            <?php if ($_SESSION['emp_role_id'] != 1 && $_SESSION['emp_role_id'] != 2): ?>
-            {
-                "data": "project_id",
-                "render": function(data, type, row) {
-                    let view = '<a href="view-project.php?id=' + data + '" class="btn btn-primary btn-sm"><i class="fas fa-eye"></i> View</a>';
-                    return view;
-                }
-            },
-            <?php endif; ?>
-            <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2): ?>
-            {
-                "data": "project_id",
-                "render": function(data, type, row) {
-                    let actions = '<div class="btn-group">' +
-                           '<a href="view-project.php?id=' + data + '" class="btn btn-primary btn-sm"><i class="fas fa-eye"></i></a>';
-                    <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2): ?>
-                    actions += ' <a href="edit-project.php?id=' + data + '" class="btn btn-info btn-sm"><i class="fas fa-edit"></i> Edit</a>';
-                    <?php endif; ?>
-                    
-                    actions += '</div>';
-                    return actions;
-                }
-            }
-            <?php endif; ?>
-        ],
-        "ajax": {
-            url: '<?php echo API_URL; ?>project-listing',
-            "type": "POST",
-            "contentType": "application/json",
-            "data": function(d) {
-                // Calculate page number ensuring it's at least 1
-                var calculatedPage = Math.floor(d.start / d.length) + 1;
-                var pageNumber = Math.max(1, calculatedPage); // Ensure page is never less than 1
-                
-                var params = {
-                    access_token: "<?php echo $_SESSION['access_token']; ?>",
-                    limit: d.length,
-                    page: pageNumber,
-                    search: d.search.value
-                };
-                
-                // Debug information
-                console.log('Start:', d.start, 'Length:', d.length, 'Calculated page:', calculatedPage, 'Final page:', pageNumber);
-                
-                console.log('DataTables Request:', params);
-                
-                return JSON.stringify(params);
-            },
-            "dataSrc": function(json) {
-                // Update total record count for pagination
-                if (json.data && json.data.projects) {
-                    return json.data.projects;
-                }
-                return [];
-            },
-            "dataFilter": function(data) {
-                var json = JSON.parse(data);
-                console.log('API Response:', json); // Log the API response for debugging
-                
-                // Check if the API call was successful
-                if (json.is_successful === "1") {
-                    // Make sure the response has the required DataTables properties
-                    if (json.data && typeof json.data.total_count !== 'undefined') {
-                        json.recordsTotal = parseInt(json.data.total_count) || 0;
-                        json.recordsFiltered = parseInt(json.data.total_count) || 0;
-                        
-                        // Ensure we have at least as many records as we have items in the current page
-                        if (json.data.projects && json.data.projects.length > 0 && json.recordsTotal < json.data.projects.length) {
-                            json.recordsTotal = json.data.projects.length;
-                            json.recordsFiltered = json.data.projects.length;
-                        }
-                    } else {
-                        // Fallback values if the API doesn't return total_count
-                        json.recordsTotal = (json.data && json.data.projects) ? json.data.projects.length * 3 : 0; // Multiply by estimated page count
-                        json.recordsFiltered = json.recordsTotal;
-                    }
-                } else {
-                    // Handle API error
-                    console.error('API Error:', json.errors);
-                    // Set empty data and show error message
-                    json.data = { projects: [] };
-                    json.recordsTotal = 0;
-                    json.recordsFiltered = 0;
-                    
-                    // Show error toast
-                    setTimeout(function() {
-                        var errorMsg = '';
-                        if (json.errors) {
-                            for (var key in json.errors) {
-                                errorMsg += key + ': ' + json.errors[key].join(', ') + '<br>';
-                            }
-                        } else {
-                            errorMsg = 'Error loading data from server.';
-                        }
-                        
-                        $(document).Toasts('create', {
-                            class: 'bg-danger',
-                            title: 'Error',
-                            body: errorMsg,
-                            autohide: true,
-                            delay: 5000
-                        });
-                    }, 500);
-                }
-                
-                console.log('Modified Response:', json); // Log the modified response
-                return JSON.stringify(json);
-            }
-        },
-        "columns": [
-            { "data": "project_name" },
-            { "data": "job_no" },
-            { "data": "client_name" },
-            { 
-                "data": "project_duration",
-                "render": function(data, type, row) {
-                    return data || '-';
-                }
-            },
-            { "data": "location" },
-            { 
-                "data": "current_dept_name",
-                "render": function(data) {
-                    return data || '-';
-                }
-            },
-            { 
-                "data": "assigned_emp_names",
-                "render": function(data) {
-                    if (Array.isArray(data) && data.length > 0) {
-                        return data.join(', ');
-                    }
-                    return 'Not Assigned';
-                }
-            },  
-            { 
-                "data": "status",
-                "render": function(data) {
-                    var status = data ? data.toLowerCase() : '';
-                    var statusClass = '';
-                    var statusText = data || 'Pending';
-                    
-                    switch(status) {
-                        case 'active':
-                            statusClass = 'badge-active';
-                            break;
-                        case 'in progress':
-                        case 'in-progress':
-                            statusClass = 'badge-in-progress';
-                            statusText = 'In Progress';
-                            break;
-                        case 'planned':
-                            statusClass = 'badge-planned';
-                            break;
-                        case 'pending':
-                        default:
-                            statusClass = 'badge-pending';
-                            statusText = 'Pending';
-                    }
-                    
-                    return '<span class="badge ' + statusClass + '">' + statusText + '</span>';
-                }
-            },
-            <?php if ($_SESSION['emp_role_id'] != 1 && $_SESSION['emp_role_id'] != 2): ?>
-            {
-                "data": "project_id",
-                "render": function(data, type, row) {
-                    let view = '<a href="view-project.php?id=' + data + '" class="btn btn-primary btn-sm"><i class="fas fa-eye"></i> View</a>';
-                    return view;
-                }
-            },
-            <?php endif; ?>
-            <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2): ?>
-            {
-                "data": "project_id",
-                "render": function(data, type, row) {
-                    let actions = '<div class="btn-group">';
-                    actions += '<a href="view-project.php?id=' + data + '" class="btn btn-primary btn-sm"><i class="fas fa-eye"></i></a>';
-                    actions += ' <a href="edit-project.php?id=' + data + '" class="btn btn-info btn-sm"><i class="fas fa-edit"></i> Edit</a>';
-                    actions += '</div>';
-                    return actions;
-                }
-            }
-            <?php endif; ?>
-        ]
     });
 
     // Make sure pagination is working correctly
@@ -594,8 +391,7 @@ $(document).ready(function() {
             $('#id_taluka').empty().append('<option value="">All Talukas</option>');
         }
         // Reload data with new filters
-        loadPendingProjects();
-        loadDelayedProjects();
+        projectTable.ajax.reload();
     });
 
     // Handle filter changes
@@ -609,20 +405,78 @@ $(document).ready(function() {
         "processing": true,
         "serverSide": true,
         "pageLength": 10,
+        "dom": "<'row'<'col-sm-12 col-md-6'B><'col-sm-12 col-md-6'f>>" +
+               "<'row'<'col-sm-12'tr>>" +
+               "<'row'<'col-12'i><'col-12'p>>",
+        "buttons": [
+            {
+                extend: 'copy',
+                className: 'btn btn-secondary',
+                text: 'Copy'
+            },
+            {
+                extend: 'csv',
+                className: 'btn btn-secondary',
+                text: 'CSV'
+            },
+            {
+                extend: 'excel',
+                className: 'btn btn-secondary',
+                text: 'Excel'
+            },
+            {
+                extend: 'pdf',
+                className: 'btn btn-secondary',
+                text: 'PDF'
+            },
+            {
+                extend: 'print',
+                className: 'btn btn-secondary',
+                text: 'Print'
+            },
+            {
+                extend: 'colvis',
+                className: 'btn btn-secondary',
+                text: 'Column Visibility'
+            }
+        ],
+        "initComplete": function() {
+            // Add margin to buttons container
+            $('.dt-buttons').addClass('mb-3');
+            
+            // // Add Font Awesome icons to buttons
+            // $('.buttons-copy').html('<i class="fas fa-copy"></i>');
+            // $('.buttons-csv').html('<i class="fas fa-file-csv"></i>');
+            // $('.buttons-excel').html('<i class="fas fa-file-excel"></i>');
+            // $('.buttons-pdf').html('<i class="fas fa-file-pdf"></i>');
+            // $('.buttons-print').html('<i class="fas fa-print"></i>');
+            // $('.buttons-colvis').html('<i class="fas fa-eye"></i>');
+        },
         "columns": [
             { "data": "project_name", "name": "project_name" },
             { "data": "job_no", "name": "job_no" },
             { "data": "client_name", "name": "client_name" },
-            { "data": "project_duration", "name": "project_duration" },
-            { "data": "location", "name": "location" },
+            { "data": "project_duration", "name": "project_duration", "orderable": false },
+            { "data": "probable_date_of_completion", "name": "probable_date_of_completion", "orderable": false },
+            { "data": "location", "name": "location", "orderable": false },
             { "data": "current_dept_name", "name": "current_dept_name" },
             {   
                 "data": "assigned_emp_names",
+                "orderable": false,
                 "render": function(data, type, row) {
                     if (Array.isArray(data) && data.length > 0) {
                         return data.join(', ');
                     }
                     return 'Not Assigned';
+                }
+            },
+            { 
+                "data": "priority",
+                "name": "priority",
+                "render": function(data, type, row) {
+                    if (!data) return '';
+                    var badgeClass = data.toLowerCase() === 'high' ? 'badge-danger' : 'badge-secondary';
+                    return '<span class="badge ' + badgeClass + '">' + data + '</span>';
                 }
             },
             { 
@@ -635,7 +489,7 @@ $(document).ready(function() {
             {
                 "data": "project_id",
                 "render": function(data, type, row) {
-                    let view = '<a href="view-project.php?id=' + data + '" class="btn btn-primary btn-sm"><i class="fas fa-eye"></i> View</a>';
+                    let view = '<a href="view-project?id=' + btoa(data) + '" class="btn btn-primary btn-sm" style="background-color: #30b8b9;border:none;" ><i class="fas fa-eye"></i> View</a>';
                     return view;
                 }
             },
@@ -643,11 +497,12 @@ $(document).ready(function() {
             <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2): ?>
             {
                 "data": "project_id",
+                "orderable": false,
                 "render": function(data, type, row) {
                     let actions = '<div class="btn-group">' +
-                           '<a href="view-project.php?id=' + data + '" class="btn btn-primary btn-sm"><i class="fas fa-eye"></i></a>';
+                           '<a href="view-project?id=' + data + '" class="btn btn-primary btn-sm"><i class="fas fa-eye"></i></a>';
                     <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2): ?>
-                    actions += ' <a href="edit-project.php?id=' + data + '" class="btn btn-info btn-sm"><i class="fas fa-edit"></i> Edit</a>';
+                    actions += ' <a href="edit-project?id=' + data + '" class="btn btn-info btn-sm"><i class="fas fa-edit"></i> Edit</a>';
                     <?php endif; ?>
                     
                     actions += '</div>';
@@ -658,24 +513,255 @@ $(document).ready(function() {
         ],  
         "ajax": {
             url: '<?php echo API_URL; ?>project-listing',
-                var deptId = $('#id_dept').val();
+            "type": "POST",
+            "contentType": "application/json",
+            "data": function(d) {
+                // Calculate page number ensuring it's at least 1
+                var calculatedPage = Math.floor(d.start / d.length) + 1;
+                var pageNumber = Math.max(1, calculatedPage); // Ensure page is never less than 1
+                
+                // Only include sorting parameters if the column is orderable
+                var orderColumn = d.order[0];
+                var column = d.columns[orderColumn.column];
+                
+                var params = {
+                    access_token: "<?php echo $_SESSION['access_token']; ?>",
+                    limit: d.length,
+                    page: pageNumber,
+                    search: d.search.value
+                };
+                
+                // Only add sorting parameters if the column is orderable
+                if (column.orderable !== false) {
+                    params.order_by = column.data || '';
+                    params.order_dir = orderColumn.dir || 'asc';
+                }
 
-                if (circleId) params.circle_id = parseInt(circleId);
-                if (divisionId) params.division_id = parseInt(divisionId);
-                if (subId) params.sub_id = parseInt(subId);
-                if (talukaId) params.taluka_id = parseInt(talukaId);
-                if (empId) params.emp_id = parseInt(empId);
-                if (deptId) params.dept_id = parseInt(deptId);
+                var circle_id = $('#id_circle').val();
+                var division_id = $('#id_division').val();
+                var sub_id = $('#id_sub_division').val();
+                var taluka_id = $('#id_taluka').val();
+                var emp_id = $('#id_assing').val();
+                var dept_id = $('#id_dept').val();
 
+                if (circle_id) params.circle_id = parseInt(circle_id);
+                if (division_id) params.division_id = parseInt(division_id);
+                if (sub_id) params.sub_id = parseInt(sub_id);
+                if (taluka_id) params.taluka_id = parseInt(taluka_id);
+                if (emp_id) params.emp_id = parseInt(emp_id);
+                if (dept_id) params.dept_id = parseInt(dept_id);
+                
+                // Debug information
+                console.log('Start:', d.start, 'Length:', d.length, 'Calculated page:', calculatedPage, 'Final page:', pageNumber);
+                
+                console.log('DataTables Request:', params);
+                
                 return JSON.stringify(params);
             },
             "dataSrc": function(json) {
-                if (json.is_successful === '1' && json.data && Array.isArray(json.data)) {
-                    return json.data;
+                // Update total record count for pagination
+                if (json.data && json.data.projects) {
+                    return json.data.projects;
                 }
                 return [];
+            },
+            "dataFilter": function(data) {
+                var json = JSON.parse(data);
+                console.log('API Response:', json); // Log the API response for debugging
+                
+                // Check if the API call was successful
+                if (json.is_successful === "1") {
+                    // Make sure the response has the required DataTables properties
+                    if (json.data && typeof json.data.total !== 'undefined') {
+                        json.recordsTotal = parseInt(json.data.total) || 0;
+                        json.recordsFiltered = parseInt(json.data.total) || 0;
+                        
+                        // Ensure we have at least as many records as we have items in the current page
+                        if (json.data.projects && json.data.projects.length > 0 && json.recordsTotal < json.data.projects.length) {
+                            json.recordsTotal = json.data.projects.length;
+                            json.recordsFiltered = json.data.projects.length;
+                        }
+                    } else {
+                        // Fallback values if the API doesn't return total_count
+                        json.recordsTotal = (json.data && json.data.projects) ? json.data.projects.length * 3 : 0; // Multiply by estimated page count
+                        json.recordsFiltered = json.recordsTotal;
+                    }
+                } else {
+                    // Handle API error
+                    console.error('API Error:', json.errors);
+                    // Set empty data and show error message
+                    json.data = { projects: [] };
+                    json.recordsTotal = 0;
+                    json.recordsFiltered = 0;
+                    
+                    // Show error toast
+                    setTimeout(function() {
+                        var errorMsg = '';
+                        if (json.errors) {
+                            for (var key in json.errors) {
+                                errorMsg += key + ': ' + json.errors[key].join(', ') + '<br>';
+                            }
+                        } else {
+                            errorMsg = 'Error loading data from server.';
+                        }
+                        
+                        $(document).Toasts('create', {
+                            class: 'bg-danger',
+                            title: 'Error',
+                            body: errorMsg,
+                            autohide: true,
+                            delay: 5000
+                        });
+                    }, 500);
+                }
+                
+                console.log('Modified Response:', json); // Log the modified response
+                return JSON.stringify(json);
             }
-        }
+        },
+        "columns": [
+            { "data": "project_name" },
+            { "data": "job_no" },
+            { "data": "client_name" },
+            { 
+                "data": "project_duration",
+                "render": function(data, type, row) {
+                    return data || '-';
+                },
+                "orderable": "false"
+            },
+            { "data": "probable_date_of_completion", "orderable": "false" },
+            { "data": "location", "orderable": "false" },
+            { 
+                "data": "current_dept_name",
+                "render": function(data) {
+                    return data || '-';
+                }
+            },
+            { 
+                "data": "assigned_employees",
+                "render": function(data, type, row) {
+                    if (Array.isArray(data) && data.length > 0) {
+                        var html = '<div class="d-flex flex-wrap gap-2">';
+                        data.forEach(function(emp) {
+                            var imgSrc = emp.profile_picture || 'assets/img/default-avatar.png';
+                            html += `
+                                <div class="d-flex flex-column align-items-center" style="width: 50px;">
+                                    <img src="${imgSrc}" class="img-circle elevation-1" alt="User Image" style="width: 30px; height: 30px; object-fit: cover;">
+                                    <small class="text-truncate" style="max-width: 100%;" title="${emp.name}">${emp.name.split(' ')[0]}</small>
+                                </div>`;
+                        });
+                        html += '</div>';
+                        return html;
+                    }
+                    return '<span class="text-muted">Not Assigned</span>';
+                },
+                "orderable": "false"
+            },
+            
+            { 
+                "data": "priority",
+                "render": function(data) {
+                    var priority = data ? data.toLowerCase() : '';
+                    var priorityClass = '';
+                    var priorityText = data || 'Regular';
+                    
+                    switch(priority.toLowerCase()) {
+                        case 'high':
+                            priorityClass = 'badge-danger';
+                            break;
+                        case 'regular':
+                            priorityClass = 'badge-secondary';
+                            break;
+                        default:
+                            priorityClass = 'badge-secondary';
+                            break;
+                    }
+                    return '<span class="badge ' + priorityClass + '">' + priorityText + '</span>';
+                }
+            },  
+            { 
+                "data": "status",
+                "render": function(data) {
+                    var status = data ? data.toLowerCase() : '';
+                    var statusClass = '';
+                    var statusText = data || 'Pending';
+                    
+                    switch(status.toLowerCase()) {
+                        case 'active':
+                            statusClass = 'badge-active';
+                            break;
+                        case 'in progress':
+                        case 'in-progress':
+                            statusClass = 'badge-in-progress';
+                            statusText = 'In Progress';
+                            break;
+                        case 'internal done':
+                            statusClass = 'badge-info';
+                            statusText = 'Internal Done';
+                            break;
+                        case 'ext - taluka':
+                            statusClass = 'badge-warning';
+                            statusText = 'Ext - Taluka';
+                            break;
+                        case 'ext - sub division':
+                            statusClass = 'badge-warning';
+                            statusText = 'Ext - Sub Division';
+                            break;
+                        case 'ext - division':
+                            statusClass = 'badge-warning';
+                            statusText = 'Ext - Division';
+                            break;
+                        case 'ext - circle':
+                            statusClass = 'badge-warning';
+                            statusText = 'Ext - Circle';
+                            break;
+                        case 'ext - govt.':
+                            statusClass = 'badge-warning';
+                            statusText = 'Ext - Govt.';
+                            break;
+                        case 'completed':
+                            statusClass = 'badge-success';
+                            statusText = 'Completed';
+                            break;
+                        case 'cancelled':
+                            statusClass = 'badge-danger';
+                            statusText = 'Cancelled';
+                            break;
+                        case 'planned':
+                            statusClass = 'badge-planned';
+                            break;
+                        case 'pending':
+                        default:
+                            statusClass = 'badge-pending';
+                            statusText = data || 'Pending';
+                    }
+                    
+                    return '<span class="badge ' + statusClass + '">' + statusText + '</span>';
+                }
+            },
+            <?php if ($_SESSION['emp_role_id'] != 1 && $_SESSION['emp_role_id'] != 2): ?>
+            {
+                "data": "project_id",
+                "render": function(data, type, row) {
+                    let view = '<a href="view-project?id=' + btoa(data) + '" class="btn btn-primary btn-sm" style="background-color: #30b8b9;border:none;"><i class="fas fa-eye"></i> View</a>';
+                    return view;
+                }
+            },
+            <?php endif; ?>
+            <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2): ?>
+            {
+                "data": "project_id",
+                "render": function(data, type, row) {
+                    let actions = '<div class="btn-group"style="gap:5px;">';
+                    actions += '<a href="view-project?id=' + btoa(data) + '" class="btn btn-primary btn-sm rounded"><i class="fas fa-eye"></i> View</a>';
+                    actions += ' <a href="edit-project?id=' + btoa(data) + '" class="btn btn-info btn-sm rounded"><i class="fas fa-edit"></i> Edit</a>';
+                    actions += '</div>';
+                    return actions;
+                }
+            }
+            <?php endif; ?>
+        ]
     });
 
     // After DataTable is initialized, load other data
@@ -880,11 +966,9 @@ function loadDepartments() {
         }
 
         $select.select2({
-          closeOnSelect: false,
+          theme: 'bootstrap4',
           placeholder: "Select employees",
-          allowClear: true,
-          templateResult: formatOptionWithCheckbox,
-          templateSelection: formatSelection
+          allowClear: true
         });
       },
       error: function (xhr, status, error) {
@@ -893,14 +977,6 @@ function loadDepartments() {
     });
   }
 
-  function formatOptionWithCheckbox(option) {
-    if (!option.id) return option.text;
-    return $('<span><input type="checkbox" style="margin-right:10px;" />' + option.text + '</span>');
-  }
-
-  function formatSelection(selection) {
-    return selection.text;
-  }
 
   $(document).ready(function () {
     loadAssign();

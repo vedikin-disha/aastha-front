@@ -1,22 +1,39 @@
-<?php include 'common/header.php'; ?>
+<?php 
+include 'common/header.php';
+
+// Get and decode the circle_id from URL parameter
+$encoded_id = isset($_GET['id']) ? $_GET['id'] : '';
+$circle_id = '';
+
+if ($encoded_id) {
+    $circle_id = base64_decode($encoded_id);
+    if (!$circle_id || !is_numeric($circle_id)) {
+        echo "<script>showToast('Invalid circle ID', false); setTimeout(() => { window.location.href = 'circle-list'; }, 2000);</script>";
+        exit();
+    }
+} else {
+    echo "<script>showToast('No circle ID provided', false); setTimeout(() => { window.location.href = 'circle-list'; }, 2000);</script>";
+    exit();
+}
+?>
 <div class="card">
-  <div class="card-header">
+  <div class="card-header" style="border-top: 3px solid #30b8b9; border-bottom: 1px solid rgba(0, 0, 0, .125);">
     <h3 class="card-title">Edit Circle</h3>
   </div>
   <div class="card-body">
   <form method="post" id="circleForm">
       
       <div class="form-group mb-3">
-        <label for="circle_name" class="form-label">Circle Name</label>
+        <label for="circle_name" class="form-label">Circle</label>
         <div class="input-group">
           <input type="text" name="circle_name" id="circle_name" class="form-control">
           <div class="input-group-append">
-            <span class="input-group-text"><i class="fas fa-check"></i></span>
+            <span class="input-group-text"><i class="fas fa-circle"></i></span>
           </div>
         </div>
       </div>
       <div class="mt-3">
-        <button type="submit" class="btn btn-primary">Save</button>
+        <button type="submit" class="btn btn-primary"style="background-color: #30b8b9;border: 1px solid #30b8b9;">Save</button>
         <a href="circle-list" class="btn btn-secondary">Cancel</a>
       </div>
     </form>
@@ -38,7 +55,7 @@
       type: 'POST',
       contentType: 'application/json',
       data: JSON.stringify({
-        circle_id: <?php echo $_GET['id']; ?>, 
+        circle_id: <?php echo $circle_id; ?>, 
         access_token: "<?php echo $_SESSION['access_token']; ?>"
       }),
       success: function(response) {
@@ -79,7 +96,7 @@
         data: JSON.stringify({
           circle_name: circle_name, 
           access_token: "<?php echo $_SESSION['access_token']; ?>",
-          circle_id: <?php echo $_GET['id']; ?>
+          circle_id: <?php echo $circle_id; ?>
         }),
         success: function(response) {
           showToast('Circle updated successfully');
