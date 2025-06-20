@@ -2,10 +2,10 @@
 // Define which menu items are visible for each role
 $menu_visibility = [
     // Role 1 (Admin) has access to everything
-    1 => ['dashboard', 'project', 'project-task', 'report', 'configuration', 'project-template', 'user', 'circle', 'division', 'subdivision', 'taluka', 'profile', 'change-password'],
+    1 => ['dashboard', 'project', 'project-task', 'report', 'configuration', 'project-template', 'user', 'circle', 'division', 'subdivision', 'taluka', 'department', 'profile', 'change-password', 'license', 'whatsapp-message'],
     
     // Role 2 (Data Entry Operator) - as specified
-    2 => ['dashboard', 'project', 'project-task', 'user', 'circle', 'division', 'subdivision', 'taluka', 'profile', 'change-password'],
+    2 => ['dashboard', 'project', 'project-task', 'user', 'circle', 'division', 'subdivision', 'taluka', 'department', 'profile', 'change-password', 'license', 'whatsapp-message'],
     
     // Roles 3 & 4 (Regular Users)
     3 => ['dashboard', 'project', 'project-task', 'profile', 'change-password'],
@@ -189,15 +189,37 @@ function shouldShowMenu($menu_id, $allowed_menus) {
 
           <?php if (shouldShowMenu('circle', $allowed_menus)): ?>
           <li class="nav-item" id="circle">
-
             <a href="circle-list" class="nav-link">
-
               <i class="nav-icon fas fa-circle-notch"></i>
-
               <p>Circle</p>
-
             </a>
+          </li>
+          <?php endif; ?>
 
+          <?php if (shouldShowMenu('license', $allowed_menus)): ?>
+          <li class="nav-item" id="license">
+            <a href="license-list" class="nav-link">
+              <i class="nav-icon fas fa-id-card"></i>
+              <p>License</p>
+            </a>
+          </li>
+          <?php endif; ?>
+
+          <?php if (shouldShowMenu('whatsapp-message', $allowed_menus)): ?>
+          <li class="nav-item" id="whatsapp-message">
+            <a href="whatsapp-message-list" class="nav-link">
+              <i class="nav-icon fab fa-whatsapp"></i>
+              <p>WhatsApp Message</p>
+            </a>
+          </li>
+          <?php endif; ?>
+
+          <?php if (shouldShowMenu('department', $allowed_menus)): ?>
+          <li class="nav-item" id="department">
+            <a href="department-list" class="nav-link">
+              <i class="nav-icon fas fa-building"></i>
+              <p>Department</p>
+            </a>
           </li>
           <?php endif; ?>
 

@@ -2,10 +2,10 @@
 // Define which menu items are visible for each role
 $menu_visibility = [
     // Role 1 (Admin) has access to everything
-    1 => ['dashboard', 'project', 'project-task', 'report', 'configuration', 'project-template', 'user', 'circle', 'division', 'subdivision', 'taluka', 'profile', 'change-password', 'proposed-work'],
+    1 => ['dashboard', 'project', 'project-task', 'report', 'configuration', 'project-template', 'user', 'circle', 'division', 'subdivision', 'taluka', 'department', 'profile', 'change-password', 'proposed-work', 'license', 'whatsapp-message'],
     
     // Role 2 (Data Entry Operator) - as specified
-    2 => ['dashboard', 'project', 'project-task', 'user', 'circle', 'division', 'subdivision', 'taluka', 'profile', 'change-password', 'proposed-work'],
+    2 => ['dashboard', 'project', 'project-task', 'user', 'circle', 'division', 'subdivision', 'taluka', 'department', 'profile', 'change-password', 'proposed-work', 'license', 'whatsapp-message'],
     
     // Roles 3 & 4 (Regular Users)
     3 => ['dashboard', 'project', 'project-task', 'profile', 'change-password'],
@@ -39,9 +39,11 @@ function isActivePage($menu_item, $current_page) {
         ($menu_item === 'project' && in_array($current_page, ['projects', 'add-project', 'edit-project', "view-project"])) ||
         ($menu_item === 'project-template' && in_array($current_page, ['project-template-add', 'project-template-edit'])) ||
         ($menu_item === 'proposed-work' && in_array($current_page, ['proposed-work-add', 'proposed-work-edit'])) || 
-        ($menu_item === 'report' && in_array($current_page, ['department-wise-summary', 'report-job-wise-status', 'dept-wise-report', 'employee-wise-report']))
-        
-        || ($menu_item === 'change-password' && in_array($current_page, ['change-password']))
+        ($menu_item === 'report' && in_array($current_page, ['department-wise-summary', 'report-job-wise-status', 'dept-wise-report', 'employee-wise-report'])) ||
+        ($menu_item === 'department' && in_array($current_page, ['department-add', 'department-edit'])) ||
+        ($menu_item === 'license' && in_array($current_page, ['license-add', 'license-edit'])) ||
+        ($menu_item === 'whatsapp-message' && in_array($current_page, ['whatsapp-message-add', 'whatsapp-message-edit'])) ||
+        ($menu_item === 'change-password' && in_array($current_page, ['change-password']))
         ) {
         return true;
     }
@@ -207,6 +209,15 @@ function isActivePage($menu_item, $current_page) {
           </li>
           <?php endif; ?>
 
+          <?php if (shouldShowMenu('department', $allowed_menus)): ?>
+          <li class="nav-item" id="department">
+            <a href="department-list" class="nav-link <?php echo isActivePage('department', $current_page) ? 'active' : ''; ?>">
+              <i class="nav-icon fas fa-building"></i>
+              <p>Department</p>
+            </a>
+          </li>
+          <?php endif; ?>
+
           <?php if (shouldShowMenu('proposed-work', $allowed_menus)): ?>
           <li class="nav-item" id="proposedWorkNav">
             <a href="proposed-work-list" class="nav-link <?php echo isActivePage('proposed-work', $current_page) ? 'active' : ''; ?>">
@@ -230,6 +241,24 @@ function isActivePage($menu_item, $current_page) {
 
             </a>
 
+          </li>
+          <?php endif; ?>
+
+          <?php if (shouldShowMenu('license', $allowed_menus)): ?>
+          <li class="nav-item" id="license">
+            <a href="license-list" class="nav-link <?php echo isActivePage('license', $current_page) ? 'active' : ''; ?>">
+              <i class="nav-icon fas fa-id-card"></i>
+              <p>License</p>
+            </a>
+          </li>
+          <?php endif; ?>
+
+          <?php if (shouldShowMenu('whatsapp-message', $allowed_menus)): ?>
+          <li class="nav-item" id="whatsapp-message">
+            <a href="whatsapp-message-list" class="nav-link <?php echo isActivePage('whatsapp-message', $current_page) ? 'active' : ''; ?>">
+              <i class="nav-icon fab fa-whatsapp"></i>
+              <p>WhatsApp Message</p>
+            </a>
           </li>
           <?php endif; ?>
 

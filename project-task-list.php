@@ -32,32 +32,13 @@
                     <a href="add-project-task" class="btn btn-success" ><i class="fas fa-plus"></i> Add New Task</a>
                     </div>
                         <?php endif; ?>
-                <!-- <div class="card-tools">
-                    <a href="add-project-task.php" class="btn btn-primary">Add New Task</a>
-                </div> -->
+                
             </div>
         </div>
         <div class="card-body">
             <!-- Search Form -->
             <form method="get" class="mb-4">
-                <!-- <div class="row">
-                    <div class="col-md-4">
-                        <div class="input-group">
-                            <input type="text" name="search" class="form-control" placeholder="Search tasks..." value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>">
-                            <div class="input-group-append">
-                                <button type="submit" class="btn btn-primary">Search</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-2">
-                        <select name="limit" class="form-control" onchange="this.form.submit()">
-                            <option value="10" <?php echo $limit == 10 ? 'selected' : ''; ?>>10 per page</option>
-                            <option value="25" <?php echo $limit == 25 ? 'selected' : ''; ?>>25 per page</option>
-                            <option value="50" <?php echo $limit == 50 ? 'selected' : ''; ?>>50 per page</option>
-                            <option value="100" <?php echo $limit == 100 ? 'selected' : ''; ?>>100 per page</option>
-                        </select>
-                    </div>
-                </div> -->
+               
             </form>
             <div class="new-pms-ap">
                 <table id="taskTable" class="table table-bordered table-hover dataTable">
@@ -76,7 +57,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Data will be loaded dynamically by DataTables -->
+                   
                 </tbody>
             </table>
         </div>
@@ -614,9 +595,7 @@ $(document).ready(function() {
         window.history.pushState({}, '', url);
     });
     
-    // Remove the custom click handler for pagination buttons
-    // as it's causing conflicts with DataTables' built-in pagination
-    // $(document).off('click', '.paginate_button:not(.disabled)');
+   
 
     $('#taskTable').on('click', '.delete-task', function() {
         taskIdToDelete = $(this).data('task-id');
@@ -625,59 +604,7 @@ $(document).ready(function() {
         $('#deleteModal').modal('show');
     });
 
-    // Handle confirm delete
-    // $('#confirmDelete').click(function() {
-    //     if (!taskIdToDelete) return;
-
-    //     var csrftoken = getCookie('csrftoken');
-        
-    //     $.ajax({
-    //         url: 'project-task-list.php/delete/' + taskIdToDelete + '/',
-    //         type: 'POST',
-    //         headers: {
-    //             'X-CSRFToken': csrftoken
-    //         },
-    //         success: function(response) {
-    //             if (response.status === 'success') {
-    //                 // Remove the row from the table
-    //                 table.row($('button[data-task-id="' + taskIdToDelete + '"]').closest('tr')).remove().draw();
-                    
-    //                 // Show success message
-    //                 $(document).Toasts('create', {
-    //                     class: 'bg-success',
-    //                     title: 'Success',
-    //                     body: response.success_message,
-    //                     autohide: true,
-    //                     delay: 3000
-    //                 });
-    //             } else {
-    //                 // Show error message
-    //                 $(document).Toasts('create', {
-    //                     class: 'bg-danger',
-    //                     title: 'Error',
-    //                     body: response.success_message,
-    //                     autohide: true,
-    //                     delay: 3000
-    //                 });
-    //             }
-    //         },
-    //         error: function(xhr) {
-    //             // Show error message
-    //             $(document).Toasts('create', {
-    //                 class: 'bg-danger',
-    //                 title: 'Error',
-    //                 body: 'Error deleting task. Please try again.',
-    //                 autohide: true,
-    //                 delay: 3000
-    //             });
-    //         },
-    //         complete: function() {
-    //             $('#deleteModal').modal('hide');
-    //             taskIdToDelete = null;
-    //             taskNameToDelete = null;
-    //         }
-    //     });
-    // });
+   
 
     // Add active class to navigation
     $('#project-task a').addClass('active nav-link');

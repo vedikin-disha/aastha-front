@@ -40,24 +40,93 @@ include 'common/header.php';
 
           <!-- Apply Button -->
           <div class="col-12 text-end mt-2">
-            <button type="submit" class="btn btn-primary px-5">Apply</button>
+            <button type="submit" class="btn px-5" style=" background-color: #30b8b9 !important; color:white">Apply</button>
           </div>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Chart Card -->
-  <div class="card">
-    <div class="card-body">
-      <canvas id="donutChart" style="min-height:250px;"></canvas>
+  <!-- Charts Row -->
+  <style>
+    .chart-container {
+      position: relative;
+      width: 100%;
+      padding-bottom: 0;
+      margin-bottom: 20px;
+      display: none; /* Hide by default */
+    }
+    .chart-wrapper {
+      position: relative;
+      height: 300px;
+      min-height: 300px;
+      width: 100%;
+    }
+    .chart-card {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    .chart-card .card-body {
+      flex: 1;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .chart-card .card-header {
+      padding: 0.75rem 1.25rem;
+    }
+    .no-data-message {
+      text-align: center;
+      padding: 20px;
+      color: #6c757d;
+      font-style: italic;
+    }
+  </style>
+  
+  <!-- Charts Container - Initially hidden -->
+  <div id="chartsContainer" class="row d-none">
+    <!-- Date Frame Chart -->
+    <div class="col-md-6 mb-4">
+      <div class="card chart-card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Date Frame Overview</h5>
+        </div>
+        <div class="card-body">
+          <div class="chart-wrapper">
+            <canvas id="dateFrameChart"></canvas>
+          </div>
+        </div>
+      </div>
     </div>
+    
+    <!-- Today's Chart -->
+    <div class="col-md-6 mb-4">
+      <div class="card chart-card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Today's Overview</h5>
+        </div>
+        <div class="card-body">
+          <div class="chart-wrapper">
+            <canvas id="todayChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- No Data Message - Initially hidden -->
+  <div id="noDataMessage" class="no-data-message d-none">
+    <i class="fas fa-chart-pie fa-3x mb-3"></i>
+    <h4>No data available</h4>
+    <p>Select filters and click Apply to view charts</p>
   </div>
 
   <!-- Department Report Table -->
   <div class="card mt-4">
     <div class="card-header">
-      <h5 class="card-title mb-0">Department Report Details</h5>
+      <h5 id="reportTitle" class="card-title mb-0">Department Report Details</h5>
     </div>
     <div class="card-body">
       <div class="table-responsive">
@@ -67,7 +136,14 @@ include 'common/header.php';
               <th>Project Name</th>
               <th>Department Start Date</th>
               <th>Department End Date</th>
-              <th>Status</th>
+              <th>
+                <div class="d-flex justify-content-between align-items-center">
+                  <span>Status</span>
+                  <select id="statusFilter" class="form-control form-control-sm ms-2" style="width: 120px">
+                    <option value="">All Status</option>
+                  </select>
+                </div>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -84,18 +160,30 @@ include 'common/header.php';
 <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/min/moment.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.5/js/dataTables.bootstrap4.min.js"></script>
+
+<script type="text/javascript" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/responsive/2.2.9/js/responsive.bootstrap4.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.bootstrap4.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js"></script>
 <!-- Chart.js (skip if already loaded by AdminLTE) -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
+  // Global variables
+  let deptTable = null;
+  let allProjectsData = [];
+  
   document.getElementById("timeRange").addEventListener("change", function () {
-  const customRange = document.getElementById("customRange");
-  if (this.value === "custom") {
-    customRange.classList.remove("d-none");
-  } else {
-    customRange.classList.add("d-none");
-  }
-});
+    const customRange = document.getElementById("customRange");
+    if (this.value === "custom") {
+      customRange.classList.remove("d-none");
+    } else {
+      customRange.classList.add("d-none");
+    }
+  })
 
 $(function () {
   loadDepartments();
@@ -148,7 +236,7 @@ $(function () {
         });
       }
     });
-}
+}})
 
   // show/hide custom range inputs
   $('#timeRange').on('change', function(){
@@ -158,18 +246,17 @@ $(function () {
   // Form submit
   $('#filterForm').on('submit', function(e){ e.preventDefault(); loadReport(); });
 
-  var deptTable = null;
-
-  var donutChart;
+  var dateFrameChart, todayChart;
 
   function loadReport(){
-    // hide chart until data arrives
-    $('#chartCard').addClass('d-none');
-    
     const dept_id = parseInt($('#id_dept').val()) || 0;
     let from_date, to_date;
     const today = moment();
 
+    // Hide charts until data loads
+    $('.chart-container').addClass('d-none');
+    
+    // Set date range based on selection
     switch($('#timeRange').val()){
       case 'today':
         from_date = today.format('YYYY-MM-DD');
@@ -190,73 +277,365 @@ $(function () {
       case 'custom':
         from_date = $('#fromDate').val();
         to_date = $('#toDate').val();
+        if (!from_date || !to_date) {
+          alert('Please select both start and end dates for custom range');
+          return;
+        }
         break;
     }
 
     const params = {access_token:'<?php echo $_SESSION['access_token']; ?>', dept_id, from_date, to_date};
 
+    // Show loading state
+    $('#noDataMessage').addClass('d-none');
+    $('#chartsContainer').addClass('d-none');
+    
+    // Load chart data
     $.ajax({
-      url:'<?php echo API_URL; ?>dept-pie-chart',
-      type:'POST', contentType:'application/json', data:JSON.stringify(params), success:function(res){
-        if(res.is_successful==='1' && res.data){
-          renderDonut(res.data.date_frame);
+      url: '<?php echo API_URL; ?>dept-pie-chart',
+      type: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify(params),
+      success: function(res) {
+        if (res.is_successful === '1' && res.data) {
+          // Check if we have data to display
+          const hasDateFrameData = res.data.date_frame && 
+                                 res.data.date_frame.datasets && 
+                                 res.data.date_frame.datasets[0].data.some(v => v > 0);
+          
+          const hasTodayData = res.data.today && 
+                             res.data.today.datasets && 
+                             res.data.today.datasets[0].data.some(v => v > 0);
+          
+          if (hasDateFrameData || hasTodayData) {
+            // Show charts container and hide no data message
+            $('#chartsContainer').removeClass('d-none');
+            $('#noDataMessage').addClass('d-none');
+            
+            // Render charts if they have data
+            if (hasDateFrameData) {
+              renderChart('dateFrameChart', res.data.date_frame);
+            } else {
+              $('#dateFrameChart').closest('.col-md-6').html('<div class="alert alert-info m-3">No data available for this time frame</div>');
+            }
+            
+            if (hasTodayData) {
+              renderChart('todayChart', res.data.today);
+            } else {
+              $('#todayChart').closest('.col-md-6').html('<div class="alert alert-info m-3">No data available for today</div>');
+            }
+          } else {
+            // No data in either chart, show message
+            $('#chartsContainer').addClass('d-none');
+            $('#noDataMessage').removeClass('d-none');
+          }
+        } else {
+          console.error('Error loading chart data:', res.errors);
+          $('#noDataMessage').removeClass('d-none').find('h4').text('Error loading data');
         }
+      },
+      error: function(xhr, status, error) {
+        console.error('AJAX Error loading chart data:', error);
+        $('#noDataMessage').removeClass('d-none').find('h4').text('Error loading data');
       }
     });
 
     $.ajax({
       url:'<?php echo API_URL; ?>dept-report',
-      type:'POST', contentType:'application/json', data:JSON.stringify(params), success:function(res){
-        if(res.is_successful==='1'){
-          populateSummary(res.data);
-          if(!deptTable){
-              deptTable = $('#deptTable').DataTable({
-                columns: [
-                  {
-                    data: 'project_name',
-                    render: function(data, type, row) {
-                      var link = 'view-project.php?id=' + btoa(row.project_id);
-                      var priority = row.priority === 'High' ? ' <i class="fas fa-exclamation text-danger"></i>' : '';
-                      return `${priority}   <a href="${link}" target="_blank">${data}</a>`;
-                    }
-                  },
-                  {
-                    data: 'selected_department_start_date',
-                    render: function(data) {
-                      return data ? formatDate(data) : '-';
-                    }
-                  },
-                  {
-                    data: 'selected_department_end_date',
-                    render: function(data) {
-                      return data ? formatDate(data) : '-';
-                    }
-                  },
-                  {
-                    data: 'date_frame_status',
-                    render: function(data) {
-                      if (data === 'uncategorized') {
-                        return '<span class="badge bg-warning">Uncategorized</span>';
-                      }
-                      return data;
-                    }
-                  }
-                ]
-              });
+      type:'POST', 
+      contentType:'application/json', 
+      data: JSON.stringify(params), 
+      success: function(res) {
+        if (res.is_successful === '1') {
+          // Store all projects data for filtering
+          allProjectsData = res.data || [];
+          
+          // Initialize or update the DataTable
+          if (!deptTable) {
+            initializeDataTable();
+          } else {
+            deptTable.clear().rows.add(allProjectsData).draw();
           }
-          deptTable.clear().rows.add(res.data).draw();
+          
+          // Clear any active filters
+          filterProjectsByStatus(null, null);
         }
+      },
+      error: function(xhr, status, error) {
+        console.error('Error loading department report:', error);
       }
     });
   }
 
-  function renderDonut(chartData){
-    if(!chartData) return;
-    const ctx=document.getElementById('donutChart').getContext('2d');
-    if(donutChart){ donutChart.destroy(); }
-    donutChart=new Chart(ctx,{type:'doughnut',data:{labels:chartData.labels,datasets:chartData.datasets},options:{maintainAspectRatio:false,responsive:true,legend:{position:'bottom'}}});
-    // show chart now that it has data
-    $('#chartCard').removeClass('d-none');
+  // Store the current filter state
+  let currentFilter = {
+    status: null,
+    dateType: null // 'date_frame' or 'today'
+  };
+
+  // Function to filter projects table by status
+  function filterProjectsByStatus(status, dateType) {
+    currentFilter.status = status;
+    currentFilter.dateType = dateType;
+    
+    // Update the table title based on date type and status
+    const statusText = status ? ` (${status.charAt(0).toUpperCase() + status.slice(1)})` : '';
+    const dateTypeText = dateType === 'today' ? "Today's " : '';
+    $('#reportTitle').text(`${dateTypeText}Department Report Details${statusText}`);
+    
+    // Clear all filters first
+    deptTable.search('').columns().search('').draw();
+    
+    // If no status or 'assigned' is clicked, show all projects
+    if (!status || status.toLowerCase() === 'assigned') {
+      deptTable.draw();
+      return;
+    }
+    
+    // For other statuses (overdue, completed), filter specifically
+    deptTable.column(3).search('^' + status + '$', true, false, true, true, true).draw();
+  }
+
+  function renderChart(chartId, chartData) {
+    if (!chartData || !chartData.labels || !chartData.datasets) return;
+    
+    const canvas = document.getElementById(chartId);
+    const parent = canvas.parentElement;
+    const ctx = canvas.getContext('2d');
+    const isDateFrame = chartId === 'dateFrameChart';
+    const dateType = isDateFrame ? 'date_frame' : 'today';
+    
+    // Set canvas dimensions to match parent
+    canvas.width = parent.offsetWidth;
+    canvas.height = parent.offsetHeight;
+    
+    // Destroy existing chart if it exists
+    if ((isDateFrame && dateFrameChart) || (!isDateFrame && todayChart)) {
+      if (isDateFrame) {
+        dateFrameChart.destroy();
+      } else {
+        todayChart.destroy();
+      }
+    }
+    
+    // Store the labels for click handling
+    const labels = [...chartData.labels];
+    
+    const chart = new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: chartData.datasets[0].data,
+          backgroundColor: chartData.datasets[0].backgroundColor,
+          hoverBackgroundColor: chartData.datasets[0].backgroundColor.map(color => 
+            Chart.helpers.color(color).darken(0.2).rgbString()
+          ),
+          borderWidth: 1,
+          hoverBorderColor: "#fff"
+        }]
+      },
+      options: {
+        onClick: (event, elements) => {
+          if (elements.length > 0) {
+            const clickedIndex = elements[0].index;
+            const status = labels[clickedIndex].toLowerCase();
+            // Toggle filter - click again to clear filter
+            if (currentFilter.status === status && currentFilter.dateType === dateType) {
+              filterProjectsByStatus(null, null);
+            } else {
+              filterProjectsByStatus(status, dateType);
+            }
+          }
+        },
+        onHover: (event, elements) => {
+          // Change cursor to pointer when hovering over chart segments
+          canvas.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+        },
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: {
+          padding: 10
+        },
+        plugins: {
+          legend: {
+            position: 'right',
+            align: 'center',
+            onClick: (e, legendItem, legend) => {
+              // Disable default legend click behavior
+              return false;
+            },
+            labels: {
+              usePointStyle: true,
+              padding: 10,
+              boxWidth: 10,
+              font: {
+                size: 12
+              },
+              // Make legend items clickable
+              generateLabels: function(chart) {
+                const data = chart.data;
+                if (data.labels.length && data.datasets.length) {
+                  return data.labels.map((label, i) => {
+                    const meta = chart.getDatasetMeta(0);
+                    const style = meta.controller.getStyle(i);
+                    
+                    return {
+                      text: `${label}: ${data.datasets[0].data[i]}`,
+                      fillStyle: style.backgroundColor,
+                      strokeStyle: style.borderColor,
+                      lineWidth: style.borderWidth,
+                      hidden: isNaN(data.datasets[0].data[i]) || meta.data[i].hidden,
+                      // Extra data used for toggling the correct item
+                      index: i
+                    };
+                  });
+                }
+                return [];
+              }
+            },
+            // Handle legend item clicks
+            onClick: (e, legendItem, legend) => {
+              const index = legendItem.datasetIndex;
+              const status = legend.chart.data.labels[index].toLowerCase();
+              const dateType = legend.chart.canvas.id === 'dateFrameChart' ? 'date_frame' : 'today';
+              
+              // Toggle filter - click again to clear filter
+              if (currentFilter.status === status && currentFilter.dateType === dateType) {
+                filterProjectsByStatus(null, null);
+              } else {
+                filterProjectsByStatus(status, dateType);
+              }
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const label = context.label || '';
+                const value = context.raw || 0;
+                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                const percentage = Math.round((value / total) * 100);
+                return `${label}: ${value} (${percentage}%)`;
+              },
+              afterLabel: function() {
+                return 'Click to filter projects';
+              }
+            }
+          }
+        },
+        cutout: '60%',
+        animation: {
+          animateScale: true,
+          animateRotate: true
+        }
+      }
+    });
+    
+    // Store chart instance
+    if (isDateFrame) {
+      dateFrameChart = chart;
+    } else {
+      todayChart = chart;
+    }
+  }
+
+  // Initialize the DataTable
+  function initializeDataTable() {
+    if (deptTable) {
+      deptTable.destroy();
+    }
+    
+    deptTable = $('#deptTable').DataTable({
+      data: allProjectsData,
+      columns: [
+        { 
+          data: 'project_name',
+          render: function(data, type, row) {
+            const link = 'view-project.php?id=' + btoa(row.project_id);
+            const priority = row.priority === 'High' ? ' <i class="fas fa-exclamation text-danger"></i>' : '';
+            return `${priority} <a href="${link}" target="_blank">${data}</a>`;
+          }
+        },
+        { 
+          data: 'selected_department_start_date',
+          render: function(data) {
+            return data ? moment(data).format('DD MMM YYYY') : '-';
+          }
+        },
+        { 
+          data: 'selected_department_end_date',
+          render: function(data) {
+            return data ? moment(data).format('DD MMM YYYY') : '-';
+          }
+        },
+        { 
+          data: 'date_frame_status',
+          render: function(data, type, row) {
+            if (!data) return '-';
+            
+            const statusMap = {
+              'assigned': { class: 'secondary', text: 'Assigned' },
+              'completed': { class: 'success', text: 'Completed' },
+              'ongoing': { class: 'primary', text: 'Ongoing' },
+              'overdue': { class: 'danger', text: 'Overdue' },
+              'uncategorized': { class: 'warning', text: 'Uncategorized' }
+            };
+            
+            const status = statusMap[data.toLowerCase()] || { class: 'secondary', text: data };
+            return `<span class="badge bg-${status.class}">${status.text}</span>`;
+          }
+        }
+      ],
+      responsive: true,
+      pageLength: 10,
+      lengthMenu: [10, 25, 50, 100],
+      order: [[1, 'desc']],
+      dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+           "<'row'<'col-sm-12'tr>>" +
+           "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+      language: {
+        search: "_INPUT_",
+        searchPlaceholder: "Search projects...",
+        lengthMenu: "Show _MENU_ projects",
+        info: "Showing _START_ to _END_ of _TOTAL_ projects",
+        infoEmpty: "No projects found",
+        infoFiltered: "(filtered from _MAX_ total projects)",
+        paginate: {
+          previous: "&laquo;",
+          next: "&raquo;"
+        }
+      },
+      drawCallback: function() {
+        // Update the status filter dropdown after table is drawn
+        const statusSet = new Set();
+        
+        // Get unique status values
+        this.api().cells(null, 3).every(function() {
+          const data = this.data();
+          if (data) statusSet.add(data);
+        });
+        
+        // Update the status filter dropdown
+        const $statusFilter = $('#statusFilter');
+        const currentFilter = $statusFilter.val();
+        $statusFilter.empty().append('<option value="">All Status</option>');
+        
+        Array.from(statusSet).sort().forEach(status => {
+          $statusFilter.append(`<option value="${status}">${status}</option>`);
+        });
+        
+        // Restore the filter selection
+        if (currentFilter) {
+          $statusFilter.val(currentFilter);
+        }
+      }
+    });
+    
+    // Add status filter handler
+    $('#statusFilter').off('change').on('change', function() {
+      const status = $(this).val();
+      deptTable.column(3).search(status, true, false).draw();
+    });
   }
 
   function populateSummary(data){
@@ -277,7 +656,6 @@ $(function () {
     if(!data) return '-';
     return moment(new Date(data)).format('DD MMM YYYY');
   }
-});
 
   function drawDonut(chartData) {
     const ctx = document.getElementById("donutChart").getContext("2d");
@@ -294,7 +672,6 @@ $(function () {
       }
     });
   }
-
 </script>
 
 <?php include 'common/footer.php'; ?>

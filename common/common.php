@@ -85,6 +85,8 @@ if (!isset($_SESSION['emp_role_id'])) {
         $access_rights[2][] = "proposed-work-add";
         $access_rights[2][] = "proposed-work-list";
         $access_rights[2][] = "view-all-notifications";
+        $access_rights[2][] = "license-edit";
+        $access_rights[2][] = "license-list";
 
     $access_rights[3] = array();
     $access_rights[3][] = "dashboard-user";
@@ -116,5 +118,94 @@ if (!isset($_SESSION['emp_role_id'])) {
     }
     return false;
     
+}
+
+
+function getProjectDetails($project_id) {
+    // Initialize project data
+
+    $project = null;
+
+
+
+    // API URL for fetching project details
+
+    $api_url = API_URL . "project-edit";
+
+
+
+    // Prepare API request data
+
+    $request_data = json_encode([
+
+        'access_token' => $_SESSION['access_token'],
+
+        'project_id' => $project_id
+
+    ]);
+
+
+
+    // Set up cURL request
+
+    $ch = curl_init($api_url);
+
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+    curl_setopt($ch, CURLOPT_POST, true);
+
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $request_data);
+
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Disable SSL verification for testing
+
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false); // Disable SSL host verification for testing
+
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+
+        'Content-Type: application/json',
+
+        'Content-Length: ' . strlen($request_data)
+
+    ]);
+
+
+
+    // Execute the request
+
+    $response = curl_exec($ch);
+
+    $error = curl_error($ch);
+
+    curl_close($ch);
+
+
+
+    // Process the response
+
+    if ($error) {
+
+        echo '<div class="alert alert-danger">Error fetching project details: ' . $error . '</div>';
+
+    } else {
+
+        $result = json_decode($response, true);
+
+        
+
+        if (isset($result['is_successful']) && $result['is_successful'] === '1' && isset($result['data'])) {
+
+            $project = $result['data'];
+
+        } else {
+
+            echo '<div class="alert alert-danger">Failed to retrieve project details: ' . 
+
+                (isset($result['errors']) ? $result['errors'] : 'Unknown error') . '</div>';
+
+        }
+
+    }
+
+    return $project;
 }
 ?>
