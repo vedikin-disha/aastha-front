@@ -83,26 +83,23 @@
 </div>
 
 <!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Confirm Delete</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to delete task "<span id="taskNameToDelete"></span>"?</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger" id="confirmDelete">Delete</button>
-            </div>
-        </div>
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+        <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to delete this task?
+      </div>
+      <div class="modal-footer p-2">
+        <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger btn-sm" id="confirmDelete">Delete</button>
+      </div>
     </div>
+  </div>
 </div>
-
 
 
 <style>
@@ -154,568 +151,6 @@
     }
 </style>
 
-<script>
-$(document).ready(function() {
-    // Check if table exists
-    var $table = $('#taskTable');
-    if ($table.length === 0) {
-        console.error('Table with ID "taskTable" not found in the DOM');
-        return;
-    }
-    
-    // Destroy existing DataTable instance if it exists
-    if ($.fn.DataTable.isDataTable($table)) {
-        $table.DataTable().destroy();
-    }
-    
- // Initialize DataTable with configuration
-try {
-    var table = $table.DataTable({
-        "processing": true,
-        "serverSide": true,
-        "ajax": {
-            "url": '<?php echo API_URL; ?>project-task-listing',
-            "type": "POST",
-            "dataType": "json",
-            "contentType": "application/json",
-            "data": function(d) {
-                return JSON.stringify({
-                    access_token: '<?php echo $_SESSION["access_token"]; ?>',
-                    page: Math.ceil((d.start / d.length) + 1),
-                    limit: d.length,
-                    search: d.search.value,
-                    order_by: d.order[0].column > 0 ? d.columns[d.order[0].column].data : 'project_name',
-                    order_dir: d.order[0].dir
-                });
-            },
-            "dataSrc": function(json) {
-                // Flatten the projects array to get project summary
-                var data = [];
-                if (json.data && json.data.projects) {
-                    json.data.projects.forEach(function(project) {
-                        data.push({
-                            project_id: project.project_id,
-                            project_name: project.project_name,
-                            priority: project.priority, // Add priority field
-                            total_tasks: project.total_tasks || 0,
-                            completed_tasks: project.completed_task || 0,
-                            pending_tasks: project.pending_task || 0
-                        });
-                    });
-                }
-                return data;
-            }
-        },
-        "columns": [
-            {
-                "className": 'expand-control',
-                "orderable": false,
-                "data": null,
-                "defaultContent": '<span class="expand-button">+</span>',
-                "width": '5%'
-            },
-            { 
-                "data": "project_name",
-                "title": "Project Name",
-                "render": function(data, type, row) {
-                    console.log('Project:', data, 'Priority:', row.priority); // Debug log
-                    if (row.priority && (row.priority.toLowerCase() === 'high' || row.priority === '1' || row.priority === 1)) {
-                        return data + ' <i class="fas fa-exclamation-circle text-danger" title="High Priority"></i>';
-                    }
-                    return data;
-                }
-            },
-            { 
-                "data": "total_tasks",
-                "title": "Total Tasks",
-                "className": "text-center"
-            },
-            { 
-                "data": "completed_tasks",
-                "title": "Completed Tasks",
-                "className": "text-center",
-                "render": function(data, type, row) {
-                    return '<span class="badge bg-success">' + data + '</span>';
-                }
-            },
-            { 
-                "data": "pending_tasks",
-                "title": "Pending Tasks",
-                "className": "text-center",
-                "render": function(data, type, row) {
-                    return '<span class="badge bg-warning">' + data + '</span>';
-                }
-            }
-        ],
-        "order": [[0, "asc"]],
-        "responsive": true,
-        "pageLength": 10,
-        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
-        "dom": "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
-               "<'row'<'col-sm-12'tr>>" +
-               "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
-        "buttons": [
-            'copy', 'csv', 'excel', 'pdf', 'print', 'colvis'
-        ],
-        "language": {
-            "emptyTable": "No projects found",
-            "info": "Showing _START_ to _END_ of _TOTAL_ entries",
-            "infoEmpty": "Showing 0 to 0 of 0 entries",
-            "infoFiltered": "(filtered from _MAX_ total projects)",
-            "lengthMenu": "Show _MENU_ projects",
-            "loadingRecords": "Loading...",
-            "processing": "Processing...",
-            "search": "Search Projects:",
-            "zeroRecords": "No matching projects found",
-            "paginate": {
-                "first": "First",
-                "last": "Last",
-                "next": "Next",
-                "previous": "Previous"
-            }
-        }
-    });
-    
-
-} catch (e) {
-    console.error('Error initializing DataTable:', e);
-}
-    // Helper function to format dates as DD-MM-YYYY
-    function formatDateDDMMYYYY(date) {
-        if (!(date instanceof Date) || isNaN(date)) return '';
-        
-        var day = date.getDate().toString().padStart(2, '0');
-        var month = (date.getMonth() + 1).toString().padStart(2, '0');
-        var year = date.getFullYear();
-        
-        return day + '-' + month + '-' + year;
-    }
-    
-
-
-    var taskIdToDelete = null;
-    var taskNameToDelete = null;
-
-    // Handle reminder button click
-    $('#taskTable').on('click', '.btn-warning', function(e) {
-        e.preventDefault();
-        var taskId = $(this).data('task-id');
-        var taskName = $(this).data('task-name');
-        
-        if (confirm('Are you sure you want to send a reminder for task: ' + taskName + '?')) {
-            var token = '<?php echo isset($_SESSION['token']) ? $_SESSION['token'] : ''; ?>';
-            
-            $.ajax({
-                url: '<?php echo API_URL; ?>send-task-reminder',
-                type: 'POST',
-                dataType: 'json',
-                contentType: 'application/json',
-                data: JSON.stringify({
-                    access_token: '<?php echo $_SESSION["access_token"]; ?>',
-                    task_id: taskId
-                }),
-                success: function(response) {
-                    if (response.is_successful === '1') {
-                        $(document).Toasts('create', {
-                            class: 'bg-success',
-                            title: 'Success',
-                            body: response.success_message || 'Reminder sent successfully',
-                            autohide: true,
-                            delay: 3000
-                        });
-                    } else {
-                        $(document).Toasts('create', {
-                            class: 'bg-danger',
-                            title: 'Error',
-                            body: response.errors || 'Error sending reminder',
-                            autohide: true,
-                            delay: 3000
-                        });
-                    }
-                },
-                error: function(xhr, status, error) {
-                    alert('Error sending reminder: ' + error);
-                }
-            });
-        }
-    });
-    
-    // Handle task status button click
-
-    // Handle task status button click
-    $('#taskTable').on('click', '.task-status-btn', function() {
-        var $button = $(this);
-        var taskId = $button.data('task-id');
-        var taskName = $button.data('task-name');
-        var currentStatus = String($button.data('current-status')); // Ensure string comparison
-        var newStatus;
-        if (currentStatus === '0') { // Was To Do
-            newStatus = '1'; // Becomes Done
-        } else if (currentStatus === '1') { // Was Done
-            newStatus = '0'; // Becomes To Do
-        } else if (currentStatus === '2') { // Was Pending
-            newStatus = '1'; // Becomes Done
-        } else {
-            
-            return; // Exit if status is not recognized
-        }
-        var isChecked = newStatus === '1'; // 'isChecked' effectively means 'is new status Done?'
-        
-        // Store the switch element to restore state if API call fails
-        var $switch = $(this);
-        
-        // Get the row data from DataTable
-        var row = table.row($(this).closest('tr')).data();
-        
-        $.ajax({
-            url: '<?php echo API_URL; ?>project-task-update',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({
-                access_token: '<?php echo $_SESSION["access_token"]; ?>',
-                task_id: taskId,
-                task_name: row.task_name,
-                dept_id: row.dept_id,
-                project_id: row.project_id,
-                task_status: parseInt(newStatus)
-            }),
-            success: function(response) {
-                if (response.is_successful === "1") {
-                    // Remove the button if task is marked as done
-                    if (newStatus === '1') {
-                        $button.remove();
-                    } else {
-                        // Update button appearance for other statuses
-                        var newButtonClass = 'btn-warning';
-                        var newButtonText = 'Mark as Done';
-                        
-                        $button
-                            .removeClass('btn-success btn-warning btn-info')
-                            .addClass(newButtonClass)
-                            .text(newButtonText)
-                            .data('current-status', newStatus);
-                    }
-                    // If newStatus could be '2' (e.g. for reverting from Done to original Pending), add handling here
-
-                    $button
-                        .removeClass('btn-success btn-warning btn-info') // Clear relevant old classes
-                        .addClass(newButtonClass)
-                        .text(newButtonText)
-                        .data('current-status', newStatus);
-                    
-                    // Show success message
-                    $(document).Toasts('create', {
-                        class: 'bg-success',
-                        title: 'Success',
-                        body: newStatus === '1' ? 'Task marked as Done successfully' : (newStatus === '0' ? 'Task marked as To Do successfully' : 'Task status updated successfully'),
-                        autohide: true,
-                        delay: 3000
-                    });
-                    
-                    // Clean up URL by removing page and limit parameters
-                    if (window.history.replaceState) {
-                        var cleanURL = window.location.pathname + window.location.search.replace(/[?&]?(page|limit)=\d+/g, '').replace(/^&/, '?');
-                        window.history.replaceState({}, document.title, cleanURL);
-                    }
-
-                    // Refresh the DataTable to show updated data
-                    table.ajax.reload(null, false);
-                } else {
-                    // Revert switch state
-                    $switch.prop('checked', !isChecked);
-                    
-                    // Show error message
-                    $(document).Toasts('create', {
-                        class: 'bg-danger',
-                        title: 'Error',
-                        body: response.errors ? Object.values(response.errors).join('<br>') : 'Failed to update task status',
-                        autohide: true,
-                        delay: 3000
-                    });
-                }
-            },
-            error: function(xhr) {
-                // Revert switch state
-                $switch.prop('checked', !isChecked);
-                
-                // Show error message
-                $(document).Toasts('create', {
-                    class: 'bg-danger',
-                    title: 'Error',
-                    body: 'Error updating task status. Please try again.',
-                    autohide: true,
-                    delay: 3000
-                });
-            }
-        });
-    });
-    
-    // Function to format duration
-    function formatDuration(startDate, endDate) {
-        if (!startDate || !endDate) return 'N/A';
-        
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-        const diffMs = end - start;
-        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-        const diffHrs = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const diffMins = Math.round((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-        
-        let result = '';
-        if (diffDays > 0) result += diffDays + 'd ';
-        if (diffHrs > 0) result += diffHrs + 'h ';
-        if (diffMins > 0 || result === '') result += diffMins + 'm';
-        
-        return result.trim();
-    }
-
-    // Function to get status badge HTML
-    function getStatusBadge(status) {
-        const statusClass = {
-            'To Do': 'bg-secondary',
-            'In Progress': 'bg-primary',
-            'Completed': 'bg-success',
-            'Overdue': 'bg-danger'
-        }[status] || 'bg-secondary';
-        
-        return `<span class="badge ${statusClass}">${status}</span>`;
-    }
-
-    // Add event listener for expanding/collapsing rows
-    $('#taskTable tbody').on('click', 'td.expand-control', function () {
-        var tr = $(this).closest('tr');
-        var row = table.row(tr);
-        var expandButton = $(this).find('.expand-button');
-        var rowData = row.data();
-        
-        if (row.child.isShown()) {
-            // This row is already open - close it
-            row.child.hide();
-            expandButton.removeClass('expanded');
-        } else {
-            // Show loading state
-            var loadingRow = $('<div class="text-center p-3"><i class="fas fa-spinner fa-spin"></i> Loading tasks...</div>');
-            row.child(loadingRow).show();
-            
-            // Fetch task details
-            $.ajax({
-                url: '<?php echo API_URL; ?>project-task-listing',
-                type: 'POST',
-                dataType: 'json',
-                contentType: 'application/json',
-                data: JSON.stringify({
-                    access_token: '<?php echo $_SESSION["access_token"]; ?>',
-                    project_id: rowData.project_id,
-                    limit: 10 // Adjust based on your needs
-                }),
-                success: function(response) {
-                    // Check if we have tasks in the response
-                    if (response && Array.isArray(response.tasks) && response.tasks.length > 0) {
-                        // Group tasks by department
-                        const tasksByDept = {};
-                        response.tasks.forEach(task => {
-                            if (!tasksByDept[task.dept_id]) {
-                                tasksByDept[task.dept_id] = {
-                                    dept_name: task.dept_name || 'Unassigned Department',
-                                    tasks: []
-                                };
-                            }
-                            tasksByDept[task.dept_id].tasks.push(task);
-                        });
-                        
-                        // Create the task list HTML
-                        let taskListHtml = `
-                            <div class="child-row p-3">
-                                <div class="row mb-3">
-                                    <div class="col">
-                                        <h5>Project: ${response.project_name || rowData.project_name || 'N/A'}</h5>
-                                        <p class="mb-1"><strong>Priority:</strong> ${response.priority || rowData.priority || 'Not specified'}</p>
-                                        <p class="mb-1"><strong>Total Tasks:</strong> ${response.total_tasks || 0} 
-                                            | <span class="text-success">Completed: ${response.completed_task || 0}</span> 
-                                            | <span class="text-warning">In Progress: ${response.ongoing_task || 0}</span>
-                                            | <span class="text-danger">Overdue: ${response.overdue_task || 0}</span>
-                                        </p>
-                                    </div>
-                                </div>
-                                
-                                <div class="table-responsive">
-                                    <table class="table table-bordered table-hover">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th>Task ID</th>
-                                                <th>Task Name</th>
-                                                <th>Department</th>
-                                                <th>Assigned To</th>
-                                                <th>Status</th>
-                                                <th>Start Date</th>
-                                                <th>Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>`;
-                        
-                        // Add all tasks to the table
-                        response.tasks.forEach(task => {
-                            const startDate = task.start_date ? new Date(task.start_date).toLocaleString() : 'Not started';
-
-                            const assignedTo = task.assigned_emp_name || 'Unassigned';
-                            console.log("task details ......." , task.task_id , task.task_name , task.dept_name , assignedTo , task.task_status , startDate);
-                            
-                            taskListHtml += `
-                                <tr>
-                                    <td>#${task.task_id}</td>
-                                    <td>${task.task_name || 'N/A'}</td>
-                                    <td>${task.dept_name || 'N/A'}</td>
-                                    <td>${assignedTo}</td>
-                                    <td>${getStatusBadge(task.task_status)}</td>
-                                    <td>${startDate}</td>
-                                    <td>
-                                        <div class="btn-group btn-group-sm" role="group">
-                                            ${task.task_status_value !== 2 ? `
-                                                <button class="btn btn-outline-success btn-sm task-action" 
-                                                        data-task-id="${task.task_id}" 
-                                                        data-action="start" 
-                                                        title="Start Task">
-                                                    <i class="fas fa-play"></i>
-                                                </button>
-                                                <button class="btn btn-outline-primary btn-sm task-action" 
-                                                        data-task-id="${task.task_id}" 
-                                                        data-action="complete" 
-                                                        title="Mark as Done">
-                                                    <i class="fas fa-check"></i>
-                                                </button>
-                                            ` : ''}
-                                            <button class="btn btn-outline-info btn-sm task-action" 
-                                                    data-task-id="${task.task_id}" 
-                                                    data-action="edit" 
-                                                    title="Edit">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="btn btn-outline-danger btn-sm task-action" 
-                                                    data-task-id="${task.task_id}" 
-                                                    data-task-name="${task.task_name || ''}" 
-                                                    data-action="delete" 
-                                                    title="Delete">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>`;
-                        });
-                        
-                        // Close the table
-                        taskListHtml += `
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>`;
-                        
-                        row.child($(taskListHtml)).show();
-                        expandButton.addClass('expanded');
-                        
-                        // Initialize tooltips
-                        $('[data-toggle="tooltip"]').tooltip();
-                        
-                    } else {
-                        row.child('<div class="text-center p-3">No tasks found for this project.</div>').show();
-                        expandButton.addClass('expanded');
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error fetching task details:', error);
-                    row.child('<div class="text-center p-3 text-danger">Error loading tasks. Please try again.</div>').show();
-                    expandButton.addClass('expanded');
-                }
-            });
-        }
-    });
-    
-    // Handle task actions (start, complete, edit, delete)
-    $('#taskTable').on('click', '.task-action', function() {
-        const taskId = $(this).data('task-id');
-        const action = $(this).data('action');
-        const taskName = $(this).data('task-name') || 'this task';
-        
-        switch(action) {
-            case 'start':
-                // Handle start task
-                alert(`Starting task #${taskId}`);
-                // Add your start task logic here
-                break;
-                
-            case 'complete':
-                if (confirm(`Are you sure you want to mark task #${taskId} as complete?`)) {
-                    // Handle complete task
-                    alert(`Task #${taskId} marked as complete`);
-                    // Add your complete task logic here
-                }
-                break;
-                
-            case 'edit':
-                // Handle edit task
-                alert(`Editing task #${taskId}`);
-                // Add your edit task logic here
-                break;
-                
-            case 'delete':
-                if (confirm(`Are you sure you want to delete task: ${taskName}?`)) {
-                    // Handle delete task
-                    alert(`Task #${taskId} deleted`);
-                    // Add your delete task logic here
-                }
-                break;
-        }
-    });
-
-    // Initialize with the current page if it exists in the URL
-    var urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has('page')) {
-        var pageNum = parseInt(urlParams.get('page')) - 1; // DataTables uses 0-based index
-        if (pageNum >= 0) {
-            setTimeout(function() {
-                table.page(pageNum).draw('page');
-            }, 100);
-        }
-    }
-    
-    // Listen for page changes and update URL
-    table.on('page.dt', function() {
-        var info = table.page.info();
-        // Update URL with current page
-        var url = new URL(window.location);
-        url.searchParams.set('page', info.page + 1);
-        window.history.pushState({}, '', url);
-    });
-    
-   
-
-    $('#taskTable').on('click', '.delete-task', function() {
-        taskIdToDelete = $(this).data('task-id');
-        taskNameToDelete = $(this).data('task-name');
-        $('#taskNameToDelete').text(taskNameToDelete);
-        $('#deleteModal').modal('show');
-    });
-
-   
-
-    // Add active class to navigation
-    $('#project-task a').addClass('active nav-link');
-});
-
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
-</script>
 <!-- Delete Confirmation Modal -->
 <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -738,8 +173,492 @@ function getCookie(name) {
 </div>
 
 <script>
+$(document).ready(function() {
+    // Initialize DataTable with server-side processing
+    var table = $('#taskTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: '<?php echo API_URL; ?>project-task-listing',
+            type: 'POST',
+            dataType: 'json',
+            contentType: 'application/json',
+            data: function(d) {
+                return JSON.stringify({
+                    access_token: '<?php echo $_SESSION["access_token"]; ?>',
+                    page: Math.ceil((d.start / d.length) + 1), // Calculate page number
+                    limit: d.length,
+                    search: d.search.value,
+                    order_by: d.columns[d.order[0]?.column]?.data || 'project_name',
+                    order_dir: d.order[0]?.dir || 'asc'
+                });
+            },
+            dataSrc: function(json) {
+                // Update DataTables with the total records count
+                if (json && json.data) {
+                    // Store the total count for pagination
+                    json.recordsTotal = json.data.total || 0;
+                    json.recordsFiltered = json.data.total || 0;
+                    
+                    // Return the projects array
+                    if (json.data.projects && Array.isArray(json.data.projects)) {
+                        return json.data.projects.map(project => ({
+                            project_id: project.project_id,
+                            project_name: project.project_name || 'Unnamed Project',
+                            priority: project.priority || 'Regular',
+                            total_tasks: project.total_tasks || 0,
+                            completed_tasks: project.completed_task || 0,
+                            pending_tasks: project.pending_task || 0,
+                            ongoing_tasks: project.ongoing_task || 0,
+                            overdue_tasks: project.overdue_task || 0,
+                            tasks: project.tasks || []
+                        }));
+                    }
+                }
+                return [];
+            }
+        },
+        columns: [
+            {
+                data: null,
+                className: 'expand-control',
+                orderable: false,
+                defaultContent: '<span class="expand-button">+</span>',
+                width: '5%'
+            },
+            { 
+                data: 'project_name',
+                render: function(data, type, row) {
+                    let priorityBadge = '';
+                    if (row.priority && row.priority.toLowerCase() === 'high') {
+                        priorityBadge = ' <span class="badge bg-danger">High</span>';
+                    }
+                    return (data || 'Unnamed Project') + priorityBadge;
+                }
+            },
+            { 
+                data: 'total_tasks',
+                className: 'text-center'
+            },
+            { 
+                data: 'completed_tasks',
+                className: 'text-center',
+                render: function(data) {
+                    return `<span class="badge bg-success">${data || 0}</span>`;
+                }
+            },
+            { 
+                data: 'pending_tasks',
+                className: 'text-center',
+                render: function(data) {
+                    return `<span class="badge bg-warning">${data || 0}</span>`;
+                }
+            }
+        ],
+        order: [[1, 'asc']], // Default sort by project name
+        pageLength: 10,
+        lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+        dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+             "<'row'<'col-sm-12'tr>>" +
+             "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+        language: {
+            processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span>',
+            emptyTable: 'No projects found',
+            info: 'Showing _START_ to _END_ of _TOTAL_ projects',
+            infoEmpty: 'No projects available',
+            infoFiltered: '(filtered from _MAX_ total projects)',
+            lengthMenu: 'Show _MENU_ projects',
+            search: 'Search:',
+            paginate: {
+                first: 'First',
+                last: 'Last',
+                next: 'Next',
+                previous: 'Previous'
+            }
+        }
+    });
+
+    // Track loading states for expandable rows
+    const loadingStates = new Map();
+
+    // Handle expand/collapse of project rows
+    $('#taskTable tbody').on('click', 'td.expand-control', function() {
+        const tr = $(this).closest('tr');
+        const row = table.row(tr);
+        const rowData = row.data();
+        const rowId = rowData.project_id;
+        const expandButton = $(this).find('.expand-button');
+
+        // Prevent multiple clicks while loading
+        if (loadingStates.get(rowId)) return;
+        
+        if (row.child.isShown()) {
+            // This row is already open - close it
+            row.child.hide();
+            expandButton.removeClass('expanded');
+            return;
+        }
+
+        // Show loading state
+        loadingStates.set(rowId, true);
+        expandButton.addClass('loading');
+        const loadingRow = $('<div class="text-center p-3"><i class="fas fa-spinner fa-spin"></i> Loading tasks...</div>');
+        row.child(loadingRow).show();
+
+        // Fetch task details
+        $.ajax({
+    url: '<?php echo API_URL; ?>project-task-listing',
+    type: 'POST',
+    dataType: 'json',
+    contentType: 'application/json', // Add this
+    data: JSON.stringify({ // Stringify the data
+        access_token: '<?php echo $_SESSION["access_token"]; ?>',
+        project_id: rowId
+    }),
+            success: function(response) {
+                loadingStates.set(rowId, false);
+                expandButton.removeClass('loading').addClass('expanded');
+                
+                if (response && response.data && response.data.projects && response.data.projects.length > 0) {
+                    const project = response.data.projects[0];
+                    const tasks = project.tasks || [];
+                    
+                    // Create task list HTML
+                    let taskList = `
+                        <div class="p-3">
+                            <h6>Tasks for ${project.project_name || 'Project'}</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Task</th>
+                                <th>Status</th>
+                                <th>Assigned To</th>
+                                <th>Assigned Duration</th>
+                                <th>Completed Duration</th>
+                                <th>task_status</th>
+                                <th>Department</th>
+                               
+                                <th>Actions</th>
+                                <th>More</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>`;
+                    
+                    // Function to format date to dd/mm/yyyy
+                    function formatDate(dateStr) {
+                        if (!dateStr) return 'N/A';
+                        const date = new Date(dateStr);
+                        if (isNaN(date.getTime())) return 'N/A';
+                        return date.toLocaleDateString('en-GB'); // dd/mm/yyyy format
+                    }
+
+                    tasks.forEach(task => {
+                        // Format assigned duration - use assigned_duration if available, otherwise use individual dates
+                        let assignedDuration = 'N/A';
+                        if (task.assigned_duration) {
+                            try {
+                                const [start, end] = task.assigned_duration.split(' - ');
+                                if (start && end) {
+                                    assignedDuration = `${formatDate(start.trim())} to ${formatDate(end.trim())}`;
+                                }
+                            } catch (e) {
+                                console.error('Error formatting assigned_duration:', e);
+                            }
+                        } else if (task.assigned_start_date && task.assigned_end_date) {
+                            assignedDuration = `${formatDate(task.assigned_start_date)} to ${formatDate(task.assigned_end_date)}`;
+                        }
+
+                        // Format completed duration - use completed_duration if available, otherwise use task_duration
+                        let completedDuration = 'N/A';
+                        if (task.completed_duration) {
+                            try {
+                                // Check if it's a range or single date
+                                if (task.completed_duration.includes(' - ')) {
+                                    // Handle date range
+                                    const [start, end] = task.completed_duration.split(' - ');
+                                    if (start && end) {
+                                        completedDuration = `${formatDate(start.trim())} to ${formatDate(end.trim())}`;
+                                    }
+                                } else {
+                                    // Handle single date
+                                    completedDuration = formatDate(task.completed_duration.trim());
+                                }
+                            } catch (e) {
+                                console.error('Error formatting completed_duration:', e);
+                            }
+                        } else if (task.task_duration) {
+                            try {
+                                const [start, end] = task.task_duration.split(' - ');
+                                if (start && end) {
+                                    completedDuration = `${formatDate(start.trim())} to ${formatDate(end.trim())}`;
+                                }
+                            } catch (e) {
+                                console.error('Error formatting task_duration:', e);
+                            }
+                        }
+
+                        taskList += `
+                            <tr data-task-id="${task.task_id}"
+                                data-project-id="${project.project_id || ''}"
+                                data-assigned-emp="${task.assigned_emp_id || ''}"
+                                data-start-date="${task.assigned_start_date || ''}"
+                                data-end-date="${task.assigned_end_date || ''}"
+                                data-dept-id="${task.dept_id || ''}">
+                                <td class="task-name">${task.task_name || 'N/A'}</td>
+                                <td>${getStatusBadge(task.task_status)}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        ${task.assigned_emp_profile 
+                                            ? `<img src="${task.assigned_emp_profile}" class="rounded-circle mr-2" width="32" height="32" alt="${task.assigned_emp_name || 'User'}" />`
+                                            : ''
+                                        }
+                                        <span>${task.assigned_emp_name || 'N/A'}</span>
+                                    </div>
+                                </td>
+                                <td>${assignedDuration}</td>
+                                <td>${completedDuration}</td>
+                                <td>${task.task_status || 'N/A'}</td>
+                                <td>${task.dept_name || 'N/A'}</td>
+                            
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-success btn-sm mark-done-btn" data-task-id="${task.task_id}" ${task.task_status === 'Done' ? 'disabled' : ''}>
+                                            <i class="fas fa-check"></i> Done
+                                        </button>
+                                        <button class="btn btn-primary btn-sm start-task-btn" data-task-id="${task.task_id}" ${task.task_status === 'In Progress' ? 'disabled' : ''}>
+                                            <i class="fas fa-play"></i> Start
+                                        </button>
+                                    </div>
+                                </td>
+                               <td>
+                                <div class="btn-group btn-group-sm">
+                                <a href="edit-project-task.php?id=${btoa(task.task_id)}" class="btn btn-info btn-sm">
+                                    <i class="fas fa-edit"></i> Edit
+                                    </a>
+                                   <button class="btn btn-danger btn-sm delete-task-btn" data-task-id="${task.task_id}">
+                                    <i class="fas fa-trash"></i> Delete
+                                    </button>
+                                </div>
+                                </td>
+                            </tr>`;
+                    
+                    // Add click handlers after the row is added to DOM
+                    setTimeout(() => {
+                        // Mark as Done handler
+                     
+                        
+                        // Start Task handler
+                        $(`#${rowId} .start-task-btn`).on('click', function() {
+                            const taskId = $(this).data('task-id');
+                            updateTaskStatus(taskId, 'In Progress');
+                        });
+                        
+                        // Edit Task handler
+                        $(`#${rowId} .edit-task-btn`).on('click', function() {
+                            const taskId = $(this).data('task-id');
+                            // Redirect to edit page with task ID
+                            window.location.href = `edit-project-task.php?task_id=${taskId}`;
+                        });
+                        
+                        // Delete Task handler
+                        $(`#${rowId} .delete-task-btn`).on('click', function() {
+                            const taskId = $(this).data('task-id');
+                            if(confirm('Are you sure you want to delete this task?')) {
+                                // Add your delete task logic here
+                                showToast('Delete task ' + taskId);
+                            }
+                        });
+                    }, 0);
+                    });
+                    
+                    taskList += `</tbody></table></div></div>`;
+                    
+                    // Add updateTaskStatus function if not exists
+                    if (typeof updateTaskStatus !== 'function') {
+                        window.updateTaskStatus = function(taskId, status) {
+                            // Find the task to get its details
+                            const task = tasks.find(t => t.task_id == taskId);
+                            if (!task) {
+                                console.error('Task not found:', taskId);
+                                return;
+                            }
+                            
+                            // Prepare the data for the API
+                            const postData = {
+                                access_token: '<?php echo $_SESSION["access_token"]; ?>',
+                                task_id: taskId,
+                                task_name: task.task_name || '',
+                                assigned_emp_id: task.assigned_emp_id || '',
+                                start_date: task.start_date ? new Date(task.start_date).toISOString().split('T')[0] : '',
+                                end_date: task.end_date ? new Date(task.end_date).toISOString().split('T')[0] : '',
+                                dept_id: task.dept_id || 1,
+                                task_status: status === 'Done' ? 2 : (status === 'In Progress' ? 1 : 0),
+                                project_id: project.project_id
+                            };
+                            
+                            console.log('Updating task:', postData);
+                            
+                        
+                        };
+                    }
+                    row.child($(taskList)).show();
+                } else {
+                    row.child('<div class="text-center p-3">No tasks found for this project.</div>').show();
+                }
+            },
+            error: function(xhr, status, error) {
+                loadingStates.set(rowId, false);
+                expandButton.removeClass('loading');
+                console.error('Error loading tasks:', error);
+                row.child('<div class="text-center p-3 text-danger">Error loading tasks. Please try again.</div>').show();
+            }
+        });
+    });
+
+    $(document).on('click', '.start-task-btn', function () {
+    const button = $(this);
+    const taskId = button.data('task-id');
+
+    const row = button.closest('tr');
+    const taskName = row.find('.task-name').text().trim();
+    const projectId = row.data('project-id');
+    const assignedEmpId = row.data('assigned-emp');
+    const formatDate = (dateString) => {
+        if (!dateString) return '';
+        // If date is already in YYYY-MM-DD format, return as is
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) return dateString;
+        // Try to parse and format other date formats if needed
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return ''; // Invalid date
+        return date.toISOString().split('T')[0]; // Returns YYYY-MM-DD
+    };
+    
+    const startDate = formatDate(row.data('start-date'));
+    const endDate = formatDate(row.data('end-date'));
+    const deptId = row.data('dept-id');
+
+    const requestData = {
+        access_token: "<?php echo $_SESSION['access_token']; ?>", // Replace or retrieve dynamically
+        task_id: taskId,
+        task_name: taskName,
+        assigned_emp_id: assignedEmpId,
+        start_date: startDate,
+        end_date: endDate,
+        dept_id: deptId,
+        task_status: 1, // 1 = In Progress
+        project_id: projectId
+    };
+
+    $.ajax({
+        url: "<?php echo API_URL ?>project-task-update", // Replace with your actual API URL    
+        method: "POST",
+        contentType: "application/json",
+        data: JSON.stringify(requestData),
+        success: function (response) {
+            if (response.is_successful === "1") {
+                showToast(response.success_message);
+                button.prop('disabled', true); // disable the button
+                // Optionally refresh the row or task status
+            } else {
+                showToast(response.success_message);
+            }
+        },
+        error: function () {
+            showToast("Error calling API.");
+        }
+    });
+});
+
+    // Helper function to format task duration
+    function formatTaskDuration(startDate, endDate) {
+        if (!startDate) return 'Not started';
+        const start = new Date(startDate);
+        const end = endDate ? new Date(endDate) : new Date();
+        return `${start.toLocaleDateString()} - ${endDate ? end.toLocaleDateString() : 'Present'}`;
+    }
+
+    // Helper function to get status badge
+    function getStatusBadge(status) {
+        const statusMap = {
+            'To Do': 'secondary',
+            'In Progress': 'primary',
+            'Completed': 'success',
+            'Overdue': 'danger'
+        };
+        const statusClass = statusMap[status] || 'secondary';
+        return `<span class="badge bg-${statusClass}">${status || 'N/A'}</span>`;
+    }
+
+    $(document).on('click', '.mark-done-btn', function () {
+    const button = $(this);
+    const taskId = button.data('task-id');
+
+    // Find task details from DOM
+    const row = button.closest('tr');
+    const taskName = row.find('.task-name').text().trim();
+    
+    // Get values and ensure proper types
+    const projectId = parseInt(row.data('project-id') || 0);
+    const assignedEmpId = parseInt(row.data('assigned-emp') || 0);
+    
+    // Format dates to YYYY-MM-DD
+    const formatDate = (dateString) => {
+        if (!dateString) return '';
+        // If date is already in YYYY-MM-DD format, return as is
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) return dateString;
+        // Try to parse and format other date formats if needed
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return ''; // Invalid date
+        return date.toISOString().split('T')[0]; // Returns YYYY-MM-DD
+    };
+    
+    const startDate = formatDate(row.data('start-date'));
+    const endDate = formatDate(row.data('end-date'));
+    const deptId = parseInt(row.data('dept-id') || 0);
+
+    // Construct request body with proper types
+    const requestData = {
+        access_token: "<?php echo $_SESSION["access_token"]; ?>",
+        task_id: parseInt(taskId) || 0,
+        task_name: taskName,
+        assigned_emp_id: assignedEmpId,
+        start_date: startDate,
+        end_date: endDate,
+        dept_id: deptId,
+        task_status: 2, // 'Done'
+        project_id: projectId
+    };
+
+    $.ajax({
+        url: "<?php echo API_URL; ?>project-task-update", // replace with actual endpoint or full path
+        method: "POST",
+        contentType: "application/json",
+        data: JSON.stringify(requestData),
+        success: function (response) {
+            if (response.is_successful === "1") {
+                    showToast(response.success_message);
+                button.prop('disabled', true); // disable Done button
+                // Optionally update task status text or reload table
+            } else {
+                showError(response.errors);
+            }
+        },
+        error: function () {
+            showError("Error calling API.");
+        }
+    });
+});
+});
+</script>
+
+<script>
 var taskIdToDelete = null;
 var taskNameToDelete = null;
+
+// Update the mark-done-btn click handler
+
+
 
 // Show delete confirmation modal
 $('#taskTable').on('click', '.delete-task', function() {
@@ -750,9 +669,18 @@ $('#taskTable').on('click', '.delete-task', function() {
 });
 
 // Handle confirm delete
-$('#confirmDelete').click(function() {
+// let taskIdToDelete = null;
+
+// When delete button is clicked
+$(document).on('click', '.delete-task-btn', function () {
+    taskIdToDelete = $(this).data('task-id');
+    $('#deleteModal').modal('show');
+});
+
+// When confirm delete is clicked
+$('#confirmDelete').click(function () {
     if (!taskIdToDelete) return;
-    
+
     $.ajax({
         url: '<?php echo API_URL; ?>project-task-delete',
         type: 'POST',
@@ -761,13 +689,13 @@ $('#confirmDelete').click(function() {
             access_token: '<?php echo $_SESSION["access_token"]; ?>',
             task_id: taskIdToDelete
         }),
-        success: function(response) {
+        success: function (response) {
             if (response.is_successful === '1') {
-                // Remove the row from the table
-                var row = $('button[data-task-id="' + taskIdToDelete + '"]').closest('tr');
+                // Remove task row from table
+                const row = $('button[data-task-id="' + taskIdToDelete + '"]').closest('tr');
                 $('#taskTable').DataTable().row(row).remove().draw();
-                
-                // Show success message
+
+                // Success toast
                 $(document).Toasts('create', {
                     class: 'bg-success',
                     title: 'Success',
@@ -776,7 +704,7 @@ $('#confirmDelete').click(function() {
                     delay: 3000
                 });
             } else {
-                // Show error message
+                // Error toast
                 $(document).Toasts('create', {
                     class: 'bg-danger',
                     title: 'Error',
@@ -786,8 +714,7 @@ $('#confirmDelete').click(function() {
                 });
             }
         },
-        error: function(xhr) {
-            // Show error message
+        error: function () {
             $(document).Toasts('create', {
                 class: 'bg-danger',
                 title: 'Error',
@@ -796,10 +723,9 @@ $('#confirmDelete').click(function() {
                 delay: 3000
             });
         },
-        complete: function() {
+        complete: function () {
             $('#deleteModal').modal('hide');
             taskIdToDelete = null;
-            taskNameToDelete = null;
         }
     });
 });

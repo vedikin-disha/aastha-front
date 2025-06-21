@@ -206,6 +206,82 @@
 
         });
 
+        window.openAssignmentModal = function(mode) {
+
+window.assignmentMode = mode; // Store the current mode (add/update)
+
+
+
+// Update modal title based on mode
+
+const modalTitle = mode === 'add' ? 'Add Project Assignment' : 'Update Project Assignment';
+
+$('#assignmentModalLabel').text(modalTitle);
+
+
+
+// Update save button text
+
+const saveButtonText = mode === 'add' ? 'Add Assignment' : 'Update Assignment';
+
+$('#save-assignment').text(saveButtonText);
+
+
+
+// Show the modal
+
+$('#assignmentModal').modal('show');
+
+};
+
+
+
+// Load users into assignment modal when opened
+
+$('#assignmentModal').on('show.bs.modal', function() {
+
+const checkboxList = $('#user-checkbox-list');
+
+const selectedUsers = $('#selected-users');
+
+checkboxList.empty();
+
+selectedUsers.empty();
+
+
+
+// Create checkboxes from timeline user filter options
+
+$('#timeline-user-filter option').each(function() {
+
+if ($(this).val()) { // Skip the "All Users" option
+
+    const userId = $(this).val();
+
+    const userName = $(this).text();
+
+    
+
+    const checkbox = `
+
+        <div class="custom-control custom-checkbox mb-2">
+
+            <input type="checkbox" class="custom-control-input" id="user-${userId}" value="${userId}" data-name="${userName}">
+
+            <label class="custom-control-label" for="user-${userId}">${userName}</label>
+
+        </div>
+
+    `;
+
+    checkboxList.append(checkbox);
+
+}
+
+});
+
+});
+
     });
 
 </script>

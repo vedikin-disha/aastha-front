@@ -1,14 +1,20 @@
 <?php 
-include 'common/header.php';
+// Start session if not already started
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Get and decode task_id from URL parameter
 $task_id = isset($_GET['id']) ? base64_decode($_GET['id']) : null;
 
-// Redirect if no valid ID
+// Redirect if no valid ID - must be before any output
 if (!$task_id) {
     header('Location: project-task-list.php');
     exit();
 }
+
+// Now include header.php after any potential redirects
+include 'common/header.php';
 
 // Fetch task details using API
 if ($task_id) {

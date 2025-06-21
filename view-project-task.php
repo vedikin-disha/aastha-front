@@ -1,37 +1,46 @@
+
+
+
 <div class="row">
 
-                        <div class="table-responsive">
+    <div class="table-responsive">
 
-                        <div class="card-header py-3">
-                        <div class="d-flex justify-content-between align-items-center flex-wrap">
+        <div class="card-header py-3">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
 
-<h6 class="m-0 font-weight-bold text-primary" style="color:#30b8b9 !important;">
-    Project Task
-</h6>
+                <h6 class="m-0 font-weight-bold text-primary" style="color:#30b8b9 !important;">
+                    Project Task
+                </h6>
 
-<div class="d-flex align-items-center ms-auto gap-2">
-<?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2 || $_SESSION['emp_role_id'] == 3): ?>
-    <select id="user-filter" class="form-control form-control-sm me-2" style="width: 180px; margin-right: 10px;">
-        <option value="">Select User</option>
-    </select>
-<?php endif; ?>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-2 flex-wrap">
+        
+        <!-- Left side: dropdown + assign -->
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2 || $_SESSION['emp_role_id'] == 3): ?>
+            <select id="user-filter" class="form-control form-control-sm" style="width: 180px;margin-right: 10px;">
+              <option value="">Select User</option>
+            </select>
+          <?php endif; ?>
 
+          <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2 || $_SESSION['emp_role_id'] == 3): ?>
+            <button type="button" class="btn btn-sm btn-success" onclick="assignTask()" >
+              <i class="fas fa-user"></i> Assign To
+            </button>
+          <?php endif; ?>
+        </div>
 
-<?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2 || $_SESSION['emp_role_id'] == 3): ?>
-    <button type="button" class="btn btn-sm btn-success" onclick="assignTask()" style="margin-right: 10px;">
-        <i class="fas fa-user"></i> Assign To
-    </button>
-<?php endif; ?>
-<?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2 || $_SESSION['emp_role_id'] == 3): ?>
-    <button type="button" class="btn btn-sm btn-success" data-toggle="modal" data-target="#addTaskModal">
-        <i class="fas fa-plus"></i> Add New Task
-    </button>
-<?php endif; ?>
+        <!-- Right side: Add New Task -->
+        <div>
+          <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2 || $_SESSION['emp_role_id'] == 3): ?>
+            <button type="button" class="btn btn-sm btn-success" data-toggle="modal" data-target="#addTaskModal">
+              <i class="fas fa-plus"></i> Add New Task
+            </button>
+          <?php endif; ?>
+        </div>
+    </div>
+
 </div>
-
-</div>
-
-                        </div>
 
                         
 
@@ -62,6 +71,8 @@
                                 </tbody>
 
                             </table>
+
+
 
                         </div>
 
@@ -321,7 +332,7 @@ $.ajax({
 
                     const message = isChecked ? 'Task marked as done!' : 'Task marked as pending';
 
-                    alert(message);
+                    showToast(response.success_message);
 
                 } else {
 
@@ -329,7 +340,7 @@ $.ajax({
 
                     $switch.prop('checked', !isChecked);
 
-                    alert('Failed to update task status: ' + (response.errors || 'Unknown error'));
+                    showToast(response.error_message);
 
                 }
 
@@ -339,7 +350,7 @@ $.ajax({
 
                 console.error('Error updating task status:', error);
 
-                alert('Error updating task status. Please try again.');
+                    showToast('Error updating task status. Please try again.');
 
             }
 
@@ -381,6 +392,52 @@ $.ajax({
             }
         });
     }
+
+
+    function assignTask() {
+        const selectedTasks = [];
+        $('.task-checkbox:checked:enabled').each(function() {
+            selectedTasks.push($(this).data('task-id'));
+        });
+
+        if (selectedTasks.length === 0) {
+            alert('Please select at least one task to assign.');
+            return;
+        }
+
+        const userId = $('#user-filter').val();
+        if (!userId) {
+            alert('Please select a user to assign tasks to.');
+            return;
+        }
+
+        if (confirm(`Are you sure you want to assign ${selectedTasks.length} task(s) to the selected user?`)) {
+            $.ajax({
+                url: '<?php echo API_URL; ?>task-assign-multiple',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    access_token: '<?php echo $_SESSION["access_token"]; ?>',
+                    task_ids: selectedTasks,
+                    assigned_emp_id: userId
+                }),
+                success: function(response) {
+                    if (response.is_successful === '1') {
+                        showToast(response.success_message);
+                        // Refresh the task list
+                        loadProjectTasks();
+                    } else {
+                        showToast(response.error_message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error assigning tasks:', error);
+                    showToast('An error occurred while assigning tasks. Please try again.');
+                }
+            });
+        }
+    }
+
 
 // });
 </script>

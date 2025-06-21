@@ -74,13 +74,11 @@
 
                     <div class="form-group">
 
-                        <label for="answer_dept">Compliance Department</label>
+                        <label for="answer_dept">Assign To</label>
 
-                        <select class="form-control" id="answer_dept" name="answer_dept">
+                        <select class="form-control select2-multiple" id="answer_dept" name="answer_dept[]" multiple="multiple" style="width: 100%;">
 
-                            <option value="">Select Department</option>
-
-                            <!-- Departments will be loaded from API -->
+                            <!-- Users will be loaded from API -->
 
                         </select>
 
@@ -163,16 +161,204 @@
 </div>
 
 
+
+<div class="modal fade" id="complianceModal" tabindex="-1" role="dialog" aria-labelledby="complianceModalLabel" aria-hidden="true">
+
+    <div class="modal-dialog modal-lg" role="document">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title" id="complianceModalLabel">Add Compliance</h5>
+
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+
+                    <span aria-hidden="true">&times;</span>
+
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <div class="editor-toolbar mb-2">
+
+                    <button type="button" class="btn btn-sm btn-light modal-answer-toolbar" data-command="bold" title="Bold"><i class="fas fa-bold"></i></button>
+
+                    <button type="button" class="btn btn-sm btn-light modal-answer-toolbar" data-command="italic" title="Italic"><i class="fas fa-italic"></i></button>
+
+                    <button type="button" class="btn btn-sm btn-light modal-answer-toolbar" data-command="underline" title="Underline"><i class="fas fa-underline"></i></button>
+
+                </div>
+
+                <div id="modal-answer-editor" class="form-control" contenteditable="true" style="min-height: 150px; overflow-y: auto;"></div>
+
+                <div id="char-count" class="text-muted mt-2" style="font-size: 0.875rem;">Characters remaining: 10000</div>
+
+                <div id="char-error" class="text-danger mt-2" style="display: none;">Your answer is too long. Maximum 10000 characters allowed.</div>
+
+                <input type="hidden" id="modal-qna-id">
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+
+                <button type="button" class="btn btn-primary" id="modal-submit-answer">Submit Answer</button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
 <script>
-// $(document).ready(function() {
-    
+
+    $("document").ready(function() {
+
+        // Character count validation for modal answer editor
+
+        $('#modal-answer-editor').on('input', function() {
+
+        const maxLength = 10000;
+
+        const currentLength = $(this).text().length;
+
+        const remaining = maxLength - currentLength;
+
+
+
+        $('#char-count').text(`Characters remaining: ${remaining}`);
+
+
+
+        if (currentLength > maxLength) {
+
+            $('#char-error').show();
+
+            $('#modal-submit-answer').prop('disabled', true);
+
+        } else {
+
+            $('#char-error').hide();
+
+            $('#modal-submit-answer').prop('disabled', false);
+
+        }
+
+        });
+        
+
+    });
+
+</script>
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+<!-- Bootstrap Multiselect CSS & JS -->
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-multiselect@1.1.0/dist/css/bootstrap-multiselect.css">
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-multiselect@1.1.0/dist/js/bootstrap-multiselect.min.js"></script>
+
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+<!-- JS -->
+
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+
+    // $(document).ready(function() {
+
     // Function to load departments from API
+
+    $(document).ready(function() {
+
+        // Initialize Select2 with multiple selection
+
+        $('.select2-multiple').select2({
+            placeholder: 'Select Users',
+            allowClear: true,
+            width: '100%',
+            closeOnSelect: false
+        });
+
+        // Handle form submission
+        $('#qna-form').on('submit', function(e) {
+            e.preventDefault();
+            
+            // Get form data
+            const question = $('#question-editor').html().trim();
+            const selectedUsers = $('#answer_dept').val() || [];
+            
+            if (!question) {
+                alert('Please enter a question');
+                return;
+            }
+            
+            if (selectedUsers.length === 0) {
+                alert('Please select at least one user');
+                return;
+            }
+            
+            // Prepare the request data
+            const requestData = {
+                access_token: '<?php echo $_SESSION["access_token"]; ?>',
+                project_id: '<?php echo $project_id; ?>',
+                question: question,
+                question_to: selectedUsers
+            };
+            
+            console.log('Submitting QnA:', requestData);
+            
+            // Show loading state
+            const submitBtn = $('#submit-qna');
+            const originalBtnText = submitBtn.html();
+            submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Submitting...');
+            
+            // Make API request
+            $.ajax({
+                url: '<?php echo API_URL; ?>qna_add',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(requestData),
+                success: function(response) {
+                    console.log('QnA submission response:', response);
+                    if (response.is_successful === '1') {
+                        alert('Comment posted successfully!');
+                        $('#qna-form')[0].reset();
+                        $('#question-editor').html('');
+                        $('#answer_dept').val(null).trigger('change');
+                        loadProjectQnA(); // Reload QnA list
+                    } else {
+                        alert('Failed to post comment: ' + (response.errors || 'Unknown error'));
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error submitting QnA:', error);
+                    alert('Error submitting comment. Please try again.');
+                },
+                complete: function() {
+                    submitBtn.prop('disabled', false).html(originalBtnText);
+                }
+            });
+        });
+
+    });
 
     function loadDepartments() {
 
         $.ajax({
 
-            url: '<?php echo API_URL; ?>department',
+            url: '<?php echo API_URL; ?>user',
 
             type: 'POST',
 
@@ -188,7 +374,7 @@
 
                 console.log('Department API response:', response);
 
-                
+                // console.log(response.data);
 
                 if (response.is_successful === '1' && Array.isArray(response.data)) {
 
@@ -198,22 +384,19 @@
 
                     $('#answer_dept option:not(:first)').remove();
 
-                    
-
                     // Add departments to dropdowns
 
-                    response.data.forEach(function(dept) {
+                    response.data.forEach(function(user) {
 
-                        const option = `<option value="${dept.dept_id}">${dept.dept_name}</option>`;
-
-                        $('#question_dept').append(option);
+                        const option = new Option(user.emp_name, user.emp_id, false, false);
 
                         $('#answer_dept').append(option);
 
                     });
 
-                    
+                    // Refresh Select2 to update the dropdown with new options
 
+                    $('#answer_dept').trigger('change');
                     // Set default value for answer_dept (e.g., Drafting Department)
 
                     $('#answer_dept').val(2); // Assuming 2 is Drafting Department
@@ -290,15 +473,13 @@
                     console.log(userDeptId,"userDeptId");
 
                     response.data.forEach(function(item) {
-
-                        const showAnswerButton = userDeptId && parseInt(userDeptId) === parseInt(item.answer_dept);
+                        // Check if user's department is in question_to array
+                        const isUserInQuestionTo = userDeptId && item.question_to && item.question_to.includes(parseInt(userDeptId));
+                        const showAnswerButton = isUserInQuestionTo || (userDeptId && parseInt(userDeptId) === parseInt(item.answer_dept));
 
                         const actionButton = showAnswerButton ? 
-
                             `<button class="btn btn-primary btn-sm add-answer-btn" style="background-color: #30b8b9;border:none;" data-qna-id="${item.qna_id}">
-
                                 ${item.answer ? 'Update Answer' : 'Add Answer'}
-
                             </button>` : '';
 
 
@@ -1184,9 +1365,7 @@
 
                 question: questionHtml,
 
-                question_dept: <?php echo isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : 'null'; ?>,
-
-                answer_dept: answerDept
+                question_to: answerDept
 
             }),
 
