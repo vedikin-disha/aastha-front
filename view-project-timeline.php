@@ -1086,7 +1086,6 @@ loadUsers();
 
     // Function to get background class for activity type
 
-
     if (typeof $.fancybox === 'undefined') {
 
         $('head').append('<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" />');
@@ -1124,12 +1123,6 @@ loadUsers();
             });
 
     }
-
-
-
-    
-
-
 
     // Function to show table insertion dialog
 
@@ -1427,7 +1420,7 @@ loadUsers();
 
 
 
-// Handle comment form submission
+    // Handle comment form submission
 
     $('#comment-form').on('submit', function (e) {
 
@@ -1831,9 +1824,56 @@ loadUsers();
 
     });
 
+
+    $('#markAsDoneBtn').click(function() {
+
+        if (confirm('Are you sure you want to mark this project as done?')) {
+
+            $.ajax({
+
+                url: '<?php echo API_URL; ?>mark-done',
+
+                type: 'POST',
+
+                contentType: 'application/json',
+
+                data: JSON.stringify({
+
+                    access_token: '<?php echo $_SESSION['access_token']; ?>',
+
+                    project_id: <?php echo $project_id; ?>
+
+                }),
+
+                success: function(response) {
+
+                    if (response.is_successful === '1') {
+
+                        alert('Project marked as done successfully!');
+
+                        location.reload(); // Reload to show updated status
+
+                    } else {
+
+                        alert('Error: ' + (response.errors || 'Unknown error occurred'));
+
+                    }
+
+                },
+
+                error: function() {
+
+                    alert('Error: Could not connect to the server');
+
+                }
+
+            });
+
+        }
+
+    });
+
 });
-
-
 
 
 </script> 

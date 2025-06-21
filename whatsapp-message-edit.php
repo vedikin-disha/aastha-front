@@ -38,49 +38,54 @@ include 'common/header.php';
           </div>
           <div class="card-body">
             <form id="messageForm">
-              <div class="form-group">
-                <label for="user_select">Select User <span class="text-muted">(Optional)</span></label>
-                <select class="form-control select2" id="user_select" name="user_select">
-                  <option value="">-- Select User --</option>
-                  <!-- Users will be loaded here -->
-                </select>
-                <small class="form-text text-muted">Select a user to auto-fill their phone number</small>
-              </div>
-
-              <div class="form-group">
-                <label for="phone_number">Phone Number <span class="text-danger">*</span></label>
-                <div class="input-group">
-                  <div class="input-group-prepend">
-                    <span class="input-group-text">+91</span>
-                  </div>
-                  <input type="text" class="form-control" id="phone_number" name="phone_number" 
-                         placeholder="Enter 10-digit phone number" pattern="[0-9]{10}" >
+              <div class="row">
+                <div class="col-md-12 mb-3">
+                  <label for="user_select" class="form-label fw-bold">Select User <span class="text-muted">(Optional)</span></label>
+                  <select class="form-control select2" id="user_select" name="user_select" style="width: 100%;" data-placeholder="Select User">
+                    <option value="">-- Select User --</option>
+                    <!-- Users will be loaded here -->
+                  </select>
+                  <small class="form-text text-muted">Select a user to auto-fill their phone number</small>
                 </div>
-                <small class="form-text text-muted">Enter phone number without country code</small>
-              </div>
 
-              <div class="form-group">
-                <label for="message">Message <span class="text-danger">*</span></label>
-                <textarea class="form-control" id="message" name="message" rows="5" 
-                          placeholder="Type your message here..." required></textarea>
-                <small class="form-text text-muted">Maximum 1000 characters</small>
-                <div class="text-right"><span id="charCount">0</span>/1000</div>
-              </div>
+                <div class="col-md-6 mb-3">
+                  <label for="phone_number" class="form-label fw-bold">Phone Number <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text bg-light">+91</span>
+                    </div>
+                    <input type="text" class="form-control" id="phone_number" name="phone_number" 
+                           placeholder="Enter 10-digit phone number" pattern="[0-9]{10}">
+                  </div>
+                  <small class="form-text text-muted">Enter phone number without country code</small>
+                </div>
 
-              <div class="form-group">
-                <label for="schedule_time">Schedule Time</label>
-                <input type="datetime-local" class="form-control" id="schedule_time" name="schedule_time" 
-                       min="<?php echo date('Y-m-d\TH:i'); ?>">
-                <small class="form-text text-muted">Leave empty to send immediately</small>
+                <div class="col-md-6 mb-3">
+                  <label for="schedule_time" class="form-label fw-bold">Schedule Time</label>
+                  <input type="datetime-local" class="form-control" id="schedule_time" name="schedule_time" 
+                         min="<?php echo date('Y-m-d\TH:i'); ?>">
+                  <small class="form-text text-muted">Leave empty to send immediately</small>
+                </div>
+
+                <div class="col-12 mb-3">
+                  <label for="message" class="form-label fw-bold">Message <span class="text-danger">*</span></label>
+                  <textarea class="form-control" id="message" name="message" rows="5" 
+                            placeholder="Type your message here..." required></textarea>
+                  <div class="d-flex justify-content-between mt-1">
+                    <small class="form-text text-muted">Maximum 1000 characters</small>
+                    <span class="text-muted"><span id="charCount">0</span>/1000</span>
+                  </div>
+                </div>
               </div>
 
               <input type="hidden" id="schedule_id" value="<?php echo htmlspecialchars($scheduleId); ?>">
-              <div class="form-group  mt-4">
-                <button type="submit" class="btn btn-primary" id="submitBtn">
-                  <i class="fas fa-save"></i> Update Message
+              
+              <div class="form-group mt-4 pt-3 border-top">
+                <button type="submit" class="btn btn-primary px-4" id="submitBtn">
+                  <i class="fas fa-save me-2"></i> Update Message
                 </button>
-                <a href="whatsapp-message-list.php" class="btn btn-secondary">
-                  <i class="fas fa-times"></i> Cancel
+                <a href="whatsapp-message-list.php" class="btn btn-outline-secondary ms-2">
+                  <i class="fas fa-times me-2"></i> Cancel
                 </a>
               </div>
             </form>
@@ -103,12 +108,7 @@ include 'common/header.php';
 <script>
 $(document).ready(function() {
   // Initialize Select2 with better configuration
-  $('.select2').select2({
-    placeholder: 'Search for a user',
-    allowClear: true,
-    width: '100%',
-    dropdownParent: $('.card-body')
-  });
+ 
 
   // Character counter for message
   $('#message').on('input', function() {
@@ -188,6 +188,31 @@ $(document).ready(function() {
           // Set form values
           $('#phone_number').val(message.phone_number.replace(/^91/, ''));
           $('#message').val(message.message);
+          
+          // Set the selected user in dropdown if emp_id exists
+          if (message.emp_id) {
+            const $userSelect = $('#user_select');
+            // Clear previous selection
+            $userSelect.val(null).trigger('change');
+            
+            // Check if the user exists in the dropdown
+            const $option = $userSelect.find(`option[value="${message.emp_id}"]`);
+            if ($option.length > 0) {
+              // User exists in dropdown, select it
+              $userSelect.val(message.emp_id).trigger('change');
+            } else if (message.emp_name) {
+              // User doesn't exist, add it to the dropdown
+              const newOption = new Option(
+                message.emp_name,
+                message.emp_id,
+                true,
+                true
+              );
+              newOption.dataset.phone = message.phone_number.replace(/^91/, '');
+              newOption.dataset.name = message.emp_name;
+              $userSelect.append(newOption).trigger('change');
+            }
+          }
           
           // Set character count
           $('#charCount').text(message.message.length);

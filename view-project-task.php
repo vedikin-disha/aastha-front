@@ -347,5 +347,40 @@ $.ajax({
 
     });
 
+
+    
+    function loadUsersToDropdown() {
+        $.ajax({
+            url: '<?php echo API_URL; ?>user',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                access_token: '<?php echo $_SESSION['access_token']; ?>'
+            }),
+            success: function (response) {
+                if (response.is_successful === "1") {
+                    const users = response.data;
+                    const $select = $('#user-filter');
+
+                    // Clear existing (except first)
+                    $select.find('option:not(:first)').remove();
+
+                    users.forEach(user => {
+                        const option = $('<option>', {
+                            value: user.emp_id,
+                            text: user.emp_name 
+                        });
+                        $select.append(option);
+                    });
+                } else {
+                    console.error('API Error:', response.errors || 'Unknown error');
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('Request Failed:', status, error);
+            }
+        });
+    }
+
 // });
 </script>

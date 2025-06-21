@@ -65,7 +65,7 @@ include 'common/header.php';
                 <small class="form-text text-muted">Leave empty to send immediately</small>
               </div>
 
-              <div class="form-group text-center mt-4">
+              <div class="form-group mt-4">
                 <button type="submit" class="btn btn-primary" id="submitBtn">
                   <i class="fas fa-paper-plane"></i> Schedule Message
                 </button>
