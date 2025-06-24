@@ -81,7 +81,7 @@ include 'common/header.php';
               <input type="hidden" id="schedule_id" value="<?php echo htmlspecialchars($scheduleId); ?>">
               
               <div class="form-group mt-4 pt-3 border-top">
-                <button type="submit" class="btn btn-primary px-4" id="submitBtn">
+                <button type="submit" class="btn btn-primary px-4" id="submitBtn" style="background-color: #30b8b9;border:none;">
                   <i class="fas fa-save me-2"></i> Update Message
                 </button>
                 <a href="whatsapp-message-list.php" class="btn btn-outline-secondary ms-2">

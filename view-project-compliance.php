@@ -24,19 +24,20 @@
 
             <div class="editor-toolbar mb-2">
 
-                <button type="button" class="btn btn-sm btn-light" data-command="bold" title="Bold"><i class="fas fa-bold"></i></button>
+               
+            <button type="button" class="btn btn-sm btn-light modal-question-toolbar" data-command="bold" title="Bold"><i class="fas fa-bold"></i></button>
 
-                <button type="button" class="btn btn-sm btn-light" data-command="italic" title="Italic"><i class="fas fa-italic"></i></button>
+<button type="button" class="btn btn-sm btn-light modal-question-toolbar" data-command="italic" title="Italic"><i class="fas fa-italic"></i></button>
 
-                <button type="button" class="btn btn-sm btn-light" data-command="underline" title="Underline"><i class="fas fa-underline"></i></button>
+<button type="button" class="btn btn-sm btn-light modal-question-toolbar" data-command="underline" title="Underline"><i class="fas fa-underline"></i></button>
 
-                <button type="button" class="btn btn-sm btn-light" data-command="strikeThrough" title="Strike through"><i class="fas fa-strikethrough"></i></button>
+                <button type="button" class="btn btn-sm btn-light modal-question-toolbar" data-command="strikeThrough" title="Strike through"><i class="fas fa-strikethrough"></i></button>
 
-                <button type="button" class="btn btn-sm btn-light" data-command="insertUnorderedList" title="Bullet list"><i class="fas fa-list-ul"></i></button>
+                <button type="button" class="btn btn-sm btn-light modal-question-toolbar" data-command="insertUnorderedList" title="Bullet list"><i class="fas fa-list-ul"></i></button>
 
-                <button type="button" class="btn btn-sm btn-light" data-command="insertOrderedList" title="Numbered list"><i class="fas fa-list-ol"></i></button>
+                <button type="button" class="btn btn-sm btn-light modal-question-toolbar" data-command="insertOrderedList" title="Numbered list"><i class="fas fa-list-ol"></i></button>
 
-                <button type="button" class="btn btn-sm btn-light" data-command="createLink" title="Insert link"><i class="fas fa-link"></i></button>
+                <button type="button" class="btn btn-sm btn-light modal-question-toolbar" data-command="createLink" title="Insert link"><i class="fas fa-link"></i></button>
 
                 
 
@@ -275,6 +276,39 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
+    // Initialize editor toolbar buttons
+    $(document).on('click', '.editor-toolbar button', function(e) {
+        e.preventDefault();
+        const command = $(this).data('command');
+        const editor = $('#question-editor').get(0);
+        
+        // Save the current selection
+        const selection = window.getSelection();
+        const range = selection.getRangeAt(0);
+        
+        // Apply the command
+        document.execCommand(command, false, null);
+        
+        // Restore focus to the editor
+        editor.focus();
+    });
+    
+    // Handle modal toolbar buttons
+    $(document).on('click', '.modal-answer-toolbar', function(e) {
+        e.preventDefault();
+        const command = $(this).data('command');
+        const editor = $('#modal-answer-editor').get(0);
+        
+        // Save the current selection
+        const selection = window.getSelection();
+        const range = selection.getRangeAt(0);
+        
+        // Apply the command
+        document.execCommand(command, false, null);
+        
+        // Restore focus to the editor
+        editor.focus();
+    });
 
     // $(document).ready(function() {
 
@@ -468,7 +502,7 @@
 
                     // Process each QnA item
 
-                    const userDeptId = <?php echo isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : 'null'; ?>;
+                    const userDeptId = <?php echo isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : ''; ?>;
 
                     console.log(userDeptId,"userDeptId");
 
@@ -492,7 +526,7 @@
 
                                 <td>${item.question || ''}</td>
 
-                                <td>${item.answer_by_name || 'Pending'} (${item.answer_dept_name})</td>
+                                <td>${item.answer_by_name || ''} (${item.answer_dept_name || 'Pending'})</td>
 
                                 <td>${item.answer || 'No answer yet'}</td>
 
@@ -644,7 +678,7 @@
 
                 // Get the user's department ID from session storage
 
-                const userDeptId = <?php echo isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : 'null'; ?>;
+                const userDeptId = <?php echo isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : ''; ?>;
 
                 
 
@@ -702,7 +736,7 @@
 
                 // Get the user's department ID from session storage
 
-                const userDeptId = <?php echo isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : 'null'; ?>;
+                const userDeptId = <?php echo isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : ''; ?>;
 
                 console.log(userDeptId,"userDeptId");
 
@@ -964,6 +998,23 @@
         });
 
         });
+
+
+        $(document).on('click', '.modal-question-toolbar', function(e) {
+        e.preventDefault();
+        const command = $(this).data('command');
+        const editor = $('#question-editor').get(0);
+        
+        // Save the current selection
+        const selection = window.getSelection();
+        const range = selection.getRangeAt(0);
+        
+        // Apply the command
+        document.execCommand(command, false, null);
+        
+        // Restore focus to the editor
+        editor.focus();
+    });
 
 
 

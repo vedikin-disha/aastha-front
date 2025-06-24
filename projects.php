@@ -3,6 +3,7 @@
   .input-group {
     margin-bottom: 1rem !important;
   }
+  
   .form-control {
     height: 38px;
   }
@@ -19,6 +20,12 @@
       align-items: center;
       justify-content: flex-end;
   }
+  div.dt-button-collection div.dropdown-menu {
+    display: block;
+    z-index: 2002;
+    min-width: 100%;
+    background-color: #30b8b9 !important; /* Add this line for red background */
+}
   
   .dataTables_length {
       padding-top: 0.5rem;
@@ -407,7 +414,7 @@ $(document).ready(function() {
         "pageLength": 10,
         "dom": "<'row'<'col-sm-12 col-md-6'B><'col-sm-12 col-md-6'f>>" +
                "<'row'<'col-sm-12'tr>>" +
-               "<'row'<'col-12'i><'col-12'p>>",
+               "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
         "buttons": [
             {
                 extend: 'copy',
@@ -435,6 +442,7 @@ $(document).ready(function() {
                 text: 'Print'
             },
             {
+               
                 extend: 'colvis',
                 className: 'btn btn-secondary',
                 text: 'Column Visibility'

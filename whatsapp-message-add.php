@@ -66,7 +66,7 @@ include 'common/header.php';
               </div>
 
               <div class="form-group mt-4">
-                <button type="submit" class="btn btn-primary" id="submitBtn">
+                <button type="submit" class="btn btn-primary" id="submitBtn" style="background-color: #30b8b9;border:none;">
                   <i class="fas fa-paper-plane"></i> Schedule Message
                 </button>
                 <a href="whatsapp-message-list.php" class="btn btn-secondary">

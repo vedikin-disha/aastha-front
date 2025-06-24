@@ -206,7 +206,7 @@ if (!$project_id) {
                                         <div class="form-group">
                                             <label>DTP Section File:</label>
                                             <input type="hidden" id="dtp_section_uuid" name="dtp_section_uuid">
-                                            <input type="file" class="form-control-file" id="dtp_section_file" accept="pdf,.doc,.docx,.jpg,.jpeg,.png.csv">
+                                            <input type="file" class="form-control-file" id="dtp_section_file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.csv,.xlsx,.xls">
                                             <button type="button" id="dtp_section_delete" class="btn btn-sm btn-danger mt-2 d-none">  <i class="far fa-trash-alt"></i></button>
                                             <div id="dtp_section_container" class="mt-2"></div>
                                             <small class="form-text text-muted">Upload a new file to update the existing one</small>
@@ -218,7 +218,7 @@ if (!$project_id) {
                                         <div class="form-group">
                                             <label>Technical Section File:</label>
                                             <input type="hidden" id="technical_section_uuid" name="technical_section_uuid">
-                                            <input type="file" class="form-control-file" id="technical_section_file" accept="pdf,.doc,.docx,.jpg,.jpeg,.png.csv">
+                                            <input type="file" class="form-control-file" id="technical_section_file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.csv,.xlsx,.xls">
                                             <button type="button" id="technical_section_delete" class="btn btn-sm btn-danger mt-2 d-none">  <i class="far fa-trash-alt"></i></button>
                                             <div id="technical_section_container" class="mt-2"></div>
                                             <small class="form-text text-muted">Upload a new file to update the existing one</small>
@@ -230,7 +230,7 @@ if (!$project_id) {
                                         <div class="form-group">
                                             <label>Administrative Approval File:</label>
                                             <input type="hidden" id="administrative_approval_uuid" name="administrative_approval_uuid">
-                                            <input type="file" class="form-control-file" id="administrative_approval_file" accept="pdf,.doc,.docx,.jpg,.jpeg,.png.csv">
+                                            <input type="file" class="form-control-file" id="administrative_approval_file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.csv,.xlsx,.xls">
                                             <button type="button" id="administrative_approval_delete" class="btn btn-sm btn-danger mt-2 d-none"><i class="far fa-trash-alt"></i></button>
                                             <div id="administrative_approval_container" class="mt-2"></div>
                                             <small class="form-text text-muted">Upload a new file to update the existing one</small>
@@ -1256,6 +1256,7 @@ function populateFormFields(data) {
     //current department
     $('#current_dept_name').val(data.current_dept_name);
     $('#current_dept_id').val(data.current_dept_id);
+    $('#description').val(data.description);
    
 
    
@@ -1611,7 +1612,10 @@ function updateProject() {
         sub_id: parseInt($('#id_sub').val()) || 0,
         taluka_id: parseInt($('#id_taluka').val()) || 0,
         status: $('#status').val(),
-        priority: $('#priority').val()
+        priority: $('#priority').val(),
+        // add the description field
+        description: $('#description').val(),
+    
         
         // current_dept_id: $('#current_dept_id').val(),
         

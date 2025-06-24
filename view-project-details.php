@@ -179,7 +179,7 @@
 
                                 <div class="col-md-4 info-label">Start Date</div>
 
-                                <div class="col-md-8"><?php echo date('d/m/Y', strtotime($project['start_date'])); ?></div>
+                                <div class="col-md-8"><?php echo !empty($project['start_date']) ? date('d/m/Y', strtotime($project['start_date'])) : '00/00/0000'; ?></div>
 
                             </div>
 
@@ -189,19 +189,21 @@
 
                                 <div class="col-md-4 info-label">End Date</div>
 
-                                <div class="col-md-8"><?php echo date('d/m/Y', strtotime($project['end_date'])); ?></div>
+                                <div class="col-md-8"><?php echo !empty($project['end_date']) ? date('d/m/Y', strtotime($project['end_date'])) : '00/00/0000'; ?></div>
 
                             </div>
 
                              <!-- add the new filed is probable_date_of_completion but in my respinse is null -->
-
-                            <div class="row info-row">
-
-                                <div class="col-md-4 info-label">Probable Date of Completion</div>
-
-                                <div class="col-md-8"><?php echo date('d/m/Y', strtotime($project['probable_date_of_completion'])); ?></div>
-
-                            </div>
+                             <div class="row info-row">
+    <div class="col-md-4 info-label">Probable Date of Completion</div>
+    <div class="col-md-8">
+        <?php 
+            echo !empty($project['probable_date_of_completion']) 
+                ? date('d/m/Y', strtotime($project['probable_date_of_completion'])) 
+                : '00/00/0000'; 
+        ?>
+    </div>
+</div>
 
                         </div>
 

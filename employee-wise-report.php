@@ -2,6 +2,7 @@
 include 'common/header.php';
 ?>
 
+
 <div class="">
     <!-- Content Header (Page header) -->
     <div class="content-header">
@@ -157,21 +158,25 @@ include 'common/header.php';
                 <div class="card-header">
                     <h3 class="card-title">Projects</h3>
                 </div>
-                <div class="card-body">
-                    <table id="projectsTable" class="table table-bordered table-striped">
-                        <thead>
-                            <tr>
-                                <th style="width: 40px;"></th>
-                                <th>Project Name</th>
-                                <th>Department</th>
-                                <th>Project Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Will be populated by JavaScript -->
-                        </tbody>
-                    </table>
+                <div>
+                <div class="card-body p-0" style="margin: 26px;">
+                    <div class="table-responsive">
+                        <table id="projectsTable" class="table table-bordered table-striped mb-0">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px;"></th>
+                                    <th>Project Name</th>
+                                    <th>Department</th>
+                                    <th>Project Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
+            </div>
             </div>
             
             <!-- Tasks Modal -->
@@ -184,21 +189,23 @@ include 'common/header.php';
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </div>
-                        <div class="modal-body">
-                            <table id="tasksTable" class="table table-bordered table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Task Name</th>
-                                        <th>Assigned To</th>
-                                        <th>Start Date</th>
-                                        <th>End Date</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <!-- Will be populated by JavaScript -->
-                                </tbody>
-                            </table>
+                        <div class="modal-body p-0">
+                            <div class="table-responsive">
+                                <table id="tasksTable" class="table table-bordered table-striped mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Task Name</th>
+                                            <th>Assigned To</th>
+                                            <th>Start Date</th>
+                                            <th>End Date</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Will be populated by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -914,6 +921,12 @@ $(document).ready(function() {
     
     .details-control:hover {
         background-color: #f8f9fa;
+    }
+
+    /* Hide default DataTables row details control */
+    table.dataTable.dtr-inline.collapsed>tbody>tr>td.dtr-control:before,
+    table.dataTable.dtr-inline.collapsed>tbody>tr>th.dtr-control:before {
+        display: none !important;
     }
     
     .detail-row {

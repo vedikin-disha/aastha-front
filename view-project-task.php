@@ -25,7 +25,7 @@
 
           <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2 || $_SESSION['emp_role_id'] == 3): ?>
             <button type="button" class="btn btn-sm btn-success" onclick="assignTask()" >
-              <i class="fas fa-user"></i> Assign To
+              <i class="fas fa-user"></i> Assign 
             </button>
           <?php endif; ?>
         </div>
@@ -49,7 +49,9 @@
                                 <thead class="thead-dark">
 
                                     <tr>
-                                    <th><input type="checkbox" id="select-all-tasks"></th>
+                                    <th style="text-align: center; vertical-align: middle;">
+  <input type="checkbox" id="select-all-tasks" style="width: 15px; height: 15px;">
+</th>
                                         <th>Task Name</th>
 
                                         <th>Department</th>
@@ -58,7 +60,7 @@
 
                                         <th>Status</th>
 
-                                        <th>Mark as Done</th>
+                                        <th>Actions</th>
 
                                     </tr>
 
@@ -80,7 +82,7 @@
 
 <script>
 // $("document").ready(function() {
-function loadUsers() {
+function loadUsers(id="#timeline-user-filter") {
 
 $.ajax({
 
@@ -100,7 +102,7 @@ $.ajax({
 
         if (response.is_successful === '1' && response.data) {
 
-            const userSelect = $('#timeline-user-filter');
+            const userSelect = $(id);
 
             response.data.forEach(function(user) {
 
@@ -194,12 +196,16 @@ $.ajax({
 
                         const row = `
 
-                            <tr>
-                                // add the checkbox if done then checkbox is remove checkbox
-                               ${isDone 
-            ? `<td><input type="checkbox" class="task-checkbox" disabled data-task-id="${task.task_id}"></td>` 
-            : `<td><input type="checkbox" class="task-checkbox" ${switchChecked} data-task-id="${task.task_id}"> </td>`}
-       
+                            <tr >
+                              ${
+    isDone 
+    ? `<td style="text-align: center; vertical-align: middle;">
+         <input type="checkbox" class="task-checkbox" style="width: 15px; height: 15px;" disabled data-task-id="${task.task_id}">
+       </td>` 
+    : `<td style="text-align: center; vertical-align: middle;">
+         <input type="checkbox" class="task-checkbox" style="width: 15px; height: 15px;" ${switchChecked} data-task-id="${task.task_id}">
+       </td>`
+  }
                                 
 
                               <td>${task.task_name}</td>
@@ -214,23 +220,24 @@ $.ajax({
 
                                 <td>
 
-                                
-
-                                    <button type="button" class="btn ${isDone ? '' : 'btn-warning'} btn-sm task-status-btn"
-
-                                        data-task-id="${task.task_id}"
-
-                                        data-task-name="${task.task_name}"
-
-                                        data-dept-id="${task.dept_id}"
-
-                                        data-project-id="${task.project_id}"
-
-                                        data-current-status="${isDone ? '1' : '2'}">
-
-                                        ${isDone ? '' : 'Mark as Done'}
-
-                                    </button>
+                                    <div class="btn-group btn-group-sm" style="gap: 5px; border-radius: 5px; border:none; ">
+                                       <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2): ?>
+                                     <button type="button" class="btn btn-warning btn-sm text-white task-reminder-btn rounded"
+                                            data-task-id="${task.task_id}"
+                                            data-task-name="${task.task_name}">
+                                            <i class="fas fa-bell"></i>
+                                        </button>
+                                        <?php endif; ?>
+                                        <button type="button" class="btn ${isDone ? '' : 'btn-success'} btn-sm task-status-btn rounded"
+                                            data-task-id="${task.task_id}"
+                                            data-task-name="${task.task_name}"
+                                            data-dept-id="${task.dept_id}"
+                                            data-project-id="${task.project_id}"
+                                            data-current-status="${isDone ? '1' : '2'}">
+                                            ${isDone ? '' : '<i class="fas fa-check"></i>'}
+                                        </button>
+                                       
+                                    </div>
 
                                 </td>
 
@@ -270,7 +277,46 @@ $.ajax({
 
     }
 
+    
 
+
+
+    // Handle task reminder button click
+    $(document).on('click', '.task-reminder-btn', function() {
+        const $button = $(this);
+        const taskId = $button.data('task-id');
+        const taskName = $button.data('task-name');
+        
+        // Show loading state
+        const originalHtml = $button.html();
+        $button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+        
+        // Make API request to send reminder
+        $.ajax({
+            url: '<?php echo API_URL; ?>send-task-reminder',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                access_token: '<?php echo $_SESSION["access_token"]; ?>',
+                task_id: taskId
+            }),
+            success: function(response) {
+                if (response.is_successful === '1') {
+                    showToast(response.success_message);
+                } else {
+                    showToast(response.success_message || 'Failed to send reminder');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error sending reminder:', error);
+                showToast('Error sending reminder. Please try again.');
+            },
+            complete: function() {
+                // Restore button state
+                $button.prop('disabled', false).html(originalHtml);
+            }
+        });
+    });
 
     // Handle task status button click
 
@@ -314,7 +360,7 @@ $.ajax({
 
                 dept_id: deptId,
 
-                task_status: isChecked ? 1 : 0,
+                task_status: isChecked ? 2 : 1,
 
                 project_id: projectId
 

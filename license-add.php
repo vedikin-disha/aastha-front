@@ -86,7 +86,7 @@
           </div>
 
           <div class="form-group mt-4">
-            <button type="submit" class="btn btn-primary" id="submitBtn">
+            <button type="submit" class="btn btn-primary" id="submitBtn" style="background-color: #30b8b9;border:none;">
               <i class="fas fa-save"></i> Save License
             </button>
             <a href="license-list" class="btn btn-secondary">

@@ -58,19 +58,30 @@ if ($encoded_id) {
   // Add active class to navigation
   $('#proposedWorkNav a').addClass('active');
   $('#proposedWorkNav a').addClass('nav-link');
-</script>
-
-<script>
+  
+  // Define global variable for proposed work ID
+  var proposedWorkId = '<?php echo $proposed_work_id; ?>';
+  
   $(document).ready(function() {
-    // Get the decoded ID from PHP
-    const proposedWorkId = '<?php echo $proposed_work_id; ?>';
-    
+    // Check if work ID is valid
     if (!proposedWorkId) {
       showToast('Invalid work ID', false);
       setTimeout(() => { window.location.href = 'proposed-work-list'; }, 2000);
       return;
     }
     
+    // Load work data
+    loadWorkData();
+    
+    // Handle form submission
+    $('#proposedWorkForm').on('submit', function(e) {
+      e.preventDefault();
+      updateWork();
+    });
+  });
+  
+  // Function to load work data
+  function loadWorkData() {
     $.ajax({
       url: '<?php echo API_URL; ?>proposed-work-edit',
       type: 'POST',
@@ -97,40 +108,38 @@ if ($encoded_id) {
         showToast('Error loading work data. Please try again.', false);
       }
     });
-  });
-</script>
-
-<script>
-  $(document).ready(function() {
-    $('#proposedWorkForm').submit(function(e) {
-      e.preventDefault();
-      var work_name = $('#work_name').val();
-      
-      if (!work_name) {
-        showToast('Please enter work name', false);
-        return;
-      }
-      
-      $.ajax({
-        url: '<?php echo API_URL; ?>proposed-work-update',
-        type: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify({
-          proposed_work_name: work_name, 
-          access_token: "<?php echo $_SESSION['access_token']; ?>",
-          proposed_work_id: proposedWorkId
-        }),
-        success: function(response) {
-          showToast('Work updated successfully');
+  }
+  
+  // Function to update work
+  function updateWork() {
+    var work_name = $('#work_name').val().trim();
+    
+    if (!work_name) {
+      showToast('Please enter work name', false);
+      return;
+    }
+    
+    $.ajax({
+      url: '<?php echo API_URL; ?>proposed-work-update',
+      type: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify({
+        proposed_work_name: work_name, 
+        access_token: "<?php echo $_SESSION['access_token']; ?>",
+        proposed_work_id: proposedWorkId
+      }),
+      success: function(response) {
+        showToast('Work updated successfully');
+        setTimeout(() => {
           window.location.href = "<?php echo BASE_URL; ?>proposed-work-list";
-        },
-        error: function(response) {
-          showToast('Failed to update work', false);
-          console.error('API error:', response);
-        }
-      });
+        }, 1000);
+      },
+      error: function(xhr, status, error) {
+        console.error('API error:', xhr.responseText);
+        showToast('Failed to update work. ' + (xhr.responseJSON?.message || ''), false);
+      }
     });
-  });
+  }
 </script>
 
 <?php include 'common/footer.php'; ?>

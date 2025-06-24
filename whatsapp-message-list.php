@@ -1,49 +1,45 @@
 <?php include 'common/header.php'; ?>
 
-<!-- Content Header (Page header) -->
-<div class="content-header">
-  <div class="container-fluid">
-    <div class="row mb-2">
-      <div class="col-sm-6">
-        <h1 class="m-0">Whatsapp Message Management</h1>
-      </div>
-      
-    </div>
-  </div>
-</div>
-
-<!-- Main content -->
-<section class="content">
-  <div class="container-fluid">
+<div class="container-fluid">
     <div class="card">
-      <div class="card-header">
-        <h3 class="card-title">Whatsapp Message List</h3>
-        <div class="card-tools">
-          <a href="whatsapp-message-add" class="btn btn-success btn-sm">
-            <i class="fas fa-plus"></i> Add Whatsapp Message
-          </a>
-        </div>
-      </div>
-      <div class="card-body">
-        <table id="whatsappMessageTable" class="table table-bordered table-striped">
-          <thead>
-            <tr>
-              <th>Employee</th>
-              <th>Message</th>
-              <th>Status</th>
-              <th>Scheduled Time</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- Data will be loaded via AJAX -->
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</section>
+        <div class="card-header" style="border-top: 3px solid #30b8b9; border-bottom: 1px solid rgba(0, 0, 0, .125);">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="card-title">Whatsapp Message List</h3>
 
+                <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2): ?>
+                    <div class="card-tools">
+                    <a href="whatsapp-message-add" class="btn btn-success" ><i class="fas fa-plus"></i> Add New Message</a>
+                    </div>
+                        <?php endif; ?>
+                
+            </div>
+        </div>
+        <div class="card-body">
+            <!-- Search Form -->
+            <form method="get" class="mb-4">
+               
+            </form>
+            <div class="new-pms-ap">
+                <table id="whatsappMessageTable" class="table table-bordered table-hover dataTable">
+                    <thead>
+                        <tr>
+                        <th>Employee</th>
+                          <th>Message</th>
+                          <th>Status</th>
+                          <th>Scheduled Time</th>
+                          <th>Actions</th>
+                        </tr>
+                    </thead>    
+                <tbody>
+
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- DataTables handles pagination now -->
+    </div>
+</div>
+</div>
 <?php include 'common/footer.php'; ?>
 
 <!-- DataTables CSS -->
@@ -111,7 +107,7 @@ $(document).ready(function() {
         "render": function(data) {
           return `
             <div class="btn-group">
-              <a href="whatsapp-message-edit?id=${btoa(data)}" class="btn btn-sm btn-primary">
+              <a href="whatsapp-message-edit?id=${btoa(data)}" class="btn btn-sm btn-primary"style="background-color: #30b8b9;border:none;">
                 <i class="fas fa-edit"></i> Edit
               </a>
             </div>

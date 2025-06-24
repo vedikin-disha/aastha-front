@@ -12,6 +12,15 @@
     #clear-all-notifications i {
         margin-right: 5px;
     }
+    .notification-link {
+    color: #007bff;
+    text-decoration: underline;
+    word-break: break-all;
+}
+.notification-link:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
 </style>
 <!-- DataTables Buttons CSS -->
 <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.0.1/css/buttons.bootstrap4.min.css">
@@ -251,7 +260,7 @@ $(document).ready(function() {
                                             <i class="fas ${notification.is_important ? 'fa-exclamation-circle text-danger' : 'fa-info-circle text-primary'}"></i>
                                         </div>
                                         <div>
-                                            <div class="text-dark">${notification.notification}</div>
+                                           <div class="text-dark">${formatNotificationText(notification.notification)}</div>
                                             ${notification.project_name ? `<small class="text-muted">Project: ${notification.project_name}</small>` : ''}
                                         </div>
                                     </div>
@@ -418,6 +427,13 @@ $(document).ready(function() {
     // Initial load of all notifications
     loadAllNotifications();
 });
+function formatNotificationText(text) {
+    if (!text) return '';
+    return text.replace(
+        /(https?:\/\/[^\s]+)/g, 
+        '<a href="$1" target="_blank" class="notification-link">$1</a>'
+    );
+}
 </script>
 
 <?php include 'common/footer.php'; ?>

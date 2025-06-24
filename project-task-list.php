@@ -231,9 +231,9 @@ $(document).ready(function() {
                 render: function(data, type, row) {
                     let priorityBadge = '';
                     if (row.priority && row.priority.toLowerCase() === 'high') {
-                        priorityBadge = ' <span class="badge bg-danger">High</span>';
+                        priorityBadge = '<span class="badge bg-danger">!</span>';
                     }
-                    return (data || 'Unnamed Project') + priorityBadge;
+                    return priorityBadge + '    ' + (data || 'Unnamed Project');
                 }
             },
             { 
@@ -262,7 +262,7 @@ $(document).ready(function() {
              "<'row'<'col-sm-12'tr>>" +
              "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
         language: {
-            processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span>',
+            processing: '<i class="fas fa-spinner fa-spin"></i> Loading....',
             emptyTable: 'No projects found',
             info: 'Showing _START_ to _END_ of _TOTAL_ projects',
             infoEmpty: 'No projects available',
@@ -332,30 +332,35 @@ $(document).ready(function() {
                                     <thead class="table-light">
                                         <tr>
                                             <th>Task</th>
-                                <th>Status</th>
+                               
                                 <th>Assigned To</th>
                                 <th>Assigned Duration</th>
                                 <th>Completed Duration</th>
                                 <th>task_status</th>
+                                <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2): ?>
                                 <th>Department</th>
                                
-                                <th>Actions</th>
+                             
+                                <?php endif; ?>
+                                   <th>Actions</th>
+                                <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2): ?>
                                 <th>More</th>
+                                <?php endif; ?>
                                         </tr>
                                     </thead>
                                     <tbody>`;
                     
                     // Function to format date to dd/mm/yyyy
                     function formatDate(dateStr) {
-                        if (!dateStr) return 'N/A';
+                        if (!dateStr) return '';
                         const date = new Date(dateStr);
-                        if (isNaN(date.getTime())) return 'N/A';
+                        if (isNaN(date.getTime())) return '';
                         return date.toLocaleDateString('en-GB'); // dd/mm/yyyy format
                     }
 
                     tasks.forEach(task => {
                         // Format assigned duration - use assigned_duration if available, otherwise use individual dates
-                        let assignedDuration = 'N/A';
+                        let assignedDuration = '';
                         if (task.assigned_duration) {
                             try {
                                 const [start, end] = task.assigned_duration.split(' - ');
@@ -370,7 +375,7 @@ $(document).ready(function() {
                         }
 
                         // Format completed duration - use completed_duration if available, otherwise use task_duration
-                        let completedDuration = 'N/A';
+                        let completedDuration = '';
                         if (task.completed_duration) {
                             try {
                                 // Check if it's a range or single date
@@ -405,43 +410,52 @@ $(document).ready(function() {
                                 data-start-date="${task.assigned_start_date || ''}"
                                 data-end-date="${task.assigned_end_date || ''}"
                                 data-dept-id="${task.dept_id || ''}">
-                                <td class="task-name">${task.task_name || 'N/A'}</td>
-                                <td>${getStatusBadge(task.task_status)}</td>
+                                <td class="task-name">${task.task_name || ''}</td>
+                              
                                 <td>
                                     <div class="d-flex align-items-center">
                                         ${task.assigned_emp_profile 
                                             ? `<img src="${task.assigned_emp_profile}" class="rounded-circle mr-2" width="32" height="32" alt="${task.assigned_emp_name || 'User'}" />`
                                             : ''
                                         }
-                                        <span>${task.assigned_emp_name || 'N/A'}</span>
+                                        <span>${task.assigned_emp_name || ''}</span>
                                     </div>
                                 </td>
                                 <td>${assignedDuration}</td>
                                 <td>${completedDuration}</td>
-                                <td>${task.task_status || 'N/A'}</td>
-                                <td>${task.dept_name || 'N/A'}</td>
+                                <td>${task.task_status || ''}</td>
+                                <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2): ?>
+                                <td>${task.dept_name || ''}</td>
+                                <?php endif; ?>
                             
                                 <td>
-                                    <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-success btn-sm mark-done-btn" data-task-id="${task.task_id}" ${task.task_status === 'Done' ? 'disabled' : ''}>
-                                            <i class="fas fa-check"></i> Done
+                                    <div class="btn-group btn-group-sm" style="gap: 5px; border-radius: 5px; border:none">
+                                        <button class="btn btn-success btn-sm mark-done-btn rounded" data-task-id="${task.task_id}" ${task.task_status === 'Done' ? 'disabled' : ''}>
+                                            <i class="fas fa-check"></i> 
                                         </button>
-                                        <button class="btn btn-primary btn-sm start-task-btn" data-task-id="${task.task_id}" ${task.task_status === 'In Progress' ? 'disabled' : ''}>
-                                            <i class="fas fa-play"></i> Start
+                                        <button class="btn btn-primary btn-sm start-task-btn rounded" data-task-id="${task.task_id}" ${task.task_status === 'On Going' || task.task_status === 'Done' ? 'disabled' : ''}>
+                                            <i class="fas fa-play"></i> 
+                                        </button>
+                                       
+                                    </div>
+                                </td>
+
+                                <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2): ?>
+                                <td>
+                                    <div class="btn-group btn-group-sm" style="gap: 5px; border-radius: 5px; border:none">
+                                        <a href="edit-project-task.php?id=${btoa(task.task_id)}" class="btn btn-info btn-sm rounded">
+                                            <i class="fas fa-edit"></i> 
+                                        </a>
+                                         <button class="btn btn-warning btn-sm text-white reminder-btn rounded" data-task-id="${task.task_id}">
+                                            <i class="fas fa-bell"></i> 
+                                        </button>
+                                        <button class="btn btn-danger btn-sm delete-task-btn rounded" data-task-id="${task.task_id}">
+                                            <i class="fas fa-trash"></i> 
                                         </button>
                                     </div>
                                 </td>
-                               <td>
-                                <div class="btn-group btn-group-sm">
-                                <a href="edit-project-task.php?id=${btoa(task.task_id)}" class="btn btn-info btn-sm">
-                                    <i class="fas fa-edit"></i> Edit
-                                    </a>
-                                   <button class="btn btn-danger btn-sm delete-task-btn" data-task-id="${task.task_id}">
-                                    <i class="fas fa-trash"></i> Delete
-                                    </button>
-                                </div>
-                                </td>
-                            </tr>`;
+                                <?php endif; ?>
+                        </tr>`;
                     
                     // Add click handlers after the row is added to DOM
                     setTimeout(() => {
@@ -558,6 +572,7 @@ $(document).ready(function() {
         success: function (response) {
             if (response.is_successful === "1") {
                 showToast(response.success_message);
+                // location.reload();
                 button.prop('disabled', true); // disable the button
                 // Optionally refresh the row or task status
             } else {
@@ -587,7 +602,7 @@ $(document).ready(function() {
             'Overdue': 'danger'
         };
         const statusClass = statusMap[status] || 'secondary';
-        return `<span class="badge bg-${statusClass}">${status || 'N/A'}</span>`;
+        return `<span class="badge bg-${statusClass}">${status || ''}</span>`;
     }
 
     $(document).on('click', '.mark-done-btn', function () {
@@ -638,6 +653,7 @@ $(document).ready(function() {
         success: function (response) {
             if (response.is_successful === "1") {
                     showToast(response.success_message);
+                location.reload();
                 button.prop('disabled', true); // disable Done button
                 // Optionally update task status text or reload table
             } else {
@@ -678,10 +694,62 @@ $(document).on('click', '.delete-task-btn', function () {
 });
 
 // When confirm delete is clicked
-$('#confirmDelete').click(function () {
-    if (!taskIdToDelete) return;
+    // Handle reminder button click
+    $(document).on('click', '.reminder-btn', function() {
+        const button = $(this);
+        const taskId = button.data('task-id');
+        
+        // Show loading state
+        const originalHtml = button.html();
+        button.html('<i class="fas fa-spinner fa-spin"></i> Sending...').prop('disabled', true);
+        
+        // Call the API to send reminder
+        $.ajax({
+            url: '<?php echo API_URL; ?>send-task-reminder',
+            type: 'POST',
+            dataType: 'json',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                access_token: '<?php echo $_SESSION["access_token"]; ?>',
+                task_id: taskId
+            }),
+            success: function(response) {
+                if (response.is_successful === '1') {
 
-    $.ajax({
+                    showToast(response.success_message);
+                    // Show success message
+                    const toast = $('<div class="toast bg-success text-white" role="alert" aria-live="assertive" aria-atomic="true">' +
+                        '<div class="toast-body">' +
+                        '<i class="fas fa-check-circle me-2"></i> Reminder sent successfully!' +
+                        '</div></div>');
+                    $('.toast-container').append(toast);
+                    const bsToast = new bootstrap.Toast(toast[0]);
+                    bsToast.show();
+                    // location.reload();
+                    
+                    // Remove toast after it hides
+                    toast.on('hidden.bs.toast', function() {
+                        $(this).remove();
+                    });
+                } else {
+                    showToast(response.success_message || 'Failed to send reminder');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error sending reminder:', error);
+                showToast('Error sending reminder: ' + (xhr.responseJSON?.errors || 'Please try again later'));
+            },
+            complete: function() {
+                // Reset button state
+                button.html(originalHtml).prop('disabled', false);
+            }
+        });
+    });
+
+    $('#confirmDelete').click(function () {
+        if (!taskIdToDelete) return;
+
+        $.ajax({
         url: '<?php echo API_URL; ?>project-task-delete',
         type: 'POST',
         contentType: 'application/json',
@@ -694,7 +762,7 @@ $('#confirmDelete').click(function () {
                 // Remove task row from table
                 const row = $('button[data-task-id="' + taskIdToDelete + '"]').closest('tr');
                 $('#taskTable').DataTable().row(row).remove().draw();
-
+                location.reload();
                 // Success toast
                 $(document).Toasts('create', {
                     class: 'bg-success',

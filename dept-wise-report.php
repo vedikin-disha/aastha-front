@@ -3,8 +3,21 @@ include 'common/header.php';
 ?>
 
 <div class="p-3">
+<div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">Department Wise Report</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+
   <!-- Filters Card -->
   <div class="card mb-4">
+    <div class="card-header">
+      <h3 class="card-title">Filters</h3>
+    </div>
     <div class="card-body">
       <form id="filterForm">
         <div class="row align-items-end">

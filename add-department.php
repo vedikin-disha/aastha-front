@@ -12,7 +12,7 @@
         <div class="input-group">
           <input type="text" name="dept_name" id="dept_name" class="form-control" required>
           <div class="input-group-append">
-            <span class="input-group-text"><i class="fas fa-circle"></i></span>
+            <span class="input-group-text"><i class="fas fa-building"></i></span>
           </div>
         </div>
       </div>

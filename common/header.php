@@ -47,6 +47,34 @@ if (!isUserHasRights($request_uri)) {
 
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+  
+  <!-- Toastr CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+  <style>
+    /* Custom toast style to prevent auto-hide */
+
+    .notification-link {
+    color: #007bff;
+    text-decoration: underline;
+    word-break: break-all;
+}
+.notification-link:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+    .toast-success {
+      background-color: #28a745 !important;
+    }
+    /* .toast-info {
+      background-color: #17a2b8 !important;
+    } */
+    .toast-warning {
+      background-color: #ffc107 !important;
+    }
+    .toast-error {
+      background-color: #dc3545 !important;
+    }
+  </style>
 
   <!-- Font Awesome -->
 
@@ -150,7 +178,8 @@ if (!isUserHasRights($request_uri)) {
       });
   </script>
 
-
+  <!-- Toastr JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
   <!-- Optional custom styles -->
 
@@ -201,7 +230,9 @@ if (!isUserHasRights($request_uri)) {
     .search-form .btn-navbar:hover {
       background-color: #e9ecef;
     }
-    
+    .navbar-badge{
+      right: 30px;
+    }    
 
   </style>
 
@@ -243,7 +274,7 @@ if (!isUserHasRights($request_uri)) {
       <!-- Notifications Dropdown Menu -->
       <li class="nav-item dropdown">
         <a class="nav-link" data-toggle="dropdown" href="#" id="notificationDropdown">
-          <i class="far fa-bell"></i>
+          <i class="far fa-bell" style="width: 40px; height: 40px;"></i>
           <span class="badge badge-warning navbar-badge" id="notification-count">0</span>
         </a>
         <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right" style="min-width: 426px; height: 700px; overflow:scroll ;">
@@ -294,7 +325,9 @@ $(document).ready(function() {
       type: 'POST',
       dataType: 'json',
       data: JSON.stringify({
-        access_token: '<?php echo isset($_SESSION["access_token"]) ? $_SESSION["access_token"] : ""; ?>'
+        // add the limit 10 parameters
+        limit: 10,
+        access_token: '<?php echo isset($_SESSION["access_token"]) ? $_SESSION["access_token"] : "";  ?>'
       }),
       contentType: 'application/json',
       success: function(response) {
@@ -505,7 +538,205 @@ $(document).ready(function() {
   
   // Update count every 5 minutes
   setInterval(updateNotificationCount, 5 * 60 * 1000);
+  
+  // Function to check for new notifications
+  function checkForNewNotifications() {
+    const accessToken = '<?php echo isset($_SESSION["access_token"]) ? $_SESSION["access_token"] : ""; ?>';
+    
+    if (!accessToken) return;
+    
+    $.ajax({
+      url: '<?php echo API_URL; ?>get-new-notification',
+      type: 'POST',
+      dataType: 'json',
+      data: JSON.stringify({
+        access_token: '<?php echo isset($_SESSION["access_token"]) ? $_SESSION["access_token"] : ""; ?>'
+      }),
+      contentType: 'application/json',
+      success: function(response) {
+        if (response.is_successful === '1' && response.data && response.data.length > 0) {
+          response.data.forEach(function(notification) {
+            // Only show if notification has content
+            if (notification.notification) {
+              showNotificationToast(notification);
+            }
+          });
+        }
+      },
+      error: function(xhr, status, error) {
+        console.error('Error fetching notifications:', error);
+      }
+    });
+  }
+  
+  // Function to show notification toast
+  function showNotificationToast(notification) {
+    // Check if this notification was already shown
+    const notificationKey = 'notification_' + notification.notification_id;
+    if (localStorage.getItem(notificationKey)) return;
+    
+    // Mark as shown
+    localStorage.setItem(notificationKey, 'shown');
+    
+    // Format the notification time
+    const formatTime = (dateString) => {
+      const date = new Date(dateString);
+      return date.toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    };
+    
+    // Create and show toast
+    const toast = toastr.info(
+        `<div class="d-flex align-items-start">
+          <div class="flex-shrink-0 me-3">
+            <img src="${notification.creator_profile || 'assets/img/default-avatar.png'}" 
+                  class="rounded-circle" 
+                  width="40" 
+                  height="40"
+                  style="object-fit: cover;"
+                  onerror="this.onerror=null; this.src='assets/img/default-avatar.png';"
+                  alt="${notification.creator_name || 'User'}">
+          </div>
+          <div class="flex-grow-1">
+            <div class="fw-bold mb-1">${notification.creator_name || 'User'}</div>
+            <div class="toast-message mb-1">${notification.notification}</div>
+            <div class="text-muted small">${formatTime(notification.created_at)}</div>
+          </div>
+        </div>`,
+        '', // Empty title
+        {
+          closeButton: true,
+          progressBar: false,
+          positionClass: 'toast-top-right',
+          timeOut: 0,
+          extendedTimeOut: 0,
+          tapToDismiss: false,
+          onclick: null
+        }
+      );
+      
+      // Add custom styling to the toast
+      $(toast)
+        .css({
+          'width': '350px',
+          'background-color': '#fff',
+          'color': '#333',
+          'border-left': '4px solid #17a2b8',
+          'box-shadow': '0 2px 10px rgba(0,0,0,0.1)'
+        })
+        .find('.toast-message')
+          .css('color', '#333');
+    
+    // Add custom styling
+    $(toast).css('width', '350px');
+  }
+  
+  // Start polling for notifications (every 35 seconds)
+  setInterval(checkForNewNotifications, 35000);
+  
+  // Initial check
+  checkForNewNotifications();
 });
+
+// Initialize toastr with custom options
+toastr.options = {
+  closeButton: true,
+  debug: false,
+  newestOnTop: true,
+  progressBar: true,
+  positionClass: 'toast-top-right',
+  preventDuplicates: true,
+  onclick: null,
+  showDuration: '300',
+  hideDuration: '1000',
+  timeOut: 0, // Don't auto-hide
+  extendedTimeOut: 0, // Don't auto-hide on hover
+  showEasing: 'swing',
+  hideEasing: 'linear',
+  showMethod: 'fadeIn',
+  hideMethod: 'fadeOut',
+  // Remove the info icon
+  iconClass: 'toast-no-icon',
+  // Custom toast template without icon
+  toastClass: 'toast',
+  // Add custom CSS to hide the icon
+  extendedTimeOut: 0,
+  tapToDismiss: false
+};
+
+// Add custom CSS for toast notifications
+const style = document.createElement('style');
+style.type = 'text/css';
+style.innerHTML = `
+  /* Base toast styling */
+  #toast-container > div {
+    padding: 15px 15px 15px 20px !important;
+    margin-bottom: 10px !important;
+    width: 350px !important;
+    background-color: #fff !important;
+    color: #333 !important;
+    border-left: 4px solid #17a2b8 !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
+    opacity: 1 !important;
+  }
+  
+  /* Remove default toast icon */
+  #toast-container > div:before {
+    display: none !important;
+  }
+  
+  /* Toast title */
+  #toast-container > .toast-title {
+    font-weight: 600;
+    margin-bottom: 5px;
+  }
+  
+  /* Toast message */
+  #toast-container > .toast-message {
+    color: #333 !important;
+    margin-bottom: 5px;
+  }
+  
+  /* Close button */
+  .toast-close-button {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #999 !important;
+    opacity: 0.7;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    -webkit-text-shadow: none;
+    text-shadow: none;
+  }
+  
+  .toast-close-button:hover,
+  .toast-close-button:focus {
+    color: #000 !important;
+    opacity: 1;
+  }
+  
+  /* Avatar image */
+  .toast .rounded-circle {
+    object-fit: cover;
+  }
+  
+  /* Timestamp */
+  .toast .text-muted {
+    color: #6c757d !important;
+    font-size: 12px;
+  }
+`;
+document.head.appendChild(style);
 </script>
 
   

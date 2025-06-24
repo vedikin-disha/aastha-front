@@ -63,6 +63,55 @@
 
 
 <script>
+
+    
+
+    // call user API to get all users. for each user, it needs to be added as checkbox within user-checkbox-list div. Don't user loadUsers function as it is for dropdown. need to write similar new function here.
+
+    function loadUsersForAssignment() {
+        $.ajax({
+
+        url: '<?php echo API_URL; ?>user',
+
+        type: 'POST',
+
+        contentType: 'application/json',
+
+        data: JSON.stringify({
+
+            access_token: '<?php echo $_SESSION['access_token']; ?>'
+
+        }),
+
+        success: function(response) {
+
+            if (response.is_successful === '1' && response.data) {
+
+                let userSelect = "";
+
+                response.data.forEach(function(user) {
+
+                    userSelect += `<div class="custom-control custom-checkbox mb-2">
+
+                    <input type="checkbox" class="custom-control-input" id="user-${user.emp_id}" value="${user.emp_id}" data-name="${user.emp_name}">
+
+                    <label class="custom-control-label" for="user-${user.emp_id}">${user.emp_name}</label>
+
+                </div>`;
+
+                });
+
+                $('#user-checkbox-list').html(userSelect);
+
+            }
+
+        }
+
+        });
+    }
+
+    
+
     
 
     $(document).on('change', '#user-checkbox-list input[type="checkbox"]', function() {
@@ -206,33 +255,34 @@
 
         });
 
-        window.openAssignmentModal = function(mode) {
+//         window.openAssignmentModal = function(mode) {
 
-window.assignmentMode = mode; // Store the current mode (add/update)
-
-
-
-// Update modal title based on mode
-
-const modalTitle = mode === 'add' ? 'Add Project Assignment' : 'Update Project Assignment';
-
-$('#assignmentModalLabel').text(modalTitle);
+// window.assignmentMode = mode; // Store the current mode (add/update)
 
 
 
-// Update save button text
+// // Update modal title based on mode
 
-const saveButtonText = mode === 'add' ? 'Add Assignment' : 'Update Assignment';
+// const modalTitle = mode === 'add' ? 'Add Project Assignment' : 'Update Project Assignment';
 
-$('#save-assignment').text(saveButtonText);
+// $('#assignmentModalLabel').text(modalTitle);
 
 
 
-// Show the modal
 
-$('#assignmentModal').modal('show');
 
-};
+// // Update save button text
+
+// const saveButtonText = mode === 'add' ? 'Add Assignment' : 'Update Assignment';
+
+// $('#save-assignment').text(saveButtonText);
+
+
+
+
+// $('#assignmentModal').modal('show');
+
+// };
 
 
 

@@ -68,7 +68,8 @@
                 <div id="new-report-job-wise" class="col-md-4 d-flex align-items-end">
                     <div class="d-flex" style="gap:10px;">
                         <!-- <button type="submit" class="btn btn-primary" style="background-color: #30b8b9;border:none;">Search</button> -->
-                        <a href="report-job-wise-status" class="btn btn-outline-secondary">Reset</a>
+
+                        <button type="button" id="resetButton" class="btn btn-outline-secondary" onclick="resetForm()">Reset</button>
                     </div>
                 </div>
             </form>
@@ -127,18 +128,54 @@
 // Define jobTable variable in global scope so it's accessible everywhere
 var jobTable;
 
-$(document).ready(function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const initialJob = urlParams.get('job_no') || '';
-const initialProjectParam = (urlParams.get('project_name') || '').toLowerCase();
-    const initialProject = urlParams.get('project_name') || '';
+// Global reset form function
+function resetForm() {
+    // Reset all form fields
+    $('form')[0].reset();
+    
+    // Reset all Select2 dropdowns
+    $('.select2').val(null).trigger('change');
+    
+    // Clear the job number input
+    $('#id_job_no').val('');
+    
+    // Reset DataTable search and filters
+    if (jobTable) {
+        jobTable.search('').columns().search('').draw();
+    }
+    
+    // Clear URL parameters without reloading
+    if (window.history.replaceState) {
+        const cleanURL = window.location.pathname;
+        window.history.replaceState({}, document.title, cleanURL);
+    }
+    
+    // Clear any global search in header
+    if (window.parent && window.parent.$) {
+        try {
+            window.parent.$('#globalSearchInput').val('');
+        } catch (e) {
+            console.log('Could not clear global search');
+        }
+    }
+    
+    // Load fresh data without any filters
+    if (typeof loadJobData === 'function') {
+        loadJobData();
+    } else {
+        // If loadJobData isn't available yet, reload the page
+        window.location.href = window.location.pathname;
+    }
+}
 
-    if(initialJob){ $('#id_job_no').val(initialJob); }
+$(document).ready(function() {
 
     // Initialize Select2
     $('.select2').select2({
         theme: 'bootstrap4'
     });
+
+    // Reset form functionality is now in the global scope
 
     // ---------------- Load Projects -----------------
     function loadProjects(){
@@ -221,6 +258,16 @@ const initialProjectParam = (urlParams.get('project_name') || '').toLowerCase();
                 circleSelect.append(new Option(circle.circle_name, circle.circle_id));
             });
 
+            // make data for API dynamically. if project_name is present then only add it in data
+            var urlParams = new URLSearchParams(window.location.search);
+            var project_name = urlParams.get('project_name');
+            var data = {
+                access_token: "<?php echo $_SESSION['access_token']; ?>"
+            };
+            if(project_name){
+                data.search = project_name;
+            }
+
             // After circles are loaded, load initial job data
             $.ajax({
                 url: '<?php echo API_URL; ?>jobwise',
@@ -228,9 +275,7 @@ const initialProjectParam = (urlParams.get('project_name') || '').toLowerCase();
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                data: JSON.stringify({
-                    access_token: "<?php echo $_SESSION['access_token']; ?>"
-                }),
+                data: JSON.stringify(data),
                 success: function(response) {
                     if (response && response.is_successful === '1' && response.data) {
                         // Clear and reload the table
@@ -252,26 +297,6 @@ const initialProjectParam = (urlParams.get('project_name') || '').toLowerCase();
                         
                         // Draw the table
                         jobTable.draw();
-
-                        // Populate project dropdown
-                        var projectSelect = $('#projectName');
-                        projectSelect.empty().append('<option value="">All Projects</option>');
-                        
-                        // Create a Set to store unique project names
-                        var uniqueProjects = new Set();
-                        response.data.forEach(function(item) {
-                            if (item.project_name) {
-                                uniqueProjects.add(item.project_name);
-                            }
-                        });
-                        
-                        // Add unique projects to dropdown
-                        uniqueProjects.forEach(function(projectName) {
-                            projectSelect.append('<option value="' + projectName + '">' + projectName + '</option>');
-                        });
-                        
-                        // Refresh Select2
-                        projectSelect.trigger('change');
                     }
                 },
                 error: function(xhr, status, error) {
@@ -411,7 +436,9 @@ const initialProjectParam = (urlParams.get('project_name') || '').toLowerCase();
 
 
 
-    // Initialize DataTable
+    // Initialize DataTable with empty data
+    var urlParams = new URLSearchParams(window.location.search);
+    var initialProjectParam = urlParams.get('project_name');
     var jobTable = $('#jobStatusTable').DataTable({
         "responsive": true,
         "lengthChange": true,
@@ -420,40 +447,74 @@ const initialProjectParam = (urlParams.get('project_name') || '').toLowerCase();
         "searching": true,
         "ordering": true,
         "info": true,
+        "serverSide": false,
+        "processing": true,
+        "data": [],
         "buttons": [
             'copy', 'csv', 'excel', 'pdf', 'print', 'colvis'
         ],
         "columns": [
             { "data": "job_no" },
-            { "data": "project_name", "render": function(data, type, row){
-                    var encoded = btoa(row.project_id || '');
-                    return `<a href=\"view-project.php?id=${encoded}\" target=\"_blank\">${data || '-'}</a>`;
-            }},
+            { 
+                "data": "project_name", 
+                "render": function(data, type, row) {
+                    if (type === 'display' && data) {
+                        var encoded = btoa(row.project_id || '');
+                        return `<a href="view-project.php?id=${encoded}" target="_blank">${data}</a>`;
+                    }
+                    return data || '-';
+                }
+            },
             { "data": "project_status" },
             { "data": "current_department" },
-            { "data": "dtp_section", "render": function(data){
-                    if(!data) return '-';
+            { 
+                "data": "dtp_section", 
+                "render": function(data) {
+                    if (!data) return '-';
                     return fileIcon(data);
-            } },
-            { "data": "technical_section", "render": function(data){
-                    if(!data) return '-';
+                } 
+            },
+            { 
+                "data": "technical_section", 
+                "render": function(data) {
+                    if (!data) return '-';
                     return fileIcon(data);
-            } },
-            { "data": "administrative_approval", "render": function(data){
-                    if(!data) return '-';
+                } 
+            },
+            { 
+                "data": "administrative_approval", 
+                "render": function(data) {
+                    if (!data) return '-';
                     return fileIcon(data);
-            } }
+                } 
+            }
         ],
-        
+        "language": {
+            "emptyTable": "No data available in table",
+            "zeroRecords": "No matching records found"
+        },
+        "drawCallback": function() {
+            // Handle empty table
+            var api = this.api();
+            if (api.rows({page:'current'}).data().length === 0) {
+                api.$('td').attr('colspan', api.columns().count())
+                    .text('No data available');
+            }
+        }
     });
+    
+    // Move buttons to the correct container
     jobTable.buttons().container()
-      .appendTo('#jobStatusTable_wrapper .col-md-6:eq(0)');
-    jobTable.clear();
-jobTable.rows.add(response.data); // if response.data is an array of objects
-jobTable.draw();
+        .appendTo('#jobStatusTable_wrapper .col-md-6:eq(0)');
+    
+    // Initial data load
+    loadJobData();
 
     // Function to load job data
     function loadJobData() {
+        // Show loading state
+        $('#jobStatusTable tbody').html('<tr><td colspan="7" class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>');
+        
         // Get selected values from filters
         var circleId = $('#id_circle').val() || '';
         var divisionId = $('#id_division').val() || '';
@@ -461,26 +522,40 @@ jobTable.draw();
         var talukaId = $('#id_taluka').val() || '';
         var jobNo = $('#id_job_no').val().trim();
         var projectName = $('#projectName').val();
-        // globaley serch then project name in going to request
         
-        jobTable.column(0).search(jobNo);
-        jobTable.column(1).search(projectName);
-        jobTable.draw();
-
+        // Get search term from URL if present
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlProjectName = urlParams.get('project_name');
+        const urlJobNo = urlParams.get('job_no');
+        
+        // If URL has project_name parameter, use that instead of form field
+        if (urlProjectName && !projectName) {
+            projectName = urlProjectName;
+            $('#projectName').val(projectName).trigger('change');
+        }
+        
+        // If URL has job_no parameter, use that instead of form field
+        if (urlJobNo && !jobNo) {
+            jobNo = urlJobNo;
+            $('#id_job_no').val(jobNo);
+        }
+        
         // Prepare request data
         var requestData = {
             access_token: "<?php echo $_SESSION['access_token']; ?>"
         };
 
-        // Only add parameters if they are selected
-        if (circleId) requestData.circle_id = circleId;
-        if (divisionId) requestData.division_id = divisionId;
-        if (subDivisionId) requestData.sub_division_id = subDivisionId;
-        if (talukaId) requestData.taluka_id = talukaId;
+        // Only add parameters if they have values
+        if (circleId) requestData.circle_id = parseInt(circleId);
+        if (divisionId) requestData.division_id = parseInt(divisionId);
+        if (subDivisionId) requestData.sub_division_id = parseInt(subDivisionId);
+        if (talukaId) requestData.taluka_id = parseInt(talukaId);
         if (jobNo) requestData.job_no = jobNo;
-        if (projectName) requestData.project_name = projectName;
+        if (projectName) requestData.search = projectName;
         
-
+        console.log('Sending request:', JSON.stringify(requestData, null, 2));
+        
+        // Make the API call
         $.ajax({
             url: '<?php echo API_URL; ?>jobwise',
             type: 'POST',
@@ -489,79 +564,194 @@ jobTable.draw();
             },
             data: JSON.stringify(requestData),
             success: function(response) {
+                console.log('API Response:', response);
+                
+                // Clear existing data
+                jobTable.clear().draw();
+                
                 if (response && response.is_successful === '1' && response.data) {
-                    // Clear and reload the table
-                    jobTable.clear();
+                    console.log('API Data:', response.data);
                     
-                    // Add the new data
-                    response.data.forEach(function(item) {
-                        jobTable.row.add({
-                            job_no: item.job_no || '-',
-                            project_name: item.project_name || '-',
-                            project_status: item.project_status ? item.project_status.charAt(0).toUpperCase() + item.project_status.slice(1) : '-',
-                            current_department: item.current_department || '-'
+                    // Check if data is an array and has items
+                    if (Array.isArray(response.data) && response.data.length > 0) {
+                        // Prepare data for DataTable
+                        var tableData = response.data.map(function(item) {
+                            return {
+                                job_no: item.job_no || '-',
+                                project_name: item.project_name || '-',
+                                project_status: item.project_status ? 
+                                    item.project_status.charAt(0).toUpperCase() + item.project_status.slice(1) : '-',
+                                current_department: item.current_department || '-',
+                                dtp_section: item.dtp_section || '',
+                                technical_section: item.technical_section || '',
+                                administrative_approval: item.administrative_approval || '',
+                                project_id: item.project_id || ''
+                            };
                         });
-                    });
-                    
-                    // Draw the table
-                    jobTable.draw();
-
-                    // Populate project dropdown
-                    var projectSelect = $('#projectName');
-                    projectSelect.empty().append('<option value="">All Projects</option>');
-                    
-                    // Create a Set to store unique project names
-                    var uniqueProjects = new Set();
-                    response.data.forEach(function(item) {
-                        if (item.project_name) {
-                            uniqueProjects.add(item.project_name);
-                        }
-                    });
-                    
-                    // Add unique projects to dropdown
-                    uniqueProjects.forEach(function(projectName) {
-                        projectSelect.append('<option value="' + projectName + '">' + projectName + '</option>');
-                    });
-                    
-                    // Refresh Select2
-                    projectSelect.trigger('change');
+                        
+                        // Clear the table and add new data
+                        jobTable.clear();
+                        jobTable.rows.add(tableData).draw();
+                    } else {
+                        // No data found
+                        $('#jobStatusTable tbody')
+                            .html('<tr><td colspan="7" class="text-center">No data available</td></tr>');
+                    }
                 } else {
-                    console.error('API Error:', response.errors || 'Unknown error');
-                    // alert('Failed to fetch job data: ' + (response.errors || 'Unknown error'));
+                    // API returned an error or no data
+                    console.error('API Error:', response?.errors || 'No data found');
+                    jobTable.clear().draw();
+                    $('#jobStatusTable tbody')
+                        .html('<tr><td colspan="7" class="text-center">No data available</td></tr>');
                 }
             },
             error: function(xhr, status, error) {
                 console.error('Error fetching job data:', error);
-                // alert('Failed to fetch job data. Please try again.');
+                jobTable.draw(); // Ensure table is drawn even on error
             }
         });
     }
 
-    // Handle filter changes
-    $('#id_circle, #id_division, #id_sub_division, #id_taluka').on('change', function() {
-        loadJobData(); // Reload data when any filter changes
-    });
-
     // Handle form submission
     $('form').on('submit', function(e) {
         e.preventDefault();
-        var jobNo = $('#id_job_no').val().trim();
-        var projectName = $('#projectName').val();
+        // Update URL with search parameter
+        const searchTerm = $('#projectName').val();
+        const url = new URL(window.location.href);
+        if (searchTerm) {
+            url.searchParams.set('project_name', searchTerm);
+        } else {
+            url.searchParams.delete('project_name');
+        }
+        window.history.pushState({}, '', url);
+        
+        // Reset to first page when searching
+        if (jobTable) {
+            jobTable.page('first').draw('page');
+        }
         loadJobData();
-
-        // Apply filters to DataTable
-        jobTable.column(0).search(jobNo);
-        jobTable.column(1).search(projectName);
-        jobTable.draw();
+    });
+    
+    // Handle job number input changes with debounce
+    var jobNoTimeout;
+    $('#id_job_no').on('keyup', function(e) {
+        clearTimeout(jobNoTimeout);
+        var $this = $(this);
+        jobNoTimeout = setTimeout(function() {
+            const jobNo = $this.val().trim();
+            if (jobNo === '' || jobNo.length >= 1) {
+                // Update URL with job number
+                const url = new URL(window.location.href);
+                if (jobNo) {
+                    url.searchParams.set('job_no', jobNo);
+                } else {
+                    url.searchParams.delete('job_no');
+                }
+                url.searchParams.delete('project_name'); // Clear project name when searching by job no
+                window.history.pushState({}, '', url);
+                
+                loadJobData();
+            }
+        }, 500); // 500ms delay
+        
+        // Also trigger on Enter key
+        if (e.key === 'Enter' || e.keyCode === 13) {
+            clearTimeout(jobNoTimeout);
+            const jobNo = $this.val().trim();
+            const url = new URL(window.location.href);
+            if (jobNo) {
+                url.searchParams.set('job_no', jobNo);
+            } else {
+                url.searchParams.delete('job_no');
+            }
+            url.searchParams.delete('project_name'); // Clear project name when searching by job no
+            window.history.pushState({}, '', url);
+            loadJobData();
+        }
+    });
+    
+    // Handle project name changes
+    $('#projectName').on('change', function() {
+        const searchTerm = $(this).val();
+        const url = new URL(window.location.href);
+        if (searchTerm) {
+            url.searchParams.set('project_name', searchTerm);
+        } else {
+            url.searchParams.delete('project_name');
+        }
+        window.history.pushState({}, '', url);
+        loadJobData();
+    });
+    
+    // Handle filter changes with debounce
+    var filterTimeout;
+    $('#id_circle, #id_division, #id_sub_division, #id_taluka').on('change', function() {
+        clearTimeout(filterTimeout);
+        filterTimeout = setTimeout(function() {
+            loadJobData();
+        }, 300);
+    });
+    
+    // Handle reset button click
+    $('#resetButton').on('click', function(e) {
+        // redirect to the report-job-wise-status page
+        window.location.href = 'report-job-wise-status.php';
+        e.preventDefault();
+        
+        // Reset all form fields
+        $('form')[0].reset();
+        
+        // Clear select2 dropdowns
+        $('.select2').val(null).trigger('change');
+        
+        // Clear the job number input
+        $('#id_job_no').val('');
+        
+        // Reset the table
+        jobTable.search('').columns().search('').draw();
+        
+        // Reload data with empty filters
+        loadJobData();
     });
 
     // Handle reset button
-    $('.btn-outline-secondary').on('click', function(e) {
+    $('.btn-outline-secondary, #resetButton').on('click', function(e) {
+        // redirect to the report-job-wise-status page
+      
         e.preventDefault();
-        // Clear all filters
-        $('#id_circle, #id_division, #id_sub_division, #id_taluka, #id_job_no, #projectName').val('').trigger('change');
-        jobTable.search('').columns().search('').draw();
-        loadJobData(); // Reload with no filters
+        window.location.href = 'report-job-wise-status.php';
+        
+        // Reset all form fields
+        $('form')[0].reset();
+        
+        // Reset all Select2 dropdowns
+        $('.select2').val(null).trigger('change');
+        
+        // Clear the job number input
+        $('#id_job_no').val('');
+        
+        // Reset DataTable search and filters
+        if (jobTable) {
+            jobTable.search('').columns().search('').draw();
+        }
+        
+        // Clear URL parameters without reloading
+        if (window.history.replaceState) {
+            const cleanURL = window.location.pathname;
+            window.history.replaceState({}, document.title, cleanURL);
+        }
+        
+        // Clear any global search in header
+        if (window.parent && window.parent.$) {
+            try {
+                window.parent.$('#globalSearchInput').val('');
+            } catch (e) {
+                console.log('Could not clear global search');
+            }
+        }
+        
+        // Load fresh data without any filters
+        loadJobData();
     });
 
 

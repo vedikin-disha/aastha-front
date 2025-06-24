@@ -1768,7 +1768,7 @@ loadUsers();
 
             $('#save-assignment').text(saveButtonText);
 
-
+            loadUsersForAssignment();
 
             // Show the modal
 

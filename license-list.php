@@ -1,55 +1,53 @@
 <?php include 'common/header.php'; ?>
 
-<!-- Content Header (Page header) -->
-<div class="content-header">
-  <div class="container-fluid">
-    <div class="row mb-2">
-      <div class="col-sm-6">
-        <h1 class="m-0">License Management</h1>
-      </div>
-      <div class="col-sm-6">
-        <ol class="breadcrumb float-sm-right">
-          <li class="breadcrumb-item"><a href="#">Home</a></li>
-          <li class="breadcrumb-item active">License List</li>
-        </ol>
-      </div>
+
+
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header" style="border-top: 3px solid #30b8b9; border-bottom: 1px solid rgba(0, 0, 0, .125);">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="card-title">License List</h3>
+
+                <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2): ?>
+                    <div class="card-tools">
+                    <a href="license-add" class="btn btn-success" ><i class="fas fa-plus"></i> Add New License</a>
+                    </div>
+                        <?php endif; ?>
+                
+            </div>
+        </div>
+        <div class="card-body">
+            <!-- Search Form -->
+            <form method="get" class="mb-4">
+               
+            </form>
+            <div class="new-pms-ap">
+                <table id="licenseTable" class="table table-bordered table-hover dataTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 5%;"></th>
+                            <th class="sorting">License ID</th>
+                            <th>User Name</th>
+                            <!-- <th>Product Name</th> -->
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Status</th>
+                            <!-- <th>Actions</th> -->
+                        </tr>
+                    </thead>    
+                <tbody>
+
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- DataTables handles pagination now -->
     </div>
-  </div>
 </div>
 
-<!-- Main content -->
-<section class="content">
-  <div class="container-fluid">
-    <div class="card">
-      <div class="card-header">
-        <h3 class="card-title">License List</h3>
-        <div class="card-tools">
-          <a href="license-add" class="btn btn-success btn-sm">
-            <i class="fas fa-plus"></i> Add License
-          </a>
-        </div>
-      </div>
-      <div class="card-body">
-        <table id="licenseTable" class="table table-bordered table-striped">
-          <thead>
-            <tr>
-              <th>License ID</th>
-              <th>User Name</th>
-              <th>Product Name</th>
-              <th>Start Date</th>
-              <th>End Date</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- Data will be loaded via AJAX -->
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</section>
+
+
+
 
 <?php include 'common/footer.php'; ?>
 
@@ -91,13 +89,7 @@ $(document).ready(function() {
     "columns": [
       { "data": "license_id", "title": "License ID" },
       { "data": "user_name", "title": "User Name" },
-      { 
-        "data": "product_id", 
-        "title": "Product",
-        "render": function(data) {
-          return 'Product ' + data;
-        }
-      },
+     
      
       { 
         "data": "start_date", 
@@ -131,7 +123,7 @@ $(document).ready(function() {
           const encodedId = btoa(data);
           return `
             <div class="btn-group">
-              <a href="license-edit?id=${encodedId}" class="btn btn-sm btn-primary">
+              <a href="license-edit?id=${encodedId}" class="btn btn-sm btn-primary" style="background-color: #30b8b9;border:none;">
                 <i class="fas fa-edit"></i> Edit
               </a>
             </div>
