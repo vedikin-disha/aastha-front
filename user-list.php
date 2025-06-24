@@ -55,7 +55,9 @@
       "autoWidth": false,
       "responsive": true,
       "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"],
-      "dom": 'Bfrtip',
+      dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+             "<'row'<'col-sm-12'tr>>" +
+             "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
       "ajax": {
         "url": "<?php echo rtrim(API_URL, '/'); ?>/user",
         "type": "POST",

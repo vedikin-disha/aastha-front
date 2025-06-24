@@ -194,12 +194,7 @@ if (!$project_id) {
                                         </div>
                                     </div>
                                     
-                                    <!-- Status -->
-                                    <div class="col-md-12">
-                                        <div class="form-group">
-                                            <label for="status" class="required-label">Status:</label>
-                                        </div>
-                                    </div>
+                                   
                                     
                                     <!-- DTP Section File -->
                                     <div class="col-md-12">
@@ -207,7 +202,7 @@ if (!$project_id) {
                                             <label>DTP Section File:</label>
                                             <input type="hidden" id="dtp_section_uuid" name="dtp_section_uuid">
                                             <input type="file" class="form-control-file" id="dtp_section_file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.csv,.xlsx,.xls">
-                                            <button type="button" id="dtp_section_delete" class="btn btn-sm btn-danger mt-2 d-none">  <i class="far fa-trash-alt"></i></button>
+                                            <button type="button" id="dtp_section_delete" class="btn btn-sm btn-link text-danger p-0 mt-2 d-none"><i class="fas fa-times-circle fa-lg"></i></button>
                                             <div id="dtp_section_container" class="mt-2"></div>
                                             <small class="form-text text-muted">Upload a new file to update the existing one</small>
                                         </div>
@@ -219,7 +214,7 @@ if (!$project_id) {
                                             <label>Technical Section File:</label>
                                             <input type="hidden" id="technical_section_uuid" name="technical_section_uuid">
                                             <input type="file" class="form-control-file" id="technical_section_file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.csv,.xlsx,.xls">
-                                            <button type="button" id="technical_section_delete" class="btn btn-sm btn-danger mt-2 d-none">  <i class="far fa-trash-alt"></i></button>
+                                            <button type="button" id="technical_section_delete" class="btn btn-sm btn-link text-danger p-0 mt-2 d-none"><i class="fas fa-times-circle fa-lg"></i></button>
                                             <div id="technical_section_container" class="mt-2"></div>
                                             <small class="form-text text-muted">Upload a new file to update the existing one</small>
                                         </div>
@@ -231,7 +226,7 @@ if (!$project_id) {
                                             <label>Administrative Approval File:</label>
                                             <input type="hidden" id="administrative_approval_uuid" name="administrative_approval_uuid">
                                             <input type="file" class="form-control-file" id="administrative_approval_file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.csv,.xlsx,.xls">
-                                            <button type="button" id="administrative_approval_delete" class="btn btn-sm btn-danger mt-2 d-none"><i class="far fa-trash-alt"></i></button>
+                                            <button type="button" id="administrative_approval_delete" class="btn btn-sm btn-link text-danger p-0 mt-2 d-none"><i class="fas fa-times-circle fa-lg"></i></button>
                                             <div id="administrative_approval_container" class="mt-2"></div>
                                             <small class="form-text text-muted">Upload a new file to update the existing one</small>
                                         </div>
@@ -1379,6 +1374,7 @@ function populateFormFields(data) {
                         id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     <i class="${iconByExt(url)}"></i> ${label}
                 </button>
+            
                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                     <a class="dropdown-item" href="${url}" target="_blank">
                         <i class="fas fa-eye mr-2"></i> View ${isImage ? 'Image' : 'File'}

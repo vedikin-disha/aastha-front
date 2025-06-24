@@ -259,7 +259,7 @@ if (!isUserHasRights($request_uri)) {
     <div class="search-form ml-3" style="width: 400px;">
       <form id="globalSearchForm" class="form-inline">
         <div class="input-group input-group-sm" style="width: 100%;">
-          <input class="form-control form-control-navbar" type="search" id="globalSearchInput" placeholder="Search projects..." aria-label="Search" required>
+          <input class="form-control form-control-navbar" type="search" id="globalSearchInput" placeholder="Search projects..." aria-label="Search">
           <div class="input-group-append">
             <button class="btn btn-navbar" type="submit">
               <i class="fas fa-search"></i>

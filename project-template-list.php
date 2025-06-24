@@ -94,7 +94,7 @@ $(document).ready(function() {
             "responsive": true,
             "dom": "<'row'<'col-sm-12 col-md-6'B><'col-sm-12 col-md-6'f>>" +
                "<'row'<'col-sm-12'tr>>" +
-               "<'row'<'col-12'i><'col-12'p>>",
+               "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
             "language": {
                 "search": "Search:",
                
