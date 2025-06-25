@@ -174,10 +174,12 @@ function displayFileWithIcon($filePath, $label) {
         <div class="col-md-4 info-label">$label</div>
         <div class="col-md-8">
             <div class="file-item d-flex align-items-center">
-                <i class="$iconClass fa-2x me-3"></i>
-                <!-- <a href="$fileUrl" target="_blank" class="text-decoration-none">
-                    $fileName
-                </a> -->
+                <a href="$fileUrl" target="_blank" class="text-decoration-none">
+                    <i class="$iconClass fa-2x me-3"></i>
+                </a>
+                <a href="$fileUrl" target="_blank" class="text-decoration-none">
+                    <!-- $fileName -->
+                </a>
             </div>
         </div>
     </div>

@@ -30,10 +30,32 @@
     </tbody>
 </table>
 
+<style>
+/* Remove modal backdrop */
+.modal-backdrop.show {
+    opacity: 0 !important;
+}
+
+/* Ensure modal is still clickable */
+.modal {
+    pointer-events: none;
+}
+
+.modal-dialog {
+    pointer-events: auto;
+}
+</style>
 
 <script>
 $(document).ready(function() {
+    // This will remove the backdrop when modal is shown
+    $('#attachmentsModal').on('show.bs.modal', function () {
+        $('.modal-backdrop').css('opacity', '0');
+    });
     
-
+    // Reset when modal is hidden
+    $('#attachmentsModal').on('hidden.bs.modal', function () {
+        $('.modal-backdrop').remove();
+    });
 });
 </script>

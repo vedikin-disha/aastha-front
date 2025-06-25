@@ -335,4 +335,30 @@ if ($(this).val()) { // Skip the "All Users" option
 
     });
 
+    // Remove modal backdrop when assignment modal is shown
+    $('#assignmentModal').on('show.bs.modal', function () {
+        $('.modal-backdrop').css('opacity', '0');
+    });
+    
+    // Clean up when modal is hidden
+    $('#assignmentModal').on('hidden.bs.modal', function () {
+        $('.modal-backdrop').remove();
+    });
+
 </script>
+
+<style>
+/* Remove modal backdrop */
+.modal-backdrop.show {
+    opacity: 0 !important;
+}
+
+/* Ensure modal is still clickable */
+.modal {
+    pointer-events: none;
+}
+
+.modal-dialog {
+    pointer-events: auto;
+}
+</style>
