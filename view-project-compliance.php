@@ -502,7 +502,7 @@
 
                     // Process each QnA item
 
-                    const userDeptId = <?php echo isset($_SESSION['dept_id']) ? $_SESSION['dept_id'] : ''; ?>;
+                    const userDeptId = <?php echo isset($_SESSION['emp_id']) ? $_SESSION['emp_id'] : ''; ?>;
 
                     console.log(userDeptId,"userDeptId");
 

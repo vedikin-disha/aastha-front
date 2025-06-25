@@ -72,7 +72,7 @@
         <div class="form-group mb-3 col-md-6">
           <label for="start_date" class="form-label">Start Date</label>
           <div class="input-group">
-            <input type="date" class="form-control" id="start_date" name="start_date" required>
+            <input type="date" class="form-control" id="start_date" name="start_date" >
               <!-- <div class="input-group-append">
             
               </div> -->
@@ -84,7 +84,7 @@
         <div class="form-group mb-3 col-md-6">
           <label for="end_date" class="form-label">End Date</label>
           <div class="input-group">
-            <input type="date" class="form-control" id="end_date" name="end_date" required>
+            <input type="date" class="form-control" id="end_date" name="end_date" >
             <!-- <div class="input-group-append">
              
             </div> -->

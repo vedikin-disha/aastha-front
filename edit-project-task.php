@@ -74,10 +74,10 @@ if ($task_id) {
         <div class="form-group mb-3">
           <label for="id_project" class="form-label">Project</label>
           <div class="input-group">
-            <select class="form-select" id="id_project" name="project" required>
+            <select class="form-select" id="id_project" name="project" required disabled>
               <option value="">Select a Project</option>
               <?php if (isset($task_data)): ?>
-              <option value="<?php echo $task_data['project_id']; ?>" selected>
+              <option value="<?php echo $task_data['project_id']; ?>" selected disabled>
                 <?php echo htmlspecialchars($task_data['project_name']); ?>
               </option>
               <?php endif; ?>
@@ -93,10 +93,10 @@ if ($task_id) {
         <div class="form-group mb-3">
           <label for="id_dept" class="form-label">Department</label>
           <div class="input-group">
-            <select class="form-select" id="id_dept" name="department" required>
+            <select class="form-select" id="id_dept" name="department" required disabled>
               <option value="">Select a Department</option>
               <?php if (isset($task_data)): ?>
-              <option value="<?php echo $task_data['dept_id']; ?>" selected>
+              <option value="<?php echo $task_data['dept_id']; ?>" selected disabled>
                 <?php echo htmlspecialchars($task_data['dept_name']); ?>
               </option>
               <?php endif; ?>
@@ -151,7 +151,7 @@ if ($task_id) {
         <div class="form-group mb-3 col-md-6">
           <label for="start_date" class="form-label">Start Date</label>
           <div class="input-group">
-            <input type="date" class="form-control" id="start_date" name="start_date" value="<?php echo isset($task_data['start_date']) ? formatDateForInput($task_data['start_date']) : ''; ?>" required>
+            <input type="date" class="form-control" id="start_date" name="start_date" value="<?php echo isset($task_data['start_date']) ? formatDateForInput($task_data['start_date']) : ''; ?>" >
             <div class="input-group-append">
            
             </div>
@@ -163,7 +163,7 @@ if ($task_id) {
         <div class="form-group mb-3 col-md-6">
           <label for="end_date" class="form-label">End Date</label>
           <div class="input-group">
-            <input type="date" class="form-control" id="end_date" name="end_date" value="<?php echo isset($task_data['end_date']) ? formatDateForInput($task_data['end_date']) : ''; ?>" required>
+            <input type="date" class="form-control" id="end_date" name="end_date" value="<?php echo isset($task_data['end_date']) ? formatDateForInput($task_data['end_date']) : ''; ?>" >
             <div class="input-group-append">
               
             </div>
