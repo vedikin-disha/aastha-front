@@ -79,7 +79,8 @@
 
         data: JSON.stringify({
 
-            access_token: '<?php echo $_SESSION['access_token']; ?>'
+            access_token: '<?php echo $_SESSION['access_token']; ?>',
+            dept_id: <?php echo $_SESSION['dept_id']; ?>
 
         }),
 

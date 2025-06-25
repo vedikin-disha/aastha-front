@@ -1,3 +1,38 @@
+<?php
+// Function to get file icon class based on file extension
+function getFileIcon($filename) {
+    $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+    
+    // Define icon classes for different file types
+    $iconMap = [
+        // PDF files
+        'pdf' => 'fas fa-file-pdf text-danger',
+        
+        // Word documents
+        'doc' => 'fas fa-file-word text-primary',
+        'docx' => 'fas fa-file-word text-primary',
+        
+        // Excel files
+        'xls' => 'fas fa-file-excel text-success',
+        'xlsx' => 'fas fa-file-excel text-success',
+        'csv' => 'fas fa-file-csv text-success',
+        
+        // Image files
+        'jpg' => 'fas fa-file-image text-info',
+        'jpeg' => 'fas fa-file-image text-info',
+        'png' => 'fas fa-file-image text-info',
+        'gif' => 'fas fa-file-image text-info',
+        'bmp' => 'fas fa-file-image text-info',
+        'svg' => 'fas fa-file-image text-info',
+        
+        // Default icon for other files
+        'default' => 'fas fa-file text-secondary'
+    ];
+    
+    return $iconMap[$extension] ?? $iconMap['default'];
+}
+?>
+
 <div class="row">
 
                         <!-- Basic Information -->
@@ -122,6 +157,54 @@
                                 <div class="col-md-8"><?php echo htmlspecialchars($project['description']); ?></div>
 
                             </div>
+
+                            <?php
+// Function to display file with icon
+function displayFileWithIcon($filePath, $label) {
+    if (empty($filePath)) {
+        return '';
+    }
+    
+    $fileName = basename($filePath);
+    $fileUrl = htmlspecialchars($filePath);
+    $iconClass = getFileIcon($fileName);
+    
+    return <<<HTML
+    <div class="row info-row">
+        <div class="col-md-4 info-label">$label</div>
+        <div class="col-md-8">
+            <div class="file-item d-flex align-items-center">
+                <i class="$iconClass fa-2x me-3"></i>
+                <!-- <a href="$fileUrl" target="_blank" class="text-decoration-none">
+                    $fileName
+                </a> -->
+            </div>
+        </div>
+    </div>
+    HTML;
+}
+?>
+
+<?php 
+// Display administrative_approval file
+if (!empty($project['administrative_approval'])) {
+    echo displayFileWithIcon($project['administrative_approval'], 'Administrative Approval');
+}
+?>
+
+<?php 
+// Display technical_section file
+if (!empty($project['technical_section'])) {
+    echo displayFileWithIcon($project['technical_section'], 'Technical Section');
+}
+?>
+
+<?php 
+// Display dtp_section file
+if (!empty($project['dtp_section'])) {
+    echo displayFileWithIcon($project['dtp_section'], 'DTP Section');
+}
+?>
 
                         </div>
 

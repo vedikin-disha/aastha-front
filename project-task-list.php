@@ -47,7 +47,7 @@
             <div class="d-flex justify-content-between align-items-center">
                 <h3 class="card-title">Project Tasks</h3>
 
-                <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2): ?>
+                <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2 || $_SESSION['emp_role_id'] == 3): ?>
                     <div class="card-tools">
                     <a href="add-project-task" class="btn btn-success" ><i class="fas fa-plus"></i> Add New Task</a>
                     </div>
@@ -189,7 +189,7 @@ $(document).ready(function() {
                     page: Math.ceil((d.start / d.length) + 1), // Calculate page number
                     limit: d.length,
                     search: d.search.value,
-                    order_by: d.columns[d.order[0]?.column]?.data || 'project_name',
+                    order_by: 'project_name',
                     order_dir: d.order[0]?.dir || 'asc'
                 });
             },

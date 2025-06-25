@@ -433,7 +433,7 @@
                     $('#answer_dept').trigger('change');
                     // Set default value for answer_dept (e.g., Drafting Department)
 
-                    $('#answer_dept').val(2); // Assuming 2 is Drafting Department
+                    $('#answer_dept').val(); // Assuming 2 is Drafting Department
 
                 } else {
 

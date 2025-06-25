@@ -256,6 +256,8 @@ if (!isUserHasRights($request_uri)) {
     </ul>
 
     <!-- Search Form -->
+
+    <?php if ($_SESSION['emp_role_id'] == 1): ?>
     <div class="search-form ml-3" style="width: 400px;">
       <form id="globalSearchForm" class="form-inline">
         <div class="input-group input-group-sm" style="width: 100%;">
@@ -268,7 +270,7 @@ if (!isUserHasRights($request_uri)) {
         </div>
       </form>
     </div>
-
+    <?php endif; ?>
     <!-- Right navbar links -->
     <ul class="navbar-nav ml-auto">
       <!-- Notifications Dropdown Menu -->

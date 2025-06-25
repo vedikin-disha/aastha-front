@@ -1,16 +1,16 @@
 <!-- Add Task Modal -->
 
-<div class="modal fade" id="addTaskModal" tabindex="-1" role="dialog" aria-labelledby="addTaskModalLabel" aria-hidden="true">
+<div class="modal fade" id="addTaskModal" tabindex="-1" role="dialog" aria-labelledby="addTaskModalLabel" aria-hidden="true" style="margin-top: 37px;">
 
     <div class="modal-dialog" role="document">
 
         <div class="modal-content">
 
-            <div class="card-header" style="background-color: #30b8b9;border:none;color:white;">
+            <div class="card-header" >
 
                 <h5 class="modal-title" id="addTaskModalLabel">Add Project Task</h5>
 
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color:white;">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style='margin-top:-30px'>
 
                     <span aria-hidden="true">&times;</span>
 

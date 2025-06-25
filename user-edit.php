@@ -94,20 +94,17 @@
       <!-- Role -->
       <div class="form-group mb-3">
         <label for="emp_role_id" class="form-label">Role <span class="text-danger">*</span></label>
-        <select name="role" id="role" class="form-control">
-          <option value="">-- Select Role --</option>
-          <option value="1">Admin</option>
-          <option value="2">Manager</option>
-          <option value="3">Employee</option>
+        <select name="role" id="emp_role_id" class="form-control">
+          <option value="">-- Select Role --</option>  
         </select>
         <div class="text-danger"></div>
       </div>
 
       <!-- Department -->
       <div class="form-group mb-3">
-        <label for="department" class="form-label">Department <span class="text-danger">*</span></label>
+        <label for="id_department" class="form-label">Department <span class="text-danger">*</span></label>
         <div class="input-group">
-          <select name="department" id="department" class="form-control" required>
+          <select name="department" id="id_department" class="form-control" required>
             <option value="">-- Select Department --</option>
           </select>
         </div>
@@ -152,7 +149,7 @@
 <script>
   $(document).ready(function() {
     // Initialize Select2 for Role, Department, and Status
-    $('#role, #department, #status').select2({
+    $('#emp_role_id, #id_department, #status').select2({
       theme: 'bootstrap-5',
       width: '100%',
       dropdownParent: $('#editUserForm')
@@ -172,7 +169,7 @@
         }),
         success: function(response) {
           if (response.is_successful === '1' && response.data) {
-            const deptSelect = $('#department');
+            const deptSelect = $('#id_department');
             deptSelect.empty().append('<option value="">-- Select Department --</option>');
             
             response.data.forEach(function(dept) {
@@ -182,6 +179,41 @@
             // Set the selected department if provided
             if (selectedDeptId) {
               deptSelect.val(selectedDeptId).trigger('change');
+            }
+          } else {
+            showToast('Failed to load departments. ' + (response.errors || ''), false);
+          }
+        },
+        error: function(xhr, status, error) {
+          showToast('Failed to load departments. Please try again.', false);
+        }
+      });
+    }
+    // loadRoles();
+
+    function loadRoles(selectedRoleId = '') {
+      $.ajax({
+        url: '<?php echo API_URL; ?>role',
+        type: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer <?php echo $_SESSION["access_token"]; ?>'
+        },
+        data: JSON.stringify({
+          access_token: '<?php echo $_SESSION["access_token"]; ?>'
+        }),
+        success: function(response) {
+          if (response.is_successful === '1' && response.data) {
+            const roleSelect = $('#emp_role_id');
+            roleSelect.empty().append('<option value="">-- Select Role --</option>');
+            
+            response.data.forEach(function(role) {
+              roleSelect.append(new Option(role.emp_role_name, role.emp_role_id));
+            });
+            
+            // Set the selected department if provided
+            if (selectedRoleId) {
+              roleSelect.val(selectedRoleId).trigger('change');
             }
           } else {
             showToast('Failed to load departments. ' + (response.errors || ''), false);
@@ -220,7 +252,8 @@
     // Load departments first
     loadDepartments();
     
-    // Load departments first
+    // Load roles first
+    loadRoles();
 
     // Populate form with user data
     $.ajax({
@@ -242,7 +275,7 @@
           $('#full_name').val(user.emp_name);
           $('#phone').val(user.emp_phone_number);
           $('#w_phone').val(user.emp_whatsapp_number);
-          $('#role').val(user.emp_role_id).trigger('change');
+          $('#emp_role_id').val(user.emp_role_id).trigger('change');
           
           // Set department after a short delay to ensure it's loaded
           setTimeout(() => {
@@ -268,8 +301,8 @@
       const fullName = $('#full_name').val();
       const phone = $('#phone').val();
       const whatsapp = $('#w_phone').val();
-      const role = $('#role').val();
-      const department = $('#department').val();
+      const role = $('#emp_role_id').val();
+      const department = $('#id_department').val();
       const status = $('#status').val();
       
       // Check for empty required fields
@@ -326,15 +359,15 @@
         success: function(response) {
           if (response.is_successful === '1') {
             // Show success message using showToast
-            showToast('User updated successfully!');
+            showToast(response.success_message || 'Failed to update user', true);
             
             // Redirect after showing message
             setTimeout(function() {
-              window.location.href = 'user-list.php';
+              window.location.href = 'user-list';
             }, 1500);
           } else {
             // Show error message if API returns unsuccessful
-            showToast(response.message || 'Failed to update user', false);
+            showToast(response.success_message || 'Failed to update user', false);
           }
         },
         error: function(xhr) {

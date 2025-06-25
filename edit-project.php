@@ -141,7 +141,7 @@ if (!$project_id) {
                                         <div class="form-group">
                                             <label for="job_no">Job No:</label>
                                             <input type="text" class="form-control" id="job_no" name="job_no" 
-                                                placeholder="Enter job number">
+                                                placeholder="Enter job number" readonly>
                                             <div class="error-feedback" id="job_no_error"></div>
                                         </div>
                                     </div>

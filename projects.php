@@ -75,6 +75,11 @@
     .dropdown-item:active {
         background-color: #30b8b9 !important;
     }
+    .select2-container--bootstrap4 .select2-results__option--highlighted, .select2-container--bootstrap4 .select2-results__option--highlighted.select2-results__option[aria-selected="true"] {
+        background-color: #30b8b9 !important;
+        color: #fff !important;
+    }
+    
 </style>
 <!-- jQuery -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
@@ -113,66 +118,70 @@
                 <h3 class="card-title">Project List</h3>
                 <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2): ?>
                 <div class="card-tools">
+              
                     <a href="add-project" class="btn btn-success"><i class="fas fa-plus"></i> Add Project</a>
+              
                 </div>
                 <?php endif; ?>
             </div>
         </div>
-        <div class="card-body">
-            <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2): ?>
-            <form method="get" class="row g-3">
-                <div class="col-md-3">
-                    <label for="id_circle" class="form-label">Circle</label>
-                    <select name="circle_id" id="id_circle" class="form-control select2" style="width: 100%;" data-placeholder="Select Circle">
-                        
-                        <option value="">All Circles</option>
-                    </select>
+                <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2 || $_SESSION['emp_role_id'] == 3): ?>
+                <div class="card-body">
+                    <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2): ?>
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="id_circle" class="form-label">Circle</label>
+                            <select name="circle_id" id="id_circle" class="form-control select2" style="width: 100%;" data-placeholder="Select Circle">
+                                
+                                <option value="">All Circles</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="id_division" class="form-label">Division</label>
+                            <select name="division_id" id="id_division" class="form-control select2" style="width: 100%;" data-placeholder="Select Division">
+                                <option value="">All Divisions</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="id_sub_division" class="form-label">Sub Division</label>
+                            <select name="subdivision_id" id="id_sub_division" class="form-control select2" style="width: 100%;" data-placeholder="Select Sub Division">
+                                <option value="">All Sub Divisions</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="id_taluka" class="form-label">Taluka</label>
+                            <select name="taluka_id" id="id_taluka" class="form-control select2" style="width: 100%;" data-placeholder="Select Taluka">
+                                <option value="">All Talukas</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="id_dept" class="form-label">Department</label>
+                            <div class="input-group">
+                                <select name="department" id="id_dept" class="form-control select2" style="width: 100%;" data-placeholder="Select current department">
+                                    <option value="">All Departments</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="id_assing" class="form-label">Assign</label>
+                            <div class="input-group">
+                                <select name="taluka_id[]" id="id_assing" class="form-control select2 checkbox" style="width: 100%;" data-placeholder="Select Assign Employee">
+                                    <option value="">All assignments</option>
+                                </select>
+                                <div class="invalid-feedback" style="display: none;"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <div class="input-group">
+                                <button type="button" id="resetFilters" class="btn btn-secondary">
+                                    <i class="fas fa-undo"></i> Reset
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    <?php endif; ?>
                 </div>
-                <div class="col-md-3">
-                    <label for="id_division" class="form-label">Division</label>
-                    <select name="division_id" id="id_division" class="form-control select2" style="width: 100%;" data-placeholder="Select Division">
-                        <option value="">All Divisions</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label for="id_sub_division" class="form-label">Sub Division</label>
-                    <select name="subdivision_id" id="id_sub_division" class="form-control select2" style="width: 100%;" data-placeholder="Select Sub Division">
-                        <option value="">All Sub Divisions</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label for="id_taluka" class="form-label">Taluka</label>
-                    <select name="taluka_id" id="id_taluka" class="form-control select2" style="width: 100%;" data-placeholder="Select Taluka">
-                        <option value="">All Talukas</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label for="id_dept" class="form-label">Department</label>
-                    <div class="input-group">
-                        <select name="department" id="id_dept" class="form-control select2" style="width: 100%;" data-placeholder="Select current department">
-                            <option value="">All Departments</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <label for="id_assing" class="form-label">Assign</label>
-                    <div class="input-group">
-                        <select name="taluka_id[]" id="id_assing" class="form-control select2 checkbox" style="width: 100%;" data-placeholder="Select Assign Employee">
-                            <option value="">All assignments</option>
-                        </select>
-                        <div class="invalid-feedback" style="display: none;"></div>
-                    </div>
-                </div>
-                <div class="col-md-3 d-flex align-items-end">
-                    <div class="input-group">
-                        <button type="button" id="resetFilters" class="btn btn-secondary">
-                            <i class="fas fa-undo"></i> Reset
-                        </button>
-                    </div>
-                </div>
-            </form>
-            <?php endif; ?>
-        </div>
+                <?php endif; ?>
         <script>
         $(document).ready(function() {
             // Reset button click handler

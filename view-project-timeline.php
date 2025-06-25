@@ -1485,10 +1485,12 @@ loadUsers();
             success: function (response) {
 
                 console.log('Comment added:', response);
+                
 
 
 
                 if (response.is_successful === '1') {
+
 
                     const activityId = response.data.activity_id;
 
@@ -1552,7 +1554,7 @@ loadUsers();
 
 
 
-                            alert('Comment and attachments uploaded successfully!');
+                            showToast('Comment and attachments uploaded successfully!');
 
                             //refersh the page 
 

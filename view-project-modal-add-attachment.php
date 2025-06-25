@@ -145,7 +145,7 @@ $("document").ready(function() {
                             const attachmentHtml = `
         <tr>
             <td>${attachment.attachment_name}</td>
-            <td>${attachment.description}</td>
+            <td>${attachment.description || ""}</td>
             <td>
                 <a href="${attachment.file_path}" target="_blank"><i class="${icon} fa-2x"></i></a>
             </td>
