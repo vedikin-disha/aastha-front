@@ -181,7 +181,7 @@ if (!defined('API_URL')) {
                                     <!-- Start Date -->
                                     <div class="col-md-12">
 
-                                  
+                                  <!-- // by defult today date -->
                                         <div class="form-group">
                                             <label for="start_date" class="required-label">Start Date:</label>
                                             <input type="date" class="form-control" id="start_date" name="start_date" data-date-format="YYYY-MM-DD">
@@ -839,8 +839,26 @@ function updateProjectWithAttachments(projectId, uploadedUUIDs) {
 
 
 // Main document ready function
+// Function to format date as YYYY-MM-DD
+function formatDate(date) {
+    const d = new Date(date);
+    let month = '' + (d.getMonth() + 1);
+    let day = '' + d.getDate();
+    const year = d.getFullYear();
+
+    if (month.length < 2) month = '0' + month;
+    if (day.length < 2) day = '0' + day;
+
+    return [year, month, day].join('-');
+}
+
 $(document).ready(function() {
     console.log('jQuery loaded, initializing components');
+    
+    // Set today's date as default for start date
+    const today = new Date();
+    const formattedDate = formatDate(today);
+    $('#start_date').val(formattedDate);
     
     // Initialize file input change handlers
     $('input[type="file"]').on('change', function() {

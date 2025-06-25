@@ -72,7 +72,7 @@
             { "data": "subdivision_name" },
             { "data": "division_name" },
             { "data": "circle_name" },
-            { "data": "taluka_id" }
+            { "data": "taluka_id", "className": 'text-center' }
           ],
           "createdRow": function (row, data, dataIndex) {
             // Encode the taluka_id using base64 for the URL

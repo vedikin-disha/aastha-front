@@ -130,13 +130,14 @@
 
                 { "data": "circle_name" },
 
-                { "data": "circle_id" },
+                { "data": "circle_id", "className": 'text-center' },
 
                 // { "data": "action" }
 
               ],
 
               "createdRow": function (row, data, dataIndex) {
+                
                 // Add edit button to all rows
                 // Encode the ID using base64 for the URL
                 const encodedId = btoa(data.circle_id);

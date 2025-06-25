@@ -69,7 +69,7 @@
             "columns": [
               { "data": "division_name" },
               { "data": "circle_name" },
-              { "data": "division_id" },
+              { "data": "division_id", "className": 'text-center' },
             ],
             "createdRow": function (row, data, dataIndex) {
               // Encode the division_id using base64 for the URL

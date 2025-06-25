@@ -30,7 +30,7 @@ if (!$license_id) {
           <div class="row">
             <div class="col-md-12">
               <div class="form-group">
-                <label for="user_name">User Name <span class="text-danger">*</span></label>
+                <label for="user_name">Person Name <span class="text-danger">*</span></label>
                 <input type="text" class="form-control" id="user_name" name="user_name" required>
               </div>
             </div>

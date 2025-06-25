@@ -44,7 +44,7 @@
         <!-- DataTables handles pagination now -->
     </div>
 </div>
-
+</div>
 
 
 
@@ -146,5 +146,5 @@ $(document).ready(function() {
     }
   });
 });
-</script></script>
+</script>
 

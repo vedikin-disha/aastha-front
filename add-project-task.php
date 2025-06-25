@@ -109,7 +109,25 @@
 <script src="js/vfs_fonts.js"></script>
 
 <script>
+// Function to format date as YYYY-MM-DD
+function formatDate(date) {
+  const d = new Date(date);
+  let month = '' + (d.getMonth() + 1);
+  let day = '' + d.getDate();
+  const year = d.getFullYear();
+
+  if (month.length < 2) month = '0' + month;
+  if (day.length < 2) day = '0' + day;
+
+  return [year, month, day].join('-');
+}
+
 $(document).ready(function() {
+  // Set today's date as default for start date
+  const today = new Date();
+  const formattedDate = formatDate(today);
+  $('#start_date').val(formattedDate);
+  
   // Initialize Select2 for dropdowns
   $('#id_project, #id_dept,#id_assign').select2({
     theme: 'bootstrap-5',

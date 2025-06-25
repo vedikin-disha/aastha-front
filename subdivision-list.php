@@ -122,7 +122,7 @@ https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js
 
           { "data": "circle_name" },
 
-          { "data": "sub_id" }
+          { "data": "sub_id", "className": 'text-center' }
 
         ],
 

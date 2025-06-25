@@ -25,7 +25,7 @@ include 'common/header.php';
           <div class="col-md-4 mb-3">
             <label for="id_dept" class="form-label fw-semibold">Department</label>
             <select name="department" id="id_dept" class="form-control select2" data-placeholder="Select Department">
-              <option value="">All Departments</option>
+              <option value="">Select Department</option>
               <!-- Dynamic Options -->
             </select>
           </div>
@@ -34,10 +34,11 @@ include 'common/header.php';
           <div class="col-md-4 mb-3">
             <label for="timeRange" class="form-label fw-semibold">Time Range</label>
             <select id="timeRange" class="form-control">
+              <option value="" selected>Select Time</option>
               <option value="today">Today</option>
               <option value="last_week">Last Week</option>
               <option value="current_week">Current Week</option>
-              <option value="current_month" selected>Current Month</option>
+              <option value="current_month">Current Month</option>
               <option value="custom">Custom</option>
             </select>
           </div>

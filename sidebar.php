@@ -244,23 +244,7 @@ function isActivePage($menu_item, $current_page) {
           </li>
           <?php endif; ?>
 
-          <?php if (shouldShowMenu('license', $allowed_menus)): ?>
-          <li class="nav-item" id="license">
-            <a href="license-list" class="nav-link <?php echo isActivePage('license', $current_page) ? 'active' : ''; ?>">
-              <i class="nav-icon fas fa-id-card"></i>
-              <p>License</p>
-            </a>
-          </li>
-          <?php endif; ?>
-
-          <?php if (shouldShowMenu('whatsapp-message', $allowed_menus)): ?>
-          <li class="nav-item" id="whatsapp-message">
-            <a href="whatsapp-message-list" class="nav-link <?php echo isActivePage('whatsapp-message', $current_page) ? 'active' : ''; ?>">
-              <i class="nav-icon fab fa-whatsapp"></i>
-              <p>WhatsApp Message</p>
-            </a>
-          </li>
-          <?php endif; ?>
+       
 
           <?php if (shouldShowMenu('division', $allowed_menus)): ?>
           <li class="nav-item" id="division">
@@ -301,6 +285,24 @@ function isActivePage($menu_item, $current_page) {
 
             </a>
 
+          </li>
+          <?php endif; ?>
+
+          <?php if (shouldShowMenu('license', $allowed_menus)): ?>
+          <li class="nav-item" id="license">
+            <a href="license-list" class="nav-link <?php echo isActivePage('license', $current_page) ? 'active' : ''; ?>">
+              <i class="nav-icon fas fa-id-card"></i>
+              <p>License</p>
+            </a>
+          </li>
+          <?php endif; ?>
+
+          <?php if (shouldShowMenu('whatsapp-message', $allowed_menus)): ?>
+          <li class="nav-item" id="whatsapp-message">
+            <a href="whatsapp-message-list" class="nav-link <?php echo isActivePage('whatsapp-message', $current_page) ? 'active' : ''; ?>">
+              <i class="nav-icon fab fa-whatsapp"></i>
+              <p>WhatsApp Message</p>
+            </a>
           </li>
           <?php endif; ?>
 

@@ -149,4 +149,3 @@ $(document).ready(function() {
   loadDepartment();
 });
 </script>
-<?php include 'common/footer.php'; ?>

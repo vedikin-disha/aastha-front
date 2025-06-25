@@ -230,7 +230,7 @@
 
                         'Project assignments updated successfully';
 
-                    alert(message);
+                   showToast(response.success_message);
 
                     loadProjectTimeline(); // Reload timeline to show changes
 

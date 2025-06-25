@@ -18,7 +18,7 @@
       <thead>
         <tr>
           <th>Proposed Work</th>
-          <th>Action</th>
+          <th className="text-center">Action</th>
         </tr>
       </thead>
       <tbody>
@@ -58,6 +58,7 @@
             { "data": "proposed_work_name" },
             { 
               "data": "proposed_work_id",
+              "className": 'text-center',
               "render": function(data, type, row) {
                 // Encode the ID using base64 for the URL
                 const encodedId = btoa(data);

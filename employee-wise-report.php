@@ -41,10 +41,11 @@ include 'common/header.php';
                                 <div class="form-group">
                                     <label>Time Range</label>
                                     <select class="form-control" id="timeRange">
+                                        <option value="" selected>Select Time</option>
                                         <option value="today">Today</option>
                                         <option value="last_week">Last Week (Mon-Sun)</option>
                                         <option value="current_week">Current Week</option>
-                                        <option value="current_month" selected>Current Month</option>
+                                        <option value="current_month">Current Month</option>
                                         <option value="custom">Custom Date Range</option>
                                     </select>
                                 </div>

@@ -22,7 +22,7 @@
           <div class="row">
             <div class="col-md-12">
               <div class="form-group">
-                <label for="user_name">User Name <span class="text-danger">*</span></label>
+                <label for="user_name">Person Name <span class="text-danger">*</span></label>
                 <input type="text" class="form-control" id="user_name" name="user_name" required>
               </div>
             </div>
@@ -38,8 +38,8 @@
             </div>
             <div class="col-md-6">
             <div class="form-group">
-                <label for="user_email">Email <span class="text-danger">*</span></label>
-                <input type="email" class="form-control" id="user_email" name="user_email" required>
+                <label for="user_email">Email </label>
+                <input type="email" class="form-control" id="user_email" name="user_email" >
               </div>
             </div>
           </div>
@@ -48,7 +48,8 @@
             <div class="col-md-6">
               <div class="form-group">
                 <label for="start_date">Start Date <span class="text-danger">*</span></label>
-                <input type="date" class="form-control" id="start_date" name="start_date" required>
+                <input type="date" class="form-control" id="start_date" name="start_date" 
+                       value="<?php echo date('Y-m-d'); ?>" required>
               </div>
             </div>
             <div class="col-md-6">
@@ -105,9 +106,29 @@
 $(document).ready(function() {
   // Generate activation key
   function generateActivationKey() {
-    const timestamp = new Date().getTime().toString(36);
-    const random = Math.random().toString(36).substr(2, 5);
-    return `${timestamp}-${random}`.toUpperCase();
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let result = '';
+    const length = 50;
+    
+    // Create a more secure random value using crypto if available
+    const crypto = window.crypto || window.msCrypto;
+    
+    if (crypto && crypto.getRandomValues) {
+      // Use crypto API for better randomness
+      const values = new Uint32Array(length);
+      crypto.getRandomValues(values);
+      
+      for (let i = 0; i < length; i++) {
+        result += chars[values[i] % chars.length];
+      }
+    } else {
+      // Fallback to Math.random if crypto API is not available
+      for (let i = 0; i < length; i++) {
+        result += chars[Math.floor(Math.random() * chars.length)];
+      }
+    }
+    
+    return result;
   }
 
   // Generate and set activation key

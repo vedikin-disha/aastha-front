@@ -10,8 +10,8 @@
     .new-pms-ap {
 
         width: 100% !important;
-        overflow-x: auto !important;
-        overflow-y: hidden !important;
+        /* overflow-x: auto !important;
+        overflow-y: hidden !important; */
     }
 
     .select2-results__option .select2-results__option--highlighted {

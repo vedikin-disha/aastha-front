@@ -61,6 +61,10 @@ include 'common/header.php';
               <div class="form-group">
                 <label for="schedule_time">Schedule Time</label>
                 <input type="datetime-local" class="form-control" id="schedule_time" name="schedule_time" 
+                       value="<?php 
+                         $currentTime = new DateTime('now', new DateTimeZone('Asia/Kolkata'));
+                         echo $currentTime->format('Y-m-d\TH:i');
+                       ?>"
                        min="<?php echo date('Y-m-d\TH:i'); ?>">
                 <small class="form-text text-muted">Leave empty to send immediately</small>
               </div>
@@ -109,7 +113,7 @@ function loadUsers() {
             <option value="${user.emp_id}" 
                     data-phone="${user.emp_whatsapp_number}"
                     data-name="${user.emp_name}">
-              ${user.emp_name} (${user.emp_whatsapp_number})
+              ${user.emp_name} 
             </option>
           `);
         });
@@ -129,10 +133,18 @@ $(document).ready(function() {
   $('#user_select').on('change', function() {
     const selectedOption = $(this).find('option:selected');
     if (selectedOption.val()) {
-      const phone = selectedOption.data('phone') || '';
-      if (typeof phone === 'string') {
-        $('#phone_number').val(phone.replace(/^91/, '')); // Remove country code if present
-      }
+      // Get the phone number from the data attribute
+      const phoneNumber = selectedOption.data('phone') || '';
+      // Remove any non-digit characters and ensure we don't have a leading 91
+      const cleanNumber = phoneNumber.toString().replace(/\D/g, '').replace(/^91/, '');
+      // Update the phone number field
+      $('#phone_number').val(cleanNumber);
+      
+      // Debug log (you can remove this after confirming it works)
+      console.log('Selected user phone:', phoneNumber, 'Cleaned number:', cleanNumber);
+    } else {
+      // Clear the field if no user is selected
+      $('#phone_number').val('');
     }
   });
 

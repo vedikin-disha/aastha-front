@@ -235,7 +235,7 @@ $(document).ready(function() {
                         
                         // Get user details
                         const displayName = notification.creator_name || 'User';
-                        const userImage = notification.creator_profile || 'assets/img/default-avatar.png';
+                        const userImage = notification.creator_profile || './assets/img/default-avatar.png';
                         
                         notificationsHtml += `
                             <tr class="notification-row ${notification.is_active === '1' ? 'font-weight-bold' : ''}" data-notification-id="${notification.notification_id}">
@@ -245,8 +245,8 @@ $(document).ready(function() {
                                             <img src="${userImage}" alt="${displayName}" 
                                                 class="img-fluid rounded-circle" 
                                                 style="width: 40px; height: 40px; object-fit: cover; border: 2px solid #dee2e6;"
-                                                onerror="this.src='assets/img/default-avatar.png'"
-                                            >
+                                                onerror="this.src='./assets/img/default-avatar.png'"
+                                            >   
                                         </div>
                                         <div class="ml-2">
                                             <div class="text-dark" style="font-size: 0.9rem;">${displayName}</div>

@@ -64,6 +64,22 @@
       background-color: #ffc107;
       color: #212529;
   }
+  .dt-button-collection .dt-button {
+    background-color: white !important;
+    color: #212529 !important;
+    /* border: 1px solid #dee2e6 !important; */
+    /* margin: 2px 0; */
+    width: 100%;
+    text-align: left;
+    padding: 0.5rem 1rem;
+}
+
+.dt-button-collection .dt-button:hover:not(.disabled) {
+    background-color: none !important;
+    color: #212529 !important;
+}
+
+
   .btn-group {
       white-space: nowrap;
   }
@@ -420,10 +436,15 @@ $(document).ready(function() {
     var projectTable = $('#projectTable').DataTable({
         "processing": true,
         "serverSide": true,
+        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
+        "language": {
+            "lengthMenu": "Show _MENU_ entries"
+        },
         "pageLength": 10,
         "dom": "<'row'<'col-sm-12 col-md-6'B><'col-sm-12 col-md-6'f>>" +
-               "<'row'<'col-sm-12'tr>>" +
-               "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+        "<'row'<'col-sm-12 col-md-6'l>>" +
+        "<'row'<'col-sm-12'tr>>" +
+        "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
         "buttons": [
             {
                 extend: 'copy',

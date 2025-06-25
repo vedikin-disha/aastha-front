@@ -1,7 +1,7 @@
 <?php include 'common/header.php'; ?>
 <style>
   .input-group {
-    margin-bottom: 1rem !important;
+    /* margin-bottom: 1rem !important; */
   }
   .form-control {
     height: 38px;
@@ -148,6 +148,9 @@
 
 <script>
   $(document).ready(function() {
+    // Clear password field on page load
+    $('#password').val('');
+    
     // Initialize Select2 for Role, Department, and Status
     $('#emp_role_id, #id_department, #status').select2({
       theme: 'bootstrap-5',
@@ -189,7 +192,8 @@
         }
       });
     }
-    // loadRoles();
+    // Load roles when page loads
+    loadRoles();
 
     function loadRoles(selectedRoleId = '') {
       $.ajax({

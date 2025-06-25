@@ -213,8 +213,8 @@ if (!isUserHasRights($request_uri)) {
 
     .new-pms-ap {
       width: 100% !important;
-      overflow-x: auto !important;
-      overflow-y: hidden !important;
+      /* overflow-x: auto !important; */
+      /* overflow-y: hidden !important; */
     }
     
     /* Search form styles */
@@ -279,7 +279,7 @@ if (!isUserHasRights($request_uri)) {
           <i class="far fa-bell" style="width: 40px; height: 40px;"></i>
           <span class="badge badge-warning navbar-badge" id="notification-count">0</span>
         </a>
-        <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right" style="min-width: 426px; height: 700px; overflow:scroll ;">
+        <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right" style="min-width: 426px; max-height: 500px; overflow-y: auto;">
           <div class="dropdown-header d-flex justify-content-between align-items-center">
             <span>Notifications</span>
             <button type="button" class="close" onclick="event.stopPropagation(); $('.dropdown-menu').removeClass('show');" aria-label="Close" style="font-size: 1.5rem; line-height: 1; outline: none;">
@@ -290,6 +290,10 @@ if (!isUserHasRights($request_uri)) {
           <div id="notification-list">
             <div class="dropdown-item text-center py-3">
               <i class="fas fa-spinner fa-spin"></i> Loading...
+            </div>
+            <div id="no-notifications" class="dropdown-item text-center py-4 d-none">
+              <i class="far fa-bell-slash fa-2x text-muted mb-2"></i>
+              <p class="mb-0 text-muted">No notifications found</p>
             </div>
           </div>
           <div class="dropdown-divider"></div>
@@ -393,12 +397,14 @@ $(document).ready(function() {
           // Update notification count
           $('#notification-count').text(response.data.length);
           
-          // If no notifications
+          // Handle no notifications case
           if (response.data.length === 0) {
-            notificationsHtml = '<div class="dropdown-item">No notifications found</div>';
+            $('#notification-list').html('<div class="text-center py-4"><i class="far fa-bell-slash fa-2x text-muted mb-2"></i><p class="mb-0 text-muted">No notifications found</p></div>');
+            $('#clear-all-notifications').closest('.d-flex').hide();
+          } else {
+            $('#notification-list').html(notificationsHtml);
+            $('#clear-all-notifications').closest('.d-flex').show();
           }
-          
-          $('#notification-list').html(notificationsHtml);
         } else {
           $('#notification-list').html('<div class="dropdown-item">No notifications found</div>');
         }
