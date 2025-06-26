@@ -55,17 +55,25 @@
                         <option value="">All Talukas</option>
                     </select>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-2">
                     <label for="id_job_no" class="form-label">Job No.</label>
                     <input type="text" name="job_no" id="id_job_no" class="form-control" placeholder="Enter Job No" value="">
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
+                    <label for="from_date" class="form-label">From Date</label>
+                    <input type="date" name="from_date" id="from_date" class="form-control">
+                </div>
+                <div class="col-md-2">
+                    <label for="to_date" class="form-label">To Date</label>
+                    <input type="date" name="to_date" id="to_date" class="form-control">
+                </div>
+                <div class="col-md-3">
                     <label for="projectName" class="form-label">Project Name</label>
                     <select name="project_name" id="projectName" class="form-control select2" style="width: 100%;" data-placeholder="Select Project">
                         <option value="">All Projects</option>
                     </select>
                 </div>
-                <div id="new-report-job-wise" class="col-md-4 d-flex align-items-end">
+                <div id="new-report-job-wise" class="col-md-2 d-flex align-items-end">
                     <div class="d-flex" style="gap:10px;">
                         <!-- <button type="submit" class="btn btn-primary" style="background-color: #30b8b9;border:none;">Search</button> -->
 
@@ -84,9 +92,11 @@
                         <th>Project Name</th>
                         <th>Project Status</th>
                         <th>Current Department</th>
-                        <th>DTP Section</th>
-                        <th>Technical Section</th>
+                        
                         <th>Administrative Approval</th>
+                        <th>Technical Section</th>
+                        <th>DTP Section</th>
+                     
                     </tr>
                 </thead>
                 <tbody>
@@ -465,24 +475,33 @@ $(document).ready(function() {
                     return data || '-';
                 }
             },
-            { "data": "project_status" },
-            { "data": "current_department" },
             { 
-                "data": "dtp_section", 
+title: "Project Status",
+                "data": "project_status" },
+            { 
+title: "Current Department",
+                "data": "current_department" },
+            { 
+            title: "Administrative Approval",
+                "data": "administrative_approval", 
                 "render": function(data) {
                     if (!data) return '-';
                     return fileIcon(data);
                 } 
             },
+
             { 
+title: "Technical Section",
                 "data": "technical_section", 
                 "render": function(data) {
                     if (!data) return '-';
                     return fileIcon(data);
                 } 
             },
+           
             { 
-                "data": "administrative_approval", 
+title: "DTP Section",
+                "data": "dtp_section", 
                 "render": function(data) {
                     if (!data) return '-';
                     return fileIcon(data);
@@ -522,6 +541,8 @@ $(document).ready(function() {
         var talukaId = $('#id_taluka').val() || '';
         var jobNo = $('#id_job_no').val().trim();
         var projectName = $('#projectName').val();
+        var fromDate = $('#from_date').val();
+        var toDate = $('#to_date').val();
         
         // Get search term from URL if present
         const urlParams = new URLSearchParams(window.location.search);
@@ -552,6 +573,8 @@ $(document).ready(function() {
         if (talukaId) requestData.taluka_id = parseInt(talukaId);
         if (jobNo) requestData.job_no = jobNo;
         if (projectName) requestData.search = projectName;
+        if (fromDate) requestData.from_date = fromDate;
+        if (toDate) requestData.to_date = toDate;
         
         console.log('Sending request:', JSON.stringify(requestData, null, 2));
         
@@ -611,6 +634,17 @@ $(document).ready(function() {
             }
         });
     }
+
+    // Handle date changes
+    $('#from_date, #to_date').on('change', function() {
+        // Only proceed if both dates are selected
+        const fromDate = $('#from_date').val();
+        const toDate = $('#to_date').val();
+        
+        if (fromDate && toDate) {
+            loadJobData();
+        }
+    });
 
     // Handle form submission
     $('form').on('submit', function(e) {
@@ -721,8 +755,16 @@ $(document).ready(function() {
         e.preventDefault();
         window.location.href = 'report-job-wise-status.php';
         
+        function resetForm() {
+            $('form')[0].reset();
+            $('.select2').val('').trigger('change');
+            $('#from_date').val('');
+            $('#to_date').val('');
+            loadJobData();
+        }
+        
         // Reset all form fields
-        $('form')[0].reset();
+        resetForm();
         
         // Reset all Select2 dropdowns
         $('.select2').val(null).trigger('change');
@@ -772,26 +814,6 @@ $(document).ready(function() {
 <script src="js/buttons.print.min.js"></script>
 <script src="js/buttons.colVis.min.js"></script>
 
-<!-- <script>
-  $(function () {
-    // Initialize DataTable only once
-    jobTable = $("#jobStatusTable").DataTable({
-      responsive: true,
-      lengthChange: false,
-      autoWidth: false,
-      paging: true,
-      searching: true,
-      ordering: true,
-      info: true,
-      buttons: ["copy", "csv", "excel", "pdf", "print", "colvis"]
-    });
 
-    jobTable.buttons().container()
-      .appendTo('#jobStatusTable_wrapper .col-md-6:eq(0)');
-
-    $('#report a').addClass('active');
-    $('#report a').addClass('active nav-link');
-  });
-</script> -->
 
 <?php include 'common/footer.php'; ?>

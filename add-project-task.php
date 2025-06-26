@@ -67,6 +67,17 @@
           <div class="invalid-feedback" style="display: none;"></div>
         </div>
 
+        <!-- priority -->
+        <div class="form-group mb-3">
+            <label for="priority" class="required-label">Priority:</label>
+            <select id="priority" name="priority" class="form-control" required>
+                <option value="Regular" <?php echo (isset($task_data['task_priority']) && strtolower($task_data['task_priority']) === 'regular') ? 'selected' : ''; ?>>Regular</option>
+                <option value="High" <?php echo (isset($task_data['task_priority']) && strtolower($task_data['task_priority']) === 'high') ? 'selected' : ''; ?>>High</option>
+                  
+                </select>
+                <div class="error-feedback" id="priority_error"></div>
+        </div>
+
         <!-- Start Date -->
         <div class='row'>
         <div class="form-group mb-3 col-md-6">
@@ -172,6 +183,7 @@ $(document).ready(function() {
       assigned_emp_id: $('#id_assign').val(),
       start_date: $('#start_date').val(),
       end_date: $('#end_date').val(),
+      task_priority: $('#priority').val(),
       task_status: 0
     };
 

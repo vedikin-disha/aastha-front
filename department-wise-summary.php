@@ -1,16 +1,16 @@
 <?php include 'common/header.php'; ?>
 
 <!-- DataTables & Select2 CSS -->
-
 <link rel="stylesheet" href="css/select2.min.css">
-
 <link rel="stylesheet" href="css/dataTables.bootstrap4.min.css">
-
 <link rel="stylesheet" href="css/buttons.bootstrap4.min.css">
-
 <link rel="stylesheet" href="css/responsive.bootstrap4.min.css">
-
 <link rel="stylesheet" href="css/select2-bootstrap4.min.css">
+
+
+<!-- Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"></script>
+
 
 <style>
 
@@ -28,6 +28,32 @@
 
     border-radius: 4px;
 
+  }
+
+  .dt-buttons {
+    margin-bottom: 15px;
+  }
+  
+  .dt-button {
+    margin-right: 5px;
+    margin-bottom: 5px;
+  }
+  
+  .dt-button-collection .dropdown-menu {
+    margin-top: 5px;
+  }
+  
+  /* Ensure buttons are visible */
+  .dataTables_wrapper .dt-buttons {
+    display: inline-block;
+    float: left;
+    margin-right: 10px;
+  }
+  
+  /* Fix for button dropdowns */
+  .dt-button-collection {
+    position: absolute;
+    z-index: 2001;
   }
 
   .dt-buttons-wrapper {
@@ -169,9 +195,6 @@
                 <div class="card-body">
 
                     <div class="table-responsive">
-
-                        <div class="dt-buttons-wrapper mb-3"></div>
-
                         <table id="pending-projects-table" class="table table-bordered table-hover">
 
                             <thead>
@@ -219,9 +242,6 @@
                 <div class="card-body">
 
                     <div class="table-responsive">
-
-                        <div class="dt-buttons-wrapper mb-3"></div>
-
                         <table id="delayed-projects-table" class="table table-bordered table-hover">
 
                             <thead>
@@ -264,7 +284,17 @@
 
 <?php include 'common/footer.php'; ?>
 
+<style>
+    .dt-buttons {
+    margin-bottom: 15px;
+}
 
+.dt-button {
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+
+</style>
 
 <!-- DataTables & Select2 JS -->
 
@@ -280,21 +310,23 @@
 
 <script src="js/responsive.bootstrap4.min.js"></script>
 
-<script src="js/dataTables.buttons.min.js"></script>
+<!-- jQuery first, then DataTables, then Buttons, then other extensions -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.0.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.0.1/js/buttons.bootstrap4.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.0.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.0.1/js/buttons.print.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-<script src="js/buttons.bootstrap4.min.js"></script>
 
-<script src="js/jszip.min.js"></script>
 
-<script src="js/pdfmake.min.js"></script>
-
-<script src="js/vfs_fonts.js"></script>
-
-<script src="js/buttons.html5.min.js"></script>
-
-<script src="js/buttons.print.min.js"></script>
-
-<script src="js/buttons.colVis.min.js"></script>
+<!-- Local scripts -->
 <script src="js/common.js"></script>
 
 
@@ -308,61 +340,86 @@ $(document).ready(function() {
 
 
 
-    // Initialize DataTables with export buttons
+    // Initialize DataTables variables
+    var pendingTable, delayedTable;
+    function initializeDataTables() {
+        // Destroy existing instances if they exist
+        if ($.fn.DataTable.isDataTable('#pending-projects-table')) {
+            $('#pending-projects-table').DataTable().destroy();
+        }
+        if ($.fn.DataTable.isDataTable('#delayed-projects-table')) {
+            $('#delayed-projects-table').DataTable().destroy();
+        }
 
-    // ['#pending-projects-table', '#delayed-projects-table'].forEach(function(tableId) {
+        // Common DataTable configuration
+        var commonConfig = {
+            responsive: true,
+            lengthChange: true,
+            autoWidth: false,
+            paging: true,
+            searching: true,
+            ordering: true,
+            info: true,
+            serverSide: false,
+            processing: true,
+            dom: "<'row'<'col-sm-12 col-md-6'B><'col-sm-12 col-md-6'f>>" +
+                 "<'row'<'col-sm-12'tr>>" +
+                 "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+            buttons: {
+                dom: {
+                    button: {
+                        className: 'btn btn-sm btn-primary mr-1 mb-1'
+                    }
+                },
+                buttons: [
+                    {
+                        extend: 'collection',
+                        text: '<i class="fas fa-download"></i> Export',
+                        className: 'btn-info',
+                        buttons: [
+                            { extend: 'copy', className: 'btn-sm' },
+                            { extend: 'excel', className: 'btn-sm' },
+                            { extend: 'csv', className: 'btn-sm' },
+                            { extend: 'pdf', className: 'btn-sm' },
+                            { extend: 'print', className: 'btn-sm' }
+                        ]
+                    },
+                    {
+                        extend: 'colvis',
+                        text: '<i class="fas fa-eye"></i> Columns',
+                        className: 'btn-secondary btn-sm'
+                    }
+                ]
+            },
+            initComplete: function() {
+                // Ensure buttons container is visible
+                this.api().buttons().container().appendTo($('#pending-projects-table_wrapper .col-md-6:eq(0)'));
+            }
+        };
 
-    //     $(tableId).DataTable({
+        // Initialize Pending Projects Table
+        var pendingTable = $('#pending-projects-table').DataTable($.extend(true, {}, commonConfig, {
+            data: [],
+            columns: [
+                { data: "dept_name", title: "Department Name" },
+                { data: "no_pending_projects", title: "Pending Projects" }
+            ]
+        }));
 
-    //         responsive: true,
+        // Initialize Delayed Projects Table
+        var delayedTable = $('#delayed-projects-table').DataTable($.extend(true, {}, commonConfig, {
+            data: [],
+            columns: [
+                { data: "dept_name", title: "Department Name" },
+                { data: "no_delayed_projects", title: "Delayed Projects" }
+            ]
+        }));
+        
+        // Move buttons to their containers
+        pendingTable.buttons().container().appendTo('#pending-projects-table_wrapper .col-md-6:eq(0)');
+        delayedTable.buttons().container().appendTo('#delayed-projects-table_wrapper .col-md-6:eq(0)');
+    }
 
-    //         lengthChange: false,
-
-    //         autoWidth: false,
-
-    //         paging: true,
-
-    //         searching: true,
-
-    //         ordering: true,
-
-    //         info: true,
-
-    //         dom: '<"row"<"col-sm-12 col-md-6"B><"col-sm-12 col-md-6"f>>rtip',
-
-    //         buttons: [
-
-    //             {
-
-    //                 extend: 'collection',
-
-    //                 text: 'Export',
-
-    //                 className: 'btn btn-primary',
-
-    //                 buttons: [
-
-    //                     { extend: 'copy', text: 'Copy', className: 'btn btn-info' },
-
-    //                     { extend: 'csv', text: 'CSV', className: 'btn btn-success' },
-
-    //                     { extend: 'excel', text: 'Excel', className: 'btn btn-success' },
-
-    //                     { extend: 'pdf', text: 'PDF', className: 'btn btn-danger' },
-
-    //                     { extend: 'print', text: 'Print', className: 'btn btn-secondary' }
-
-    //                 ]
-
-    //             },
-
-    //             { extend: 'colvis', text: 'Column Visibility', className: 'btn btn-info' }
-
-    //         ]
-
-    //     }).buttons().container().appendTo($(tableId).closest('.table-responsive').find('.dt-buttons-wrapper'));
-
-    // })
 
     // Function to load circles
 
@@ -621,98 +678,56 @@ $(document).ready(function() {
     // Function to load pending projects
 
     function loadPendingProjects() {
-
         var requestData = {
-
             access_token: "<?php echo $_SESSION['access_token']; ?>"
-
         };
 
+        // Add filter values if selected
+        var circleId = $('#id_circle').val();
+        var divisionId = $('#id_division').val();
+        var subDivisionId = $('#id_sub_division').val();
+        var talukaId = $('#id_taluka').val();
 
+        if (circleId) requestData.circle_id = circleId;
+        if (divisionId) requestData.division_id = divisionId;
+        if (subDivisionId) requestData.subdivision_id = subDivisionId;
+        if (talukaId) requestData.taluka_id = talukaId;
 
-        // Add selected filters if they exist
-
-        var selectedCircle = $('#id_circle').val();
-
-        var selectedDivision = $('#id_division').val();
-
-        var selectedSubDivision = $('#id_sub_division').val();
-
-        var selectedTaluka = $('#id_taluka').val();
-
-
-
-        if (selectedCircle) requestData.circle_id = selectedCircle;
-
-        if (selectedDivision) requestData.division_id = selectedDivision;
-
-        if (selectedSubDivision) requestData.sub_division_id = selectedSubDivision;
-
-        if (selectedTaluka) requestData.taluka_id = selectedTaluka;
-
-
+        // Show loading state
+        if ($.fn.DataTable.isDataTable('#pending-projects-table')) {
+            $('#pending-projects-table').DataTable().clear().draw();
+        }
 
         $.ajax({
-
             url: '<?php echo API_URL; ?>department-pending',
-
             type: 'POST',
-
-            data: JSON.stringify(requestData),
-
-            contentType: 'application/json',
-
-            dataType: 'json',
-    xhrFields: {
-        withCredentials: false // Only set to true if API expects cookies
-    },
-
-            success: function(response) {
-
-                if (response && response.is_successful === '1' && response.data) {
-
-                    var tbody = $('#pending-projects-table tbody');
-
-                    tbody.empty(); // Clear existing rows
-
-                    
-
-                    // Add new rows
-
-                    response.data.forEach(function(item) {
-
-                        var row = '<tr>' +
-
-                            '<td>' + (item.dept_name || '-') + '</td>' +
-
-                            '<td>' + (item.no_pending_projects || '0') + '</td>' +
-
-                            '</tr>';
-
-                        tbody.append(row);
-
-                    });
-
-                } else {
-
-                    console.error('API Error:', response.errors || 'Unknown error');
-
-                    alert('Failed to fetch department pending data: ' + (response.errors || 'Unknown error'));
-
-                }
-
+            headers: {
+                'Content-Type': 'application/json'
             },
-
+            data: JSON.stringify(requestData),
+            success: function(response) {
+                if (response && response.is_successful === '1' && response.data) {
+                    var table = $('#pending-projects-table').DataTable();
+                    table.clear();
+                    
+                    response.data.forEach(function(item) {
+                        table.row.add([
+                            item.dept_name || '-',
+                            item.no_pending_projects || '0'
+                        ]);
+                    });
+                    
+                    table.draw();
+                } else {
+                    console.error('API Error:', response.errors || 'Unknown error');
+                    alert('Failed to fetch department pending data: ' + (response.errors || 'Unknown error'));
+                }
+            },
             error: function(xhr, status, error) {
-
                 console.error('Error fetching department-pending data:', error);
-
                 alert('Failed to fetch department pending data. Please try again.');
-
             }
-
         });
-
     }
 
 
@@ -720,98 +735,56 @@ $(document).ready(function() {
     // Function to load delayed projects
 
     function loadDelayedProjects() {
-
         var requestData = {
-
             access_token: "<?php echo $_SESSION['access_token']; ?>"
-
         };
 
+        // Add filter values if selected
+        var circleId = $('#id_circle').val();
+        var divisionId = $('#id_division').val();
+        var subDivisionId = $('#id_sub_division').val();
+        var talukaId = $('#id_taluka').val();
 
+        if (circleId) requestData.circle_id = circleId;
+        if (divisionId) requestData.division_id = divisionId;
+        if (subDivisionId) requestData.subdivision_id = subDivisionId;
+        if (talukaId) requestData.taluka_id = talukaId;
 
-        // Add selected filters if they exist
-
-        var selectedCircle = $('#id_circle').val();
-
-        var selectedDivision = $('#id_division').val();
-
-        var selectedSubDivision = $('#id_sub_division').val();
-
-        var selectedTaluka = $('#id_taluka').val();
-
-
-
-        if (selectedCircle) requestData.circle_id = selectedCircle;
-
-        if (selectedDivision) requestData.division_id = selectedDivision;
-
-        if (selectedSubDivision) requestData.sub_division_id = selectedSubDivision;
-
-        if (selectedTaluka) requestData.taluka_id = selectedTaluka;
-
-
+        // Show loading state
+        if ($.fn.DataTable.isDataTable('#delayed-projects-table')) {
+            $('#delayed-projects-table').DataTable().clear().draw();
+        }
 
         $.ajax({
-
             url: '<?php echo API_URL; ?>department-delayed',
-
             type: 'POST',
-
-            data: JSON.stringify(requestData),
-
-            contentType: 'application/json',
-
-            dataType: 'json',
-    xhrFields: {
-        withCredentials: false // Only set to true if API expects cookies
-    },
-
-            success: function(response) {
-
-                if (response && response.is_successful === '1' && response.data) {
-
-                    var tbody = $('#delayed-projects-table tbody');
-
-                    tbody.empty(); // Clear existing rows
-
-                    
-
-                    // Add new rows
-
-                    response.data.forEach(function(item) {
-
-                        var row = '<tr>' +
-
-                            '<td>' + (item.dept_name || '-') + '</td>' +
-
-                            '<td>' + (item.no_delayed_projects || '0') + '</td>' +
-
-                            '</tr>';
-
-                        tbody.append(row);
-
-                    });
-
-                } else {
-
-                    console.error('API Error:', response.errors || 'Unknown error');
-
-                    alert('Failed to fetch department delayed data: ' + (response.errors || 'Unknown error'));
-
-                }
-
+            headers: {
+                'Content-Type': 'application/json'
             },
-
+            data: JSON.stringify(requestData),
+            success: function(response) {
+                if (response && response.is_successful === '1' && response.data) {
+                    var table = $('#delayed-projects-table').DataTable();
+                    table.clear();
+                    
+                    response.data.forEach(function(item) {
+                        table.row.add([
+                            item.dept_name || '-',
+                            item.no_delayed_projects || '0'
+                        ]);
+                    });
+                    
+                    table.draw();
+                } else {
+                    console.error('API Error:', response.errors || 'Unknown error');
+                    alert('Failed to fetch department delayed data: ' + (response.errors || 'Unknown error'));
+                }
+            },
             error: function(xhr, status, error) {
-
                 console.error('Error fetching department-delayed data:', error);
-
                 alert('Failed to fetch department delayed data. Please try again.');
-
             }
-
         });
-
     }
 
 

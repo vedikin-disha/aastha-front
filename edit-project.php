@@ -231,6 +231,7 @@ if (!$project_id) {
                                             <small class="form-text text-muted">Upload a new file to update the existing one</small>
                                         </div>
                                     </div>
+                                   
                                     
                                     <!-- Status -->
                                     <div class="col-md-12">
@@ -238,7 +239,6 @@ if (!$project_id) {
                                             <label for="status" class="required-label">Status:</label>
                                             <select id="status" name="status" class="form-control" required>
                                                 <option value="">-- Select Status --</option>
-                                                <option value="Pending">Pending</option>
                                                 <option value="In Progress">In Progress</option>
                                                 <option value="Internal Done">Internal Done</option>
                                                 <option value="Ext - Taluka">Ext - Taluka</option>
@@ -1252,6 +1252,7 @@ function populateFormFields(data) {
     $('#current_dept_name').val(data.current_dept_name);
     $('#current_dept_id').val(data.current_dept_id);
     $('#description').val(data.description);
+    
    
 
    

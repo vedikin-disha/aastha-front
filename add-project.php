@@ -142,6 +142,8 @@ if (!defined('API_URL')) {
                                             <div class="error-feedback" id="priority_error"></div>
                                         </div>
                                     </div>
+
+                                    <!-- Status -->
                                     
                                     <!-- Current Department -->
                         
@@ -674,7 +676,7 @@ function submitProjectForm() {
         taluka_id: $('#id_taluka').val(),
         estimated_amount: $('#estimated_amount').val() || '0.00',
         length: $('#length').val() || '0.00',
-        status: 'Pending',
+        status: 'In Progress',
         priority: $('#priority').val(),
     };
 

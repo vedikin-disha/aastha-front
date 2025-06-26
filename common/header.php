@@ -233,7 +233,9 @@ if (!isUserHasRights($request_uri)) {
     .navbar-badge{
       right: 30px;
     }    
-
+    .toast-message a, .toast-message label{
+      color: #007bff !important;
+    }
   </style>
 
 </head>

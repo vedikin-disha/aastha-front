@@ -410,7 +410,12 @@ $(document).ready(function() {
                                 data-start-date="${task.assigned_start_date || ''}"
                                 data-end-date="${task.assigned_end_date || ''}"
                                 data-dept-id="${task.dept_id || ''}">
-                                <td class="task-name">${task.task_name || ''}</td>
+                                <td class="task-name">
+                                    ${task.task_priority && task.task_priority.toLowerCase() === 'high' 
+                                        ? '<span class="badge bg-danger me-1">!</span>' 
+                                        : ''
+                                    }${task.task_name || ''}
+                                </td>
                               
                                 <td>
                                     <div class="d-flex align-items-center">
@@ -421,8 +426,8 @@ $(document).ready(function() {
                                         <span>${task.assigned_emp_name || ''}</span>
                                     </div>
                                 </td>
-                                <td>${assignedDuration}</td>
-                                <td>${completedDuration}</td>
+                                <td align="center">${task.task_duration}</td>
+                                <td align="center">${task.completed_duration}</td>
                                 <td>${task.task_status || ''}</td>
                                 <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2): ?>
                                 <td>${task.dept_name || ''}</td>

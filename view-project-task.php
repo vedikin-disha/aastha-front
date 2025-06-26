@@ -54,7 +54,13 @@
 </th>
                                         <th>Task Name</th>
 
-                                        <th>Department</th>
+                                        <th>Assigned To</th>
+
+                                        
+
+                                        <th>Start Date</th>
+
+                                        
 
                                         <!-- <th>Project Name</th> -->
 
@@ -197,20 +203,21 @@ $.ajax({
                         const row = `
 
                             <tr >
-                              ${
-    isDone 
-    ? `<td style="text-align: center; vertical-align: middle;">
-         <input type="checkbox" class="task-checkbox" style="width: 15px; height: 15px;" disabled data-task-id="${task.task_id}">
-       </td>` 
-    : `<td style="text-align: center; vertical-align: middle;">
-         <input type="checkbox" class="task-checkbox" style="width: 15px; height: 15px;" ${switchChecked} data-task-id="${task.task_id}">
-       </td>`
-  }
+                                                        ${
+                                isDone 
+                                ? `<td style="text-align: center; vertical-align: middle;">
+                                    <input type="checkbox" class="task-checkbox" style="width: 15px; height: 15px;" disabled data-task-id="${task.task_id}">
+                                </td>` 
+                                : `<td style="text-align: center; vertical-align: middle;">
+                                    <input type="checkbox" class="task-checkbox" style="width: 15px; height: 15px;" ${switchChecked} data-task-id="${task.task_id}">
+                                </td>`
+                            }
                                 
 
-                              <td>${task.task_name}</td>
+                              <td>${task.task_name} </td>
 
-                                <td>${task.dept_name}</td>
+                                <td>${task.assigned_emp_name}<br>${task.dept_name}</td>
+                                <td>${task.completed_duration }</td>
 
                                
 
@@ -228,6 +235,15 @@ $.ajax({
                                             <i class="fas fa-bell"></i>
                                         </button>
                                         <?php endif; ?>
+                                       
+                                        <button type="button" class="btn btn-primary btn-sm text-white task-play-btn rounded"
+                                        data-task-id="${task.task_id}" ${task.task_status === 'On Going' || task.task_status === 'Done' ? 'disabled' : ''}
+                                            data-task-name="${task.task_name}"
+                                            data-dept-id="${task.dept_id}"
+                                            data-project-id="${task.project_id}"
+                                            data-current-status="${isDone ? '1' : '2'}">
+                                            <i class="fas fa-play"></i>
+                                        </button>
                                         <button type="button" class="btn ${isDone ? '' : 'btn-success'} btn-sm task-status-btn rounded"
                                             data-task-id="${task.task_id}"
                                             data-task-name="${task.task_name}"
@@ -236,6 +252,7 @@ $.ajax({
                                             data-current-status="${isDone ? '1' : '2'}">
                                             ${isDone ? '' : '<i class="fas fa-check"></i>'}
                                         </button>
+                                        
                                        
                                     </div>
 
@@ -277,7 +294,90 @@ $.ajax({
 
     }
 
-    
+    $(document).on('click', '.task-play-btn', function() {
+
+const $button = $(this);
+
+const taskId = $button.data('task-id');
+
+const taskName = $button.data('task-name');
+
+const deptId = $button.data('dept-id');
+
+const projectId = $button.data('project-id');
+
+const currentStatus = $button.data('current-status');
+
+const newStatus = currentStatus === '2' ? '1' : '2';
+
+const isChecked = newStatus === '1';
+
+
+
+// Make API request to update task status
+
+$.ajax({
+
+    url: '<?php echo API_URL; ?>project-task-update',
+
+    type: 'POST',
+
+    contentType: 'application/json',
+
+    data: JSON.stringify({
+
+        access_token: '<?php echo $_SESSION["access_token"]; ?>',
+
+        task_id: taskId,
+
+        task_name: taskName,
+
+        dept_id: deptId,
+
+        task_status: isChecked ? 2 : 1,
+
+        project_id: projectId
+
+    }),
+
+    success: function(response) {
+
+        if (response.is_successful === '1') {
+
+            // Update was successful, reload the tasks to show updated status
+
+            loadProjectTasks();
+
+            // Show success message
+
+            const message = isChecked ? 'Task marked as done!' : 'Task marked as pending';
+
+            showToast(response.success_message);
+
+        } else {
+
+            // Update failed, revert switch state
+
+            $switch.prop('checked', !isChecked);
+
+            showToast(response.error_message);
+
+        }
+
+    },
+
+    error: function(xhr, status, error) {
+
+        console.error('Error updating task status:', error);
+
+            showToast('Error updating task status. Please try again.');
+
+    }
+
+});
+
+});
+
 
 
 

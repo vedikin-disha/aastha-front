@@ -130,6 +130,12 @@ function shouldShowMenu($menu_id, $allowed_menus) {
                   <p>Employee Wise Report</p>
                 </a>
               </li>
+              <li class="nav-item">
+                <a href="task-wise-report" class="nav-link">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Task Wise Report</p>
+                </a>
+              </li>
               <!-- <li class="nav-item">
                 <a href="report-job-wise-status" class="nav-link">
                   <i class="far fa-circle nav-icon"></i>

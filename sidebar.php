@@ -83,7 +83,7 @@ function isActivePage($menu_item, $current_page) {
 
         <?php if (shouldShowMenu('report', $allowed_menus)): ?>
         <?php
-          $reportPages = ['department-wise-summary', 'report-job-wise-status', 'dept-wise-report', 'employee-wise-report'];
+          $reportPages = ['department-wise-summary', 'report-job-wise-status', 'dept-wise-report', 'employee-wise-report', 'task-wise-report'];
           $isReportActive = in_array($current_page, $reportPages);
         ?>
         <li class="nav-item <?php echo $isReportActive ? 'menu-open' : ''; ?>">
@@ -117,6 +117,12 @@ function isActivePage($menu_item, $current_page) {
               <a href="employee-wise-report" class="nav-link <?php echo $current_page === 'employee-wise-report' ? 'active' : ''; ?>">
                 <i class="far fa-circle nav-icon"></i>
                 <p>Employee Wise Report</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="task-wise-report" class="nav-link <?php echo $current_page === 'task-wise-report' ? 'active' : ''; ?>">
+                <i class="far fa-circle nav-icon"></i>
+                <p>Task Wise Report</p>
               </a>
             </li>
           </ul>

@@ -445,6 +445,10 @@ $(document).ready(function() {
                 infoEmpty: 'No entries to show',
                 infoFiltered: '(filtered from _MAX_ total entries)'
             },
+            dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>><'row'<'col-sm-12'tr>><'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+            buttons: [
+                'copy', 'excel', 'pdf', 'csv'
+            ],
             columnDefs: [
                 { orderable: false, targets: 0 },
                 { className: 'text-left', targets: [1, 2] },

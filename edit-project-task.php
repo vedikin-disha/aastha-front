@@ -70,6 +70,10 @@ if ($task_id) {
       <form id="projectTaskForm" method="POST" action="">
         <input type="hidden" name="task_id" value="<?php echo $task_id; ?>">
 <input type="hidden" id="encoded_task_id" value="<?php echo base64_encode($task_id); ?>">
+<?php if (isset($task_data)): ?>
+<input type="hidden" name="project_id" id="project_id" value="<?php echo $task_data['project_id']; ?>">
+<input type="hidden" name="dept_id" id="dept_id" value="<?php echo $task_data['dept_id']; ?>">
+<?php endif; ?>
         <!-- Project Selection -->
         <div class="form-group mb-3">
           <label for="id_project" class="form-label">Project</label>
@@ -77,7 +81,7 @@ if ($task_id) {
             <select class="form-select" id="id_project" name="project" required disabled>
               <option value="">Select a Project</option>
               <?php if (isset($task_data)): ?>
-              <option value="<?php echo $task_data['project_id']; ?>" selected disabled>
+              <option value="<?php echo $task_data['project_id']; ?>" disabled>
                 <?php echo htmlspecialchars($task_data['project_name']); ?>
               </option>
               <?php endif; ?>
@@ -96,7 +100,7 @@ if ($task_id) {
             <select class="form-select" id="id_dept" name="department" required disabled>
               <option value="">Select a Department</option>
               <?php if (isset($task_data)): ?>
-              <option value="<?php echo $task_data['dept_id']; ?>" selected disabled>
+              <option value="<?php echo $task_data['dept_id']; ?>"  disabled>
                 <?php echo htmlspecialchars($task_data['dept_name']); ?>
               </option>
               <?php endif; ?>
@@ -145,6 +149,16 @@ if ($task_id) {
             }
         }
         ?>
+        <!-- priority -->
+        <div class="form-group mb-3">
+            <label for="priority" class="required-label">Priority:</label>
+            <select id="priority" name="priority" class="form-control" required>
+                    <option value="" <?php echo !isset($task_data['task_priority']) ? 'selected' : ''; ?>>-- Select Priority --</option>
+                    <option value="High" <?php echo (isset($task_data['task_priority']) && strtolower($task_data['task_priority']) === 'high') ? 'selected' : ''; ?>>High</option>
+                    <option value="Regular" <?php echo (isset($task_data['task_priority']) && strtolower($task_data['task_priority']) === 'regular') ? 'selected' : ''; ?>>Regular</option>
+                </select>
+                <div class="error-feedback" id="priority_error"></div>
+        </div>
         
         <!-- Start Date -->
          <div class='row'>
@@ -267,13 +281,14 @@ $('#projectTaskForm').on('submit', function(e) {
   var formData = {
     access_token: '<?php echo $_SESSION["access_token"]; ?>',
     task_id: $('input[name="task_id"]').val(),
-    project_id: $('#id_project').val(),
-    dept_id: $('#id_dept').val(),
+    project_id: $('#project_id').val(),
+    dept_id: $('#dept_id').val(),
     task_name: $('#task_name').val(),
     assigned_emp_id: selectedEmployee,
     start_date: $('#start_date').val(),
     end_date: $('#end_date').val(),
-    task_status: $('#id_task_status').val()
+    task_status: $('#id_task_status').val(),
+    task_priority: $('#priority').val()
   };
   
   // Validate required fields
@@ -338,6 +353,7 @@ function loadEmployees(callback) {
   var apiUrl = '<?php echo API_URL; ?>user';
   var accessToken = "<?php echo $_SESSION['access_token']; ?>";
   var $select = $('#id_assign');
+
   var selectedEmpId = '<?php echo isset($task_data['assigned_emp_id']) ? $task_data['assigned_emp_id'] : ''; ?>';
   var selectedEmpName = '<?php echo isset($task_data['assigned_emp_name']) ? addslashes($task_data['assigned_emp_name']) : ''; ?>';
 
@@ -374,6 +390,7 @@ function loadEmployees(callback) {
         });
         
         // If the selected employee wasn't in the list but we have their data, add them
+        
         if (selectedEmpId && selectedEmpName && !hasSelectedEmp) {
           $select.append(new Option(
             selectedEmpName,
