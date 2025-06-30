@@ -4,7 +4,6 @@
 <!-- <link rel="stylesheet" href="css/bootstrap.min.css"> -->
  
 
-
 <div class="card card-primary card-outline">
   <div class="card-header">
     <h3 class="card-title">User List</h3>
@@ -16,25 +15,26 @@
   </div>
 
   <div class="card-body">
+    
     <div class="new-pms-ap">
-    <table id="userTable" class="table table-bordered table-hover">
-      <thead>
-        <tr>
-          <th>Employee ID</th>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Phone Number</th>
-          <th>WhatsApp Number</th>
-          <th>Role</th>
-          <th>Department</th>
-          <th>Status</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-        <tbody>
-          <!-- data table data -->
-        </tbody>
-      </table>
+      <table id="userTable" class="table table-bordered table-hover">
+        <thead>
+          <tr>
+            <th>Employee ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone Number</th>
+            <th>WhatsApp Number</th>
+            <th>Role</th>
+            <th>Department</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+          <tbody>
+            <!-- data table data -->
+          </tbody>
+        </table>
     </div>
   </div>
 </div>

@@ -213,8 +213,8 @@ if (!isUserHasRights($request_uri)) {
 
     .new-pms-ap {
       width: 100% !important;
-      /* overflow-x: auto !important; */
-      /* overflow-y: hidden !important; */
+      overflow-x: auto !important;
+      overflow-y: hidden !important;
     }
     
     /* Search form styles */

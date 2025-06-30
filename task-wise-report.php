@@ -375,7 +375,7 @@
                 cache: false, // Prevents browser from caching the AJAX request
                 contentType: 'application/json',
                 data: function(d) {
-                    return JSON.stringify({ access_token: '<?php echo $_SESSION["access_token"]; ?>' });
+                    return JSON.stringify({ access_token: '<?php echo $_SESSION["access_token"]; ?>', "limit": 10 });
                 },
                 dataSrc: function(json) {
                     if (json && json.data && Array.isArray(json.data.projects)) {

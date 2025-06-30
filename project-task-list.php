@@ -39,6 +39,11 @@
     .dropdown-item:active {
         background-color: #30b8b9 !important;
     }
+    .new-pms-ap {
+      width: 100% !important;
+      overflow-x: auto !important;
+      overflow-y: hidden !important;
+    }
    
 </style>
 <div class="container-fluid">

@@ -141,7 +141,7 @@ $(document).ready(function() {
   // Handle generate button click
   $('#generateKeyBtn').on('click', function() {
     const newKey = setNewActivationKey();
-    showToast('New activation key generated!', true);
+    // showToast('New activation key generated!', true);
     return newKey;
   });
   

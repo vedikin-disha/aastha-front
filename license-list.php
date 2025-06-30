@@ -94,16 +94,12 @@ $(document).ready(function() {
       { 
         "data": "start_date", 
         "title": "Start Date",
-        "render": function(data) {
-          return data ? new Date(data).toLocaleDateString() : '';
-        }
+        
       },
       { 
         "data": "end_date", 
         "title": "End Date",
-        "render": function(data) {
-          return data ? new Date(data).toLocaleDateString() : '';
-        }
+        
       },
       { 
         "data": "status",
