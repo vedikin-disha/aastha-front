@@ -61,6 +61,16 @@ function getFileIcon($filename) {
 
                             </div>
 
+                            <div class="row info-row">
+
+                                <div class="col-md-4 info-label">Project Code</div>
+
+                                <div class="col-md-8"><?php echo htmlspecialchars($project['project_code']); ?></div>
+
+                            </div>
+
+                            
+
                             
 
                             <div class="row info-row">

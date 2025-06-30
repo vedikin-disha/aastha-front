@@ -2,11 +2,11 @@
 if (!defined('BASE_URL')) {
     // define('BASE_URL', 'https://dev.thcitsolutions.com/aastha-pms/');
     // define('BASE_URL', 'http://localhost/git/aastha-combined/html project/');
-     define('BASE_URL', 'http://localhost/git/astha-front/');
+     define('BASE_URL', 'http://localhost/git/aastha-front/');
 }
 
 if (!defined('API_URL')) {
-    define('API_URL', 'https://windev.thcitsolutions.com:10000/');
+    define('API_URL', 'https://aastha-pms.dhokai.co.in/');
 }
 
 if (!isset($_SESSION['access_token'])) {

@@ -13,9 +13,17 @@
         /* overflow-x: auto !important;
         overflow-y: hidden !important; */
     }
+    .select2-container--bootstrap4 .select2-results__option--highlighted {
+        background-color: #30b8b9 !important;
+        color: #212529 !important;
+    }
 
     .select2-results__option .select2-results__option--highlighted {
         background-color: #ececec !important;
+        color: #212529 !important;
+    }
+    .dropdown-item.active {
+        background-color: #30b8b9 !important;
         color: #212529 !important;
     }
     

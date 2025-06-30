@@ -1423,187 +1423,105 @@ loadUsers();
     // Handle comment form submission
 
     $('#comment-form').on('submit', function (e) {
+    e.preventDefault();
 
-        e.preventDefault();
+    const commentHtml = $('#comment-editor').html();
+    $('#comment-text').val(commentHtml);
+    const commentText = $('#comment-text').val().trim();
+    const files = $('#attachment')[0].files;
 
+    if (!commentText || commentText === '<br>' || commentText === '<div><br></div>') {
+        alert('Please enter a comment before submitting.');
+        return;
+    }
 
+    const $submitBtn = $(this).find('button[type="submit"]');
+    const originalBtnText = $submitBtn.html();
+    $submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Posting...');
 
-        const commentHtml = $('#comment-editor').html();
+    // First API call: activity-add
+    const requestData = {
+        access_token: '<?php echo $_SESSION['access_token']; ?>',
+        project_id: <?php echo $project_id; ?>,
+        activity_type: 'comment_added',
+        comment: commentText
+    };
 
-        $('#comment-text').val(commentHtml);
+    $.ajax({
+        url: '<?php echo API_URL; ?>activity-add',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(requestData),
+        success: function (response) {
+            console.log('Comment added:', response);
 
-        const commentText = $('#comment-text').val().trim();
-
-        const files = $('#attachment')[0].files;
-
-
-
-        if (!commentText || commentText === '<br>' || commentText === '<div><br></div>') {
-
-            alert('Please enter a comment before submitting.');
-
-            return;
-
-        }
-
-
-
-        const $submitBtn = $(this).find('button[type="submit"]');
-
-        const originalBtnText = $submitBtn.html();
-
-        $submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Posting...');
-
-
-
-        // First API call: activity-add
-
-        const requestData = {
-
-            access_token: '<?php echo $_SESSION['access_token']; ?>',
-
-            project_id: <?php echo $project_id; ?>,
-
-            activity_type: 'comment_added',
-
-            comment: commentText
-
-        };
-
-
-
-        $.ajax({
-
-            url: '<?php echo API_URL; ?>activity-add',
-
-            type: 'POST',
-
-            contentType: 'application/json',
-
-            data: JSON.stringify(requestData),
-
-            success: function (response) {
-
-                console.log('Comment added:', response);
+            if (response.is_successful === '1') {
+                const activityId = response.data.activity_id;
+                const uploadPromises = [];
+             
                 
 
+                showSuccessPopupAndRedirect("now you can continue worked", '#timeline');
 
-
-                if (response.is_successful === '1') {
-
-
-                    const activityId = response.data.activity_id;
-
-
-
-                    // Upload each file one by one
-
-                    const uploadPromises = [];
-
-                    for (let i = 0; i < files.length; i++) {
-
-                        const formData = new FormData();
-
-                        formData.append('activity_id', activityId);
-
-                        formData.append('access_token', '<?php echo $_SESSION['access_token']; ?>');
-
-                        formData.append('attachment', files[i]);
-
-
-
-                        uploadPromises.push(
-
-                            $.ajax({
-
-                                url: '<?php echo API_URL; ?>attachment-add',
-
-                                type: 'POST',
-
-                                data: formData,
-
-                                processData: false,
-
-                                contentType: false
-
-                            })
-
-                        );
-
-                    }
-
-
-
-                    // Wait for all attachments to upload
-
-                    Promise.all(uploadPromises)
-
-                        .then(function (results) {
-
-                            console.log('All attachments uploaded successfully', results);
-
-
-
-                            $('#comment-editor').html('');
-
-                            $('#comment-text').val('');
-
-                            $('#attachment').val('');
-
-                            $submitBtn.prop('disabled', false).html(originalBtnText);
-
-
-
-                            showToast('Comment and attachments uploaded successfully!');
-
-                            //refersh the page 
-
-                            
-
-                            // loadTimeline(); // or loadProjectTimeline();
-
-                            loadProjectTimeline();
-
-                            //refresh the page in 1 second in the actibvity tab
-
-                        
-
-                        })
-
-                        .catch(function (error) {
-
-                            console.error('Attachment upload failed', error);
-
-                            $submitBtn.prop('disabled', false).html(originalBtnText);
-
-                            alert('Comment added but one or more attachments failed.');
-
-                        });
-
-                } else {
-
-                    $submitBtn.prop('disabled', false).html(originalBtnText);
-
-                    alert('Failed to add comment: ' + (response.errors || 'Unknown error'));
-
+                // If no files to upload, show success immediately
+                if (files.length === 0) {
+                    $submitBtn.prop('disabled', false).html(originalBtnText); 
+                    loadProjectTimeline();
+                    return;
                 }
 
-            },
+                // Upload each file
+                for (let i = 0; i < files.length; i++) {
+                    const formData = new FormData();
+                    formData.append('activity_id', activityId);
+                    formData.append('access_token', '<?php echo $_SESSION['access_token']; ?>');
+                    formData.append('attachment', files[i]);
 
-            error: function (xhr, status, error) {
+                    uploadPromises.push(
+                        $.ajax({
+                            url: '<?php echo API_URL; ?>attachment-add',
+                            type: 'POST',
+                            data: formData,
+                            processData: false,
+                            contentType: false
+                        })
+                    );
+                }
 
-                console.error('Comment API error:', error);
+                // Handle file upload results
+                Promise.all(uploadPromises)
+                    .then(function (results) {
+                        console.log('All attachments uploaded successfully', results);
+                        showToast(response.success_message);
+                        resetForm();
+                    })
+                    .catch(function (error) {
+                        console.error('Attachment upload failed', error);
+                        showToast('Comment added but one or more attachments failed to upload.', 'error');
+                        resetForm();
+                    });
 
+            } else {
+                showToast(response.errors || 'Failed to add comment', 'error');
                 $submitBtn.prop('disabled', false).html(originalBtnText);
-
-                alert('Failed to add comment. Please try again.');
-
             }
-
-        });
-
+        },
+        error: function (xhr, status, error) {
+            console.error('Comment API error:', error);
+            showToast('Failed to add comment. Please try again.', 'error');
+            $submitBtn.prop('disabled', false).html(originalBtnText);
+        }
     });
 
+    // Helper functions
+    function resetForm() {
+        $('#comment-editor').html('');
+        $('#comment-text').val('');
+        $('#attachment').val('');
+        $submitBtn.prop('disabled', false).html(originalBtnText);
+        loadProjectTimeline();
+    }
+});
     // Function to update the file list display
 
     function updateFileList() {
@@ -1705,6 +1623,48 @@ loadUsers();
 
 
     // Show alert message
+
+    function showSuccessPopupAndRedirect(message, redirectUrl) {
+    // Create modal HTML
+    const modalHtml = `
+    <div class="modal fade" id="successModal" tabindex="-1" role="dialog" aria-labelledby="successModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="successModalLabel">Success</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>${message}</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="okButton">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>`;
+    
+    // Add modal to body
+    $('body').append(modalHtml);
+    
+    // Show modal
+    $('#successModal').modal('show');
+    
+    // Handle OK button click
+    $('#okButton').on('click', function() {
+        $('#successModal').modal('hide');
+        if (redirectUrl) {
+            // Open in new tab
+            window.open(redirectUrl, '_blank');
+        }
+        // Remove modal from DOM after hiding
+        $('#successModal').on('hidden.bs.modal', function() {
+            $(this).remove();
+        });
+    });
+}
 
     function showAlert(message, type = 'success') {
         const alertHtml = `
@@ -1880,3 +1840,8 @@ loadUsers();
 
 </script> 
 
+
+<!-- Include common.js -->
+<script src="js/common.js"></script>
+
+</body>

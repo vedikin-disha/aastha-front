@@ -145,6 +145,16 @@ if (!$project_id) {
                                             <div class="error-feedback" id="job_no_error"></div>
                                         </div>
                                     </div>
+
+                                    <!-- Project Code -->
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="project_code">Project Code:</label>
+                                            <input type="text" class="form-control" id="project_code" name="project_code" 
+                                                placeholder="Enter project code">
+                                            <div class="error-feedback" id="project_code_error"></div>
+                                        </div>
+                                    </div>
                                     
                                     <!-- Job No Reference Date (Hidden) -->
                                     <div class="col-md-6">
@@ -1228,6 +1238,7 @@ function populateFormFields(data) {
     
     $('#project_name').val(data.project_name);
     $('#job_no').val(data.job_no);
+    $('#project_code').val(data.project_code);
     $('#client_name').val(data.client_name);
     // Format job_no_reference_date if it exists
     if (data.job_no_reference_date) {
@@ -1594,6 +1605,8 @@ function updateProject() {
         proposed_work_id: $('#proposed_work_id').val() || null,
         project_name: $('#project_name').val(),
         job_no: $('#job_no').val(),
+       
+        project_code: $('#project_code').val(),
         job_no_reference_date: $('#job_no_reference_date').val(),
         client_name: $('#client_name').val(),
         // Ensure estimated_amount is always a number and defaults to 0
@@ -1608,7 +1621,8 @@ function updateProject() {
         division_id: parseInt($('#id_division').val()) || 0,
         sub_id: parseInt($('#id_sub').val()) || 0,
         taluka_id: parseInt($('#id_taluka').val()) || 0,
-        status: $('#status').val(),
+        // Use dropdown value if it exists, otherwise fallback to existing status
+        status: $('#status').length ? $('#status').val() : projectData.status,
         priority: $('#priority').val(),
         // add the description field
         description: $('#description').val(),

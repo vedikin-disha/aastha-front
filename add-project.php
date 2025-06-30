@@ -121,6 +121,16 @@ if (!defined('API_URL')) {
                                             <div class="error-feedback" id="job_no_error"></div>
                                         </div>
                                     </div>
+
+                                    <!-- add the project_code -->
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="project_code" class="required-label">Project Code:</label>
+                                            <input type="text" class="form-control" id="project_code" name="project_code" 
+                                                placeholder="Enter project code">
+                                            <div class="error-feedback" id="project_code_error"></div>
+                                        </div>
+                                    </div>
                                     
                                     <!-- Job No Reference Date (Hidden) -->
                                     <div class="col-md-6">
@@ -665,6 +675,7 @@ function submitProjectForm() {
         proposed_work_id: $('#proposed_work_id').val(),
         project_name: $('#project_name').val(),
         job_no: $('#job_no').val(),
+        project_code: $('#project_code').val(),
         job_no_reference_date: $('#job_no_reference_date').val() || null,
         client_name: $('#client_name').val(),
         description: $('#description').val(),

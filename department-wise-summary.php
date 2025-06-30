@@ -19,6 +19,7 @@
     height: 38px;
 
   }
+  
 
   .alert-danger {
 
@@ -47,7 +48,7 @@
   .dataTables_wrapper .dt-buttons {
     display: inline-block;
     float: left;
-    margin-right: 10px;
+    /* margin-right: 10px; */
   }
   
   /* Fix for button dropdowns */
@@ -64,7 +65,7 @@
 
   .dt-buttons .btn {
 
-    margin-right: 5px;
+    margin-right: -3px;
 
   }
 
@@ -336,9 +337,159 @@ $(document).ready(function() {
 
     // Initialize Select2
 
-    $('.select2').select2();
+    $('#id_circle').select2({
+        theme: 'bootstrap4',
+        width: '100%',
+        placeholder: 'Select an option',
+        allowClear: true
+    });
 
+    $('#id_division').select2({
+        theme: 'bootstrap4',
+        width: '100%',
+        placeholder: 'Select an option',
+        allowClear: true
+    });
 
+    $('#id_sub_division').select2({
+        theme: 'bootstrap4',
+        width: '100%',
+        allowClear: true
+    });
+
+    $('#id_taluka').select2({
+        theme: 'bootstrap4',
+        width: '100%',
+        allowClear: true
+    });
+
+    // DataTable initialization with export buttons
+    $('#pending-projects-table').DataTable({
+        dom: 'Bfrtip',
+        buttons: [
+        // copy,csv,excel,pdf,[print],column visibility
+        {
+            extend: 'copy',
+            text: '<i class="fas fa-copy"></i> Copy',
+            className: 'btn btn-primary',
+            title: 'Department Wise Summary',
+            exportOptions: {
+                columns: ':visible'
+            }
+        },
+        {
+            extend: 'csv',
+            text: '<i class="fas fa-file-csv"></i> CSV',
+            className: 'btn btn-primary',
+            title: 'Department Wise Summary',
+            exportOptions: {
+                columns: ':visible'
+            }
+        },
+        {
+            extend: 'excel',
+            text: '<i class="fas fa-file-excel"></i> Excel',
+            className: 'btn btn-primary',
+            title: 'Department Wise Summary',
+            exportOptions: {
+                columns: ':visible'
+            }
+        },
+        {
+            extend: 'pdf',
+            text: '<i class="fas fa-file-pdf"></i> PDF',
+            className: 'btn btn-primary',
+            title: 'Department Wise Summary',
+                exportOptions: {
+                    columns: ':visible'
+                }
+            },
+            {
+                extend: 'print',
+                text: '<i class="fas fa-print"></i> Print',
+                className: 'btn btn-primary',
+                title: 'Department Wise Summary',
+                exportOptions: {
+                    columns: ':visible'
+                }
+            },
+            
+        ],
+        language: {
+            buttons: {
+                copyTitle: 'Copied to clipboard',
+                copySuccess: {
+                    _: '%d rows copied',
+                    1: '1 row copied'
+                }
+            }
+        },
+        responsive: true
+    });
+
+    $('#delayed-projects-table').DataTable({
+        dom: 'Bfrtip',
+        buttons: [
+            // copy,csv,excel,pdf,[print],column visibility
+            {
+                extend: 'copy',
+                text: '<i class="fas fa-copy"></i> Copy',
+                className: 'btn btn-primary',
+                title: 'Department Wise Summary',
+                exportOptions: {
+                    columns: ':visible'
+                }
+            },
+            {
+                extend: 'csv',
+                text: '<i class="fas fa-file-csv"></i> CSV',
+                className: 'btn btn-primary',
+                title: 'Department Wise Summary',
+                exportOptions: {
+                    columns: ':visible'
+                }
+            },
+            {
+                extend: 'excel',
+                text: '<i class="fas fa-file-excel"></i> Excel',
+                className: 'btn btn-primary',
+                title: 'Department Wise Summary',
+                exportOptions: {
+                    columns: ':visible'
+                }
+            },
+            {
+                extend: 'pdf',
+                text: '<i class="fas fa-file-pdf"></i> PDF',
+                className: 'btn btn-primary',
+                title: 'Department Wise Summary',
+                exportOptions: {
+                    columns: ':visible'
+                }
+            },
+            {
+                extend: 'print',
+                text: '<i class="fas fa-print"></i> Print',
+                className: 'btn btn-primary',
+                title: 'Department Wise Summary',
+                exportOptions: {
+                    columns: ':visible'
+                }
+            },
+           
+           
+        ],
+        language: {
+            buttons: {
+                copyTitle: 'Copied to clipboard',
+                copySuccess: {
+                    _: '%d rows copied',
+                    1: '1 row copied'
+                }
+            }
+        },
+        responsive: true
+    });
 
     // Initialize DataTables variables
     var pendingTable, delayedTable;
@@ -690,7 +841,7 @@ $(document).ready(function() {
 
         if (circleId) requestData.circle_id = circleId;
         if (divisionId) requestData.division_id = divisionId;
-        if (subDivisionId) requestData.subdivision_id = subDivisionId;
+        if (subDivisionId) requestData.sub_division_id = subDivisionId;
         if (talukaId) requestData.taluka_id = talukaId;
 
         // Show loading state
@@ -747,7 +898,7 @@ $(document).ready(function() {
 
         if (circleId) requestData.circle_id = circleId;
         if (divisionId) requestData.division_id = divisionId;
-        if (subDivisionId) requestData.subdivision_id = subDivisionId;
+        if (subDivisionId) requestData.sub_division_id = subDivisionId;
         if (talukaId) requestData.taluka_id = talukaId;
 
         // Show loading state

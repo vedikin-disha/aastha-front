@@ -235,7 +235,12 @@ include 'common/header.php';
 <script type="text/javascript" src="https://cdn.datatables.net/responsive/2.2.9/js/responsive.bootstrap4.min.js"></script>
 <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
 <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.bootstrap4.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
 <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.print.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.colVis.min.js"></script>
 
 <script>
 $(document).ready(function() {
@@ -445,9 +450,46 @@ $(document).ready(function() {
                 infoEmpty: 'No entries to show',
                 infoFiltered: '(filtered from _MAX_ total entries)'
             },
-            dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>><'row'<'col-sm-12'tr>><'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+            dom: 'Bfrtip',
             buttons: [
-                'copy', 'excel', 'pdf', 'csv'
+                {
+                    extend: 'copy',
+                    text: '<i class="fas fa-copy"></i> Copy',
+                    className: 'btn btn-primary',
+                    exportOptions: { columns: ':visible' }
+                },
+                {
+                    text: '<i class="fas fa-file-csv"></i> CSV',
+                    className: 'btn btn-primary',
+                    action: function() {
+                        downloadReport('csv');
+                    }
+                },
+                {
+                    text: '<i class="fas fa-file-excel"></i> Excel',
+                    className: 'btn btn-primary',
+                    action: function() {
+                        downloadReport('excel');
+                    }
+                },
+                {
+                    text: '<i class="fas fa-file-pdf"></i>PDF',
+                    className: 'btn btn-primary',
+                    action: function() {
+                        downloadReport('pdf');
+                    }
+                },
+                {
+                    extend: 'print',
+                    text: '<i class="fas fa-print"></i> Print',
+                    className: 'btn btn-primary',
+                    exportOptions: { columns: ':visible' }
+                },
+                {
+                    extend: 'colvis',
+                    text: '<i class="fas fa-columns"></i> Columns',
+                    className: 'btn btn-primary',
+                }
             ],
             columnDefs: [
                 { orderable: false, targets: 0 },
@@ -545,6 +587,104 @@ $(document).ready(function() {
                 console.error('Error loading employees:', error);
                 showError('Failed to load employees. Please try again.');
             }
+        });
+    }
+    
+    // Function to download report in different formats
+    function downloadReport(format) {
+        const employeeId = $('#employeeId').val();
+        const timeRange = $('#timeRange').val();
+        let fromDate = '';
+        let toDate = '';
+        
+        // Set date range based on selection
+        const today = moment();
+        switch(timeRange) {
+            case 'today':
+                fromDate = today.format('YYYY-MM-DD');
+                toDate = today.format('YYYY-MM-DD');
+                break;
+            case 'last_week':
+                fromDate = today.clone().subtract(1, 'weeks').startOf('week').format('YYYY-MM-DD');
+                toDate = today.clone().subtract(1, 'weeks').endOf('week').format('YYYY-MM-DD');
+                break;
+            case 'current_week':
+                fromDate = today.clone().startOf('week').format('YYYY-MM-DD');
+                toDate = today.clone().endOf('week').format('YYYY-MM-DD');
+                break;
+            case 'current_month':
+                fromDate = today.clone().startOf('month').format('YYYY-MM-DD');
+                toDate = today.clone().endOf('month').format('YYYY-MM-DD');
+                break;
+            case 'custom':
+                fromDate = $('#fromDate').val();
+                toDate = $('#toDate').val();
+                if (!fromDate || !toDate) {
+                    showError('Please select both from and to dates');
+                    return;
+                }
+                break;
+        }
+        
+        if (!employeeId) {
+            showError('Please select an employee');
+            return;
+        }
+        
+        // Show loading indicator
+        const $btn = $(`button:contains('Download ${format.toUpperCase()}')`);
+        const originalText = $btn.html();
+        $btn.html('<i class="fas fa-spinner fa-spin"></i> Downloading...').prop('disabled', true);
+        
+        // Prepare request data
+        const requestData = {
+            access_token: '<?php echo $_SESSION["access_token"]; ?>',
+            emp_id: employeeId,
+            from_date: fromDate,
+            to_date: toDate,
+            download_report_in: format
+        };
+        
+        // Make API request with JSON
+        fetch('<?php echo API_URL; ?>emp-report', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/octet-stream' // Important for file download
+            },
+            body: JSON.stringify(requestData)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.blob();
+        })
+        .then(blob => {
+            // Create a download link and trigger download
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            
+            // Set the filename based on format
+            const fileName = `employee_report_${fromDate}_to_${toDate}.${format}`;
+            a.download = fileName;
+            
+            document.body.appendChild(a);
+            a.click();
+            
+            // Clean up
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        })
+        .catch(error => {
+            console.error('Error downloading report:', error);
+            showError('Failed to download report. Please try again.');
+        })
+        .finally(() => {
+            // Reset button state
+            $btn.html(originalText).prop('disabled', false);
         });
     }
     

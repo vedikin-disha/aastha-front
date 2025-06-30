@@ -223,7 +223,7 @@
                                 <th>Location</th>
                                 <th>Department</th>
                                 <th>Assigned Employees</th>
-                                <th>Priority</th>
+                               
                                 <th>Status</th>
                                 <?php if ($_SESSION['emp_role_id'] != 1 && $_SESSION['emp_role_id'] != 2): ?>
                                 <th>View</th>
@@ -488,10 +488,20 @@ $(document).ready(function() {
             // $('.buttons-excel').html('<i class="fas fa-file-excel"></i>');
             // $('.buttons-pdf').html('<i class="fas fa-file-pdf"></i>');
             // $('.buttons-print').html('<i class="fas fa-print"></i>');
-            // $('.buttons-colvis').html('<i class="fas fa-eye"></i>');
+            // $('.buttons-colvis').html('<i class="fas fa-eye"></i>'); 
         },
         "columns": [
-            { "data": "project_name", "name": "project_name" },
+            { 
+                "data": "project_name", 
+                "name": "project_name",
+                "render": function(data, type, row) {
+                    let priorityBadge = '';
+                    if (row.priority && row.priority.toLowerCase() === 'high') {
+                        priorityBadge = '<span class="badge bg-danger">!</span>';
+                    }
+                    return priorityBadge + '    ' + (data || 'Unnamed Project');
+                }
+            },
             { "data": "job_no", "name": "job_no" },
             { "data": "client_name", "name": "client_name" },
             { "data": "project_duration", "name": "project_duration", "orderable": false },
@@ -508,15 +518,7 @@ $(document).ready(function() {
                     return 'Not Assigned';
                 }
             },
-            { 
-                "data": "priority",
-                "name": "priority",
-                "render": function(data, type, row) {
-                    if (!data) return '';
-                    var badgeClass = data.toLowerCase() === 'high' ? 'badge-danger' : 'badge-secondary';
-                    return '<span class="badge ' + badgeClass + '">' + data + '</span>';
-                }
-            },
+          
             { 
                 "data": "status",
                 "render": function(data, type, row) {
@@ -571,6 +573,12 @@ $(document).ready(function() {
                 
                 // Only add sorting parameters if the column is orderable
                 if (column.orderable !== false) {
+                    //first always proiprity high
+                    if (column.data === 'priority') {
+                        params.order_by = 'priority';
+                        params.order_dir = 'desc';
+                        return;
+                    }
                     params.order_by = column.data || '';
                     params.order_dir = orderColumn.dir || 'asc';
                 }
@@ -658,8 +666,19 @@ $(document).ready(function() {
             }
         },
         "columns": [
-            { "data": "project_name" },
+            { 
+                "data": "project_name", 
+                "name": "project_name",
+                "render": function(data, type, row) {
+                    let priorityBadge = '';
+                    if (row.priority && row.priority.toLowerCase() === 'high') {
+                        priorityBadge = '<span class="badge bg-danger">!</span>';
+                    }
+                    return priorityBadge + '    ' + (data || 'Unnamed Project');
+                }
+            },
             { "data": "job_no" },
+            
             { "data": "client_name" },
             { 
                 "data": "project_duration",
@@ -697,27 +716,7 @@ $(document).ready(function() {
                 "orderable": "false"
             },
             
-            { 
-                "data": "priority",
-                "render": function(data) {
-                    var priority = data ? data.toLowerCase() : '';
-                    var priorityClass = '';
-                    var priorityText = data || 'Regular';
-                    
-                    switch(priority.toLowerCase()) {
-                        case 'high':
-                            priorityClass = 'badge-danger';
-                            break;
-                        case 'regular':
-                            priorityClass = 'badge-secondary';
-                            break;
-                        default:
-                            priorityClass = 'badge-secondary';
-                            break;
-                    }
-                    return '<span class="badge ' + priorityClass + '">' + priorityText + '</span>';
-                }
-            },  
+           
             { 
                 "data": "status",
                 "render": function(data) {

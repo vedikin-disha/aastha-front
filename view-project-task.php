@@ -58,7 +58,8 @@
 
                                         
 
-                                        <th>Start Date</th>
+                                        <th>Task Duration</th>
+                                        <th>Completed Duration</th>
 
                                         
 
@@ -217,6 +218,7 @@ $.ajax({
                               <td>${task.task_name} </td>
 
                                 <td>${task.assigned_emp_name}<br>${task.dept_name}</td>
+                                <td>${task.task_duration}</td>
                                 <td>${task.completed_duration }</td>
 
                                

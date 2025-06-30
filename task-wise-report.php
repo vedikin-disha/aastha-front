@@ -1,28 +1,17 @@
 <?php include 'common/header.php'; ?>
 
-<!-- Add DataTables CSS and JS -->
+<!-- DataTables CSS -->
 <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.0.1/css/buttons.bootstrap4.min.css">
+
+<!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- DataTables & Extensions -->
 <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
 <script src="https://cdn.datatables.net/buttons/2.0.1/js/dataTables.buttons.min.js"></script>
 <script src="https://cdn.datatables.net/buttons/2.0.1/js/buttons.bootstrap4.min.js"></script>
-
-<script src="https://cdn.datatables.net/buttons/2.0.1/js/dataTables.buttons.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.0.1/js/buttons.bootstrap4.min.js"></script>
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-<!-- DataTables core -->
-<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
-
-<!-- Buttons core -->
-<script src="https://cdn.datatables.net/buttons/2.0.1/js/dataTables.buttons.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.0.1/js/buttons.bootstrap4.min.js"></script>
-
-<!-- Export dependencies -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
@@ -30,6 +19,33 @@
 <script src="https://cdn.datatables.net/buttons/2.0.1/js/buttons.print.min.js"></script>
 
 <style>
+    td.details-control {
+        text-align: center;
+        cursor: pointer;
+    }
+    td.details-control::before {
+        content: '+';
+        color: white;
+        background-color: #28a745; /* Green */
+        font-weight: bold;
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        text-align: center;
+        line-height: 20px;
+        border-radius: 4px;
+    }
+    tr.shown td.details-control::before {
+        content: '-';
+        background-color: #dc3545; /* Red */
+    }
+    .btn-group>.btn:not(:last-child):not(.dropdown-toggle){
+       font-size: 17px;
+    }
+    .btn-group>.btn:not(:first-child) {
+        font-size: 17px;
+    }
+
     .project-row {
         cursor: pointer;
         background-color: #f8f9fa;
@@ -83,6 +99,7 @@
                 <table id="taskReportTable" class="table table-bordered table-hover">
                 <thead>
                     <tr>
+                        <th>    </th> <!-- For controls -->
                         <th>Project Name</th>
                         <th>Total Tasks</th>
                         <th>Completed</th>
@@ -118,7 +135,7 @@
                             <th>Assigned Duration</th>
                             <th>Completed Duration</th>
                             <th>Status</th>
-                            <th>Actions</th>
+                            
                         </tr>
                     </thead>
                     <tbody id="departmentTasksBody">
@@ -132,194 +149,325 @@
 
 <script>
     $(document).ready(function () {
-    let reportData = null;
+        let allProjectsData = []; // To store the full data from API
+        
+    // Generates DIV-based structure for departments, which is more stable than nested tables.
+    function formatDepartments(projectData) {
+        if (!projectData || !projectData.tasks || projectData.tasks.length === 0) {
+            return '<div class="p-3 text-center">No tasks or departments found for this project.</div>';
+        }
 
-    // Initialize DataTable
-    const taskTable = $('#taskReportTable').DataTable({
-        paging: true,
-        lengthChange: true,
-        searching: true,
-        ordering: true,
-        info: true,
-        autoWidth: false,
-        responsive: true,
-        pageLength: 100,
-        dom: 'Bfrtip',
-        buttons: ['copy', 'csv', 'excel', 'pdf', 'print']
-    });
-    // Position the buttons in the container we created
-    taskTable.buttons().container()
-        .appendTo('#taskReportTable_wrapper .col-md-6:eq(0)');
-    // Add some margin to the buttons
-    $('.dt-buttons').addClass('mb-3');
+        const departments = projectData.tasks.reduce((acc, task) => {
+            if (task && task.dept_id) {
+                if (!acc[task.dept_id]) {
+                    acc[task.dept_id] = {
+                        id: task.dept_id,
+                        name: task.dept_name,
+                        tasks: [],
+                        counts: { completed: 0, pending: 0, ongoing: 0 }
+                    };
+                }
+                acc[task.dept_id].tasks.push(task);
 
-    // Load report data
-    loadReportData();
+                // Normalize status by converting to lowercase
+                const status = String(task.task_status || '').toLowerCase().trim();
+                if (status.includes('done') || status.includes('complete')) {
+                    acc[task.dept_id].counts.completed++;
+                } else if (status.includes('pending') || status.includes('to do')) {
+                    acc[task.dept_id].counts.pending++;
+                } else if (status.includes('in progress') || status.includes('on going')) {
+                    acc[task.dept_id].counts.ongoing++;
+                }
+            }
+            return acc;
+        }, {});
 
-    function loadReportData() {
-        $.ajax({
-            url: '<?php echo API_URL; ?>project-task-listing',
-            type: 'POST',
-            dataType: 'json',
-            contentType: 'application/json',
-            data: JSON.stringify({
-                access_token: '<?php echo $_SESSION["access_token"]; ?>'
-            }),
-            success: function (response) {
-                reportData = response; // Make response globally accessible
-                if (response && response.data && response.data.projects) {
-                    populateReportTable(response.data.projects);
+        let deptHtml = '<div class="p-3 bg-light">';
+        Object.values(departments).forEach(dept => {
+            deptHtml += `<div class="department-container border-bottom mb-2 pb-2">
+                            <div class="department-row p-2 d-flex justify-content-between align-items-center">
+                                <span><i class="fas fa-plus-circle text-primary mr-2"></i>${dept.name}</span>
+                                <div>
+                                    <span class="badge badge-secondary mr-1">Total: ${dept.tasks.length}</span>
+                                    <span class="badge badge-success mr-1">Completed: ${dept.counts.completed}</span>
+                                    <span class="badge badge-warning mr-1">To Do: ${dept.counts.pending}</span>
+                                    <span class="badge badge-info">Ongoing: ${dept.counts.ongoing}</span>
+                                </div>
+                            </div>`;
+            const tasksHtml = formatTasks(dept.tasks);
+            deptHtml += `<div class="tasks-container" style="display: none; padding-left: 20px;">${tasksHtml}</div>
+                         </div>`;
+        });
+        deptHtml += '</div>';
+        return deptHtml;
+    }
+
+    function formatTasks(tasks) {
+        if (!tasks || tasks.length === 0) {
+            return '<div class="p-3 text-center">No tasks found for this department.</div>';
+        }
+
+        let tasksHtml = '<div class="p-3"><table class="table table-bordered table-sm">';
+        tasksHtml += '<thead class="thead-light"><tr><th>Task</th><th>Assigned To</th><th>Task Duration</th><th>Completed Duration</th><th>Status</th></tr></thead><tbody>';
+        tasks.forEach(task => {
+            const statusClass = getStatusClass(task.task_status);
+            tasksHtml += `<tr>
+                            <td>${task.task_name || 'N/A'}</td>
+                            <td>${task.assigned_emp_name || 'Unassigned'}</td>
+                            <td>${task.task_duration}</td>
+                            <td>${task.completed_duration}</td>
+                            <td><span class="badge ${statusClass}">${task.task_status || 'N/A'}</span></td>
+                           
+                          </tr>`;
+        });
+        tasksHtml += '</tbody></table></div>';
+        return tasksHtml;
+    }    
+
+        function getStatusClass(status) {
+            if (!status) return 'badge-secondary';
+            // Normalize status to handle variations like 'On Going', 'To Do', etc.
+            const n = String(status).toLowerCase().trim();
+            if (n.includes('done') || n.includes('complete')) return 'badge-success';
+            if (n.includes('pending') || n.includes('to do')) return 'badge-warning';
+            if (n.includes('in progress') || n.includes('on going')) return 'badge-info';
+            if (n.includes('overdue')) return 'badge-danger';
+            return 'badge-secondary';
+        }
+
+        // Custom action for export buttons to include nested data
+        const exportAction = function(e, dt, button, config) {
+            const projects = allProjectsData;
+            const flatData = [];
+
+            projects.forEach(project => {
+                if (project.tasks && project.tasks.length > 0) {
+                    project.tasks.forEach(task => {
+                        flatData.push({
+                            project: project.project_name,
+                            department: task.dept_name,
+                            task: task.task_name,
+                            assigned: task.assigned_emp_name || 'Unassigned',
+                            status: task.task_status || 'N/A'
+                        });
+                    });
+                } else {
+                    flatData.push({
+                        project: project.project_name,
+                        department: 'N/A',
+                        task: 'N/A',
+                        assigned: 'N/A',
+                        status: 'N/A'
+                    });
+                }
+            });
+
+            const tempTable = $('<table class="d-none"></table>');
+            $('body').append(tempTable);
+
+            const tempDt = tempTable.DataTable({
+                data: flatData,
+                columns: [
+                    { title: 'Project', data: 'project' },
+                    { title: 'Department', data: 'department' },
+                    { title: 'Task', data: 'task' },
+                    { title: 'Assigned To', data: 'assigned' },
+                    { title: 'Task Duration', data: 'task_duration' },
+                    { title: 'Completed Duration', data: 'completed_duration' },
+                    { title: 'Status', data: 'status' }
+                ],
+                dom: 'B',
+                buttons: [{
+                    extend: config.extend,
+                    title: 'Task-Wise Report',
+                    customize: function (win) {
+                        // Custom styling for the print view
+                        if (config.extend === 'print') {
+                            $(win.document.body).find('h1').css('text-align', 'center');
+                            $(win.document.body).find('table').addClass('display').css('font-size', '9px');
+                        }
+                    }
+                }]
+            });
+
+            tempDt.buttons(0).trigger();
+            tempDt.destroy();
+            tempTable.remove();
+        };
+
+        // Function to handle report downloads
+        function downloadTaskReport(format) {
+            // Show loading state
+            const loading = $('<div class="loading-overlay">' +
+                '<div class="spinner-border text-primary" role="status">' +
+                '<span class="sr-only">Loading...</span></div></div>');
+            $('body').append(loading);
+            
+            // Prepare request data
+            const requestData = {
+                access_token: '<?php echo $_SESSION["access_token"]; ?>',
+                download_report_in: format
+            };
+            
+            // Make the API request
+            fetch('<?php echo API_URL; ?>project-task-listing', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/octet-stream'
+                },
+                body: JSON.stringify(requestData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                // Create a URL for the blob
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                
+                // Set the filename based on the format
+                const timestamp = new Date().toISOString().slice(0, 10);
+                let filename = 'task_report_' + timestamp;
+                
+                switch(format) {
+                    case 'pdf':
+                        filename += '.pdf';
+                        break;
+                    case 'excel':
+                        filename += '.xlsx';
+                        break;
+                    case 'csv':
+                        filename += '.csv';
+                        break;
+                    default:
+                        filename += '.pdf';
+                }
+                
+                // Trigger download
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                
+                // Clean up
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            })
+            .catch(error => {
+                console.error('Error downloading report:', error);
+                alert('Error downloading report. Please try again.');
+            })
+            .finally(() => {
+                // Remove loading state
+                loading.remove();
+            });
+        }
+
+        // Initialize the DataTable
+        const taskTable = $('#taskReportTable').DataTable({
+            ajax: {
+                url: '<?php echo API_URL; ?>project-task-listing',
+                type: 'POST',
+                cache: false, // Prevents browser from caching the AJAX request
+                contentType: 'application/json',
+                data: function(d) {
+                    return JSON.stringify({ access_token: '<?php echo $_SESSION["access_token"]; ?>' });
+                },
+                dataSrc: function(json) {
+                    if (json && json.data && Array.isArray(json.data.projects)) {
+                        allProjectsData = json.data.projects;
+                    } else {
+                        allProjectsData = [];
+                        console.error("API response is not in the expected format:", json);
+                    }
+                    return allProjectsData;
+                },
+                error: function(xhr, status, error) {
+                    console.error("AJAX Error:", error);
+                    $('.dataTables_empty').html('Failed to load data. Please try again.');
                 }
             },
-            error: function (xhr, status, error) {
-                console.error('Error loading report data:', error);
-                alert('Error loading report data. Please try again.');
+            columns: [
+                { className: 'details-control', orderable: false, data: null, defaultContent: '' },
+                { data: 'project_name' },
+                { data: 'total_tasks' },
+                { data: 'completed_task', render: function(data) { return `<span class="badge badge-success">${data || 0}</span>`; } },
+                { data: 'pending_task', render: function(data) { return `<span class="badge badge-warning">${data || 0}</span>`; } },
+                { data: 'ongoing_task', render: function(data) { return `<span class="badge badge-info">${data || 0}</span>`; } }
+            ],
+            order: [[1, 'asc']],
+            dom: 'Bfrtip',
+            buttons: [
+                {
+                    extend: 'copy',
+                    text: '<i class="fas fa-copy"></i> Copy',
+                    className: 'btn btn-sm btn-primary',
+                    exportOptions: { columns: ':visible' }
+                },
+                {
+                    text: '<i class="fas fa-file-csv"></i> CSV',
+                    className: 'btn btn-sm btn-primary',
+                    action: function() {
+                        downloadTaskReport('csv');
+                    }
+                },
+                {
+                    text: '<i class="fas fa-file-excel"></i> Excel',
+                    className: 'btn btn-sm btn-primary',
+                    action: function() {
+                        downloadTaskReport('excel');
+                    }
+                },
+                {
+                    text: '<i class="fas fa-file-pdf"></i> PDF',
+                    className: 'btn btn-sm btn-primary',
+                    action: function() {
+                        downloadTaskReport('pdf');
+                    },
+                    orientation: 'landscape',
+                    pageSize: 'A4',
+                    exportOptions: { columns: ':visible' }
+                },
+                {
+                    extend: 'print',
+                    text: '<i class="fas fa-print"></i> Print',
+                    className:'btn btn-sm btn-primary',
+                    exportOptions: { columns: ':visible' }
+                }
+            ],
+            responsive: true
+        });
+
+        // Handles the main project row expansion
+        $('#taskReportTable tbody').on('click', 'td.details-control', function () {
+            const tr = $(this).closest('tr');
+            const row = taskTable.row(tr);
+
+            if (row.child.isShown()) {
+                // This row is already open - close it
+                row.child.hide();
+                tr.removeClass('shown');
+            } else {
+                // Open this row
+                row.child(formatDepartments(row.data())).show();
+                tr.addClass('shown');
             }
         });
-    }
 
-    function populateReportTable(projects) {
-        const tbody = $('#reportTableBody');
-        tbody.empty();
-
-        projects.forEach(project => {
-            const projectRow = `
-                <tr class="project-row" data-project-id="${project.project_id}">
-                    <td>
-                        <i class="fas fa-chevron-right mr-2 expand-icon"></i>
-                        ${project.project_name}
-                    </td>
-                    <td>${project.total_tasks || 0}</td>
-                    <td><span class="badge badge-success">${project.completed_task || 0}</span></td>
-                    <td><span class="badge badge-warning">${project.pending_task || 0}</span></td>
-                    <td><span class="badge badge-info">${project.ongoing_task || 0}</span></td>
-                </tr>
-            `;
-            tbody.append(projectRow);
-
-            // Group tasks by department
-            const departments = {};
-            if (project.tasks) {
-    project.tasks.forEach(task => {
-        if (!departments[task.dept_id]) {
-            departments[task.dept_id] = {
-                name: task.dept_name,
-                tasks: [],
-                counts: {
-                    total: 0,
-                    completed: 0,
-                    pending: 0,
-                    ongoing: 0
-                }
-            };
-        }
-        departments[task.dept_id].tasks.push(task);
-        departments[task.dept_id].counts.total++;
-        
-// Update the status check to be case-insensitive and handle all variations
-const status = String(task.task_status || '').toLowerCase().trim();
-if (status.includes('done') || status.includes('complete')) {
-    departments[task.dept_id].counts.completed++;
-} else if (status.includes('pending') || status.includes('to do')) {
-    departments[task.dept_id].counts.pending++;
-} else if (
-    status.includes('in progress') || 
-    status.includes('ongoing') || 
-    status.replace(/\s/g, '') === 'inprogress'
-) {
-    departments[task.dept_id].counts.ongoing++;
-} else {
-    console.warn('Unrecognized status:', task.task_status, 'Normalized:', status);
-}
-
-const mapStatusToType = (status) => {
-    if (!status) return 'other';
-    const s = status.toLowerCase().trim().replace(/\s+/g, '');
-    
-    if (s.includes('done') || s.includes('complete')) return 'completed';
-    
-    if (s.includes('inprogress') || s.includes('ongoing') || s.includes('inprogress')) return 'ongoing';
-    if (s.includes('overdue')) return 'overdue';
-    
-    console.warn('Unmapped status:', status);
-    return 'other';
-};
-
-const type = mapStatusToType(task.task_status);
-if (type && departments[task.dept_id].counts[type] !== undefined) {
-    departments[task.dept_id].counts[type]++;
-} else {
-    console.warn('Unrecognized status:', task.task_status, 'Mapped as:', type);
-}
-
-// Add debug logging
-console.log('Task:', {
-    id: task.task_id,
-    name: task.task_name,
-    status: task.task_status,
-    normalized: status,
-    counts: departments[task.dept_id].counts
-});
+        // Handles clicks on department rows to toggle visibility of the tasks container.
+        $('#taskReportTable tbody').on('click', '.department-row', function () {
+            const $this = $(this);
+            // Find the tasks container within the same parent and toggle it.
+            $this.closest('.department-container').find('.tasks-container').toggle();
+            // Toggle the icon for visual feedback.
+            $this.find('i').toggleClass('fa-plus-circle fa-minus-circle text-primary text-danger');
+        }); 
     });
-}
-            // Add department rows
-            Object.entries(departments).forEach(([deptId, deptData]) => {
-                const deptRow = `
-                     <tr class="department-row" data-project-id="${project.project_id}" data-dept-id="${deptId}" style="display: none;">
-        <td colspan="5" class="pl-4">
-            <i class="fas fa-chevron-right mr-2 expand-icon"></i>
-            ${deptData.name}
-            <span class="badge badge-secondary ml-2">${deptData.counts.total} Tasks</span>
-            <span class="badge badge-success ml-1">${deptData.counts.completed} Done</span>
-            <span class="badge badge-warning ml-1">${deptData.counts.pending} Pending</span>
-            <span class="badge badge-info ml-1">${deptData.counts.ongoing} Ongoing</span>
-        </td>
-    </tr>
-                `;
-                tbody.append(deptRow);
-            });
-        });
-
-        setupRowHandlers();
-    }
-
-    function setupRowHandlers() {
-        // Toggle departments under projects
-        $('.project-row').off('click').on('click', function () {
-            const projectId = $(this).data('project-id');
-            const $icon = $(this).find('.expand-icon');
-            $icon.toggleClass('fa-chevron-down fa-chevron-right');
-            $(`.department-row[data-project-id="${projectId}"]`).toggle();
-        });
-
-        // Handle department row click
-        $('.department-row').off('click').on('click', function (e) {
-            e.stopPropagation();
-            const $row = $(this);
-            const projectId = $row.data('project-id');
-            const deptId = $row.data('dept-id');
-            const $icon = $row.find('.expand-icon');
-            $icon.toggleClass('fa-chevron-down fa-chevron-right');
-
-            // Check if tasks already loaded
-            if ($row.next().hasClass('task-row')) {
-    // Just toggle all task rows including header
-    $row.nextUntil(':not(.task-row)').toggle();
-} else {
-    // Render header + tasks
-    const loadingRow = $('<tr class="task-row"><td colspan="6" class="p-3 text-center"><i class="fas fa-spinner fa-spin"></i> Loading tasks...</td></tr>');
-    $row.after(loadingRow);
-
-    const tasks = getDepartmentTasks(projectId, deptId);
-    if (tasks && tasks.length > 0) {
-        loadingRow.remove();
-        renderTasks($row, tasks);
-    } else {
-        loadingRow.html('<td colspan="6" class="text-center p-3">No tasks found for this department</td>');
-    }
-}
-        });
-    }
+    
 
     function getDepartmentTasks(projectId, deptId) {
         const project = reportData?.data?.projects.find(p => p.project_id == projectId);
@@ -403,7 +551,7 @@ console.log('Task:', {
         const taskId = $(this).data('task-id');
         window.location.href = `view-project-task.php?id=${btoa(taskId)}`;
     });
-});
+
 
     
 </script>

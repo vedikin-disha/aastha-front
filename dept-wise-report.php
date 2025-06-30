@@ -169,19 +169,27 @@ include 'common/header.php';
 </div>
 
 
-<!-- Dependencies -->
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/dataTables.bootstrap4.min.css">
-<script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/min/moment.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.5/js/dataTables.bootstrap4.min.js"></script>
+<!-- Required CSS Libraries -->
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css"/>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.2.2/css/buttons.bootstrap4.min.css"/>
 
-<script type="text/javascript" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/responsive/2.2.9/js/responsive.bootstrap4.min.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.bootstrap4.min.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js"></script>
+<!-- Required JavaScript Libraries -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Moment.js for date handling -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
+
+<!-- DataTables Buttons -->
+<script src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.bootstrap4.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.print.min.js"></script>
+
 <!-- Chart.js (skip if already loaded by AdminLTE) -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -366,7 +374,7 @@ $(function () {
           
           // Initialize or update the DataTable
           if (!deptTable) {
-            initializeDataTable();
+            initializeDataTable(allProjectsData);
           } else {
             deptTable.clear().rows.add(allProjectsData).draw();
           }
@@ -557,10 +565,94 @@ $(function () {
   function initializeDataTable() {
     if (deptTable) {
       deptTable.destroy();
+      $('.dt-buttons').remove();
     }
     
     deptTable = $('#deptTable').DataTable({
+      pageLength: 10,
+      lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
+      responsive: true,
+      autoWidth: false,
+      searching: true,
+      ordering: true,
+      paging: true,
+      info: true,
+      language: {
+        lengthMenu: 'Show _MENU_ entries',
+        search: 'Search:',
+        paginate: {
+          first: 'First',
+          last: 'Last',
+          next: 'Next',
+          previous: 'Previous'
+        },
+        info: 'Showing _START_ to _END_ of _TOTAL_ entries',
+        infoEmpty: 'No entries to show',
+        infoFiltered: '(filtered from _MAX_ total entries)'
+      },
+      dom: "<'row'<'col-sm-12 col-md-6'B><'col-sm-12 col-md-6'f>>" +
+            "<'row'<'col-sm-12'tr>>" +
+            "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+      buttons: [
+        {
+          extend: 'copy',
+          text: '<i class="fas fa-copy"></i> Copy',
+          className: 'btn btn-primary',
+          exportOptions: { columns: ':visible' }
+        },
+        {
+          text: '<i class="fas fa-file-csv"></i>CSV',
+          className: 'btn btn-primary',
+          action: function() {
+            downloadDeptReport('csv');
+          }
+        },
+        {
+          text: '<i class="fas fa-file-excel"></i> Excel',
+          className: 'btn btn-primary',
+          action: function() {
+            downloadDeptReport('excel');
+          }
+        },
+        {
+          text: '<i class="fas fa-file-pdf"></i> PDF',
+          className: 'btn btn-primary',
+          action: function() {
+            downloadDeptReport('pdf');
+          }
+        },
+        {
+          extend: 'print',
+          text: '<i class="fas fa-print"></i> Print',
+          className: 'btn btn-primary',
+          exportOptions: { columns: ':visible' }
+        }
+      ],
       data: allProjectsData,
+      responsive: true,
+      language: {
+        buttons: {
+          copyTitle: 'Copied to clipboard',
+          copySuccess: {
+            _: '%d rows copied',
+            1: '1 row copied'
+          }
+        },
+        search: "_INPUT_",
+        searchPlaceholder: "Search projects...",
+        lengthMenu: "Show _MENU_ projects",
+        info: "Showing _START_ to _END_ of _TOTAL_ projects",
+        infoEmpty: "No projects found",
+        infoFiltered: "(filtered from _MAX_ total projects)",
+        paginate: {
+          previous: "&laquo;",
+          next: "&raquo;"
+        }
+      },
+      initComplete: function() {
+        // Move the buttons to our custom container
+        $('.dt-buttons').appendTo(buttonContainer);
+      },
       columns: [
         { 
           data: 'project_name',
@@ -600,25 +692,9 @@ $(function () {
           }
         }
       ],
-      responsive: true,
       pageLength: 10,
       lengthMenu: [10, 25, 50, 100],
       order: [[1, 'desc']],
-      dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
-           "<'row'<'col-sm-12'tr>>" +
-           "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
-      language: {
-        search: "_INPUT_",
-        searchPlaceholder: "Search projects...",
-        lengthMenu: "Show _MENU_ projects",
-        info: "Showing _START_ to _END_ of _TOTAL_ projects",
-        infoEmpty: "No projects found",
-        infoFiltered: "(filtered from _MAX_ total projects)",
-        paginate: {
-          previous: "&laquo;",
-          next: "&raquo;"
-        }
-      },
       drawCallback: function() {
         // Update the status filter dropdown after table is drawn
         const statusSet = new Set();
@@ -670,6 +746,103 @@ $(function () {
     if(!data) return '-';
     return moment(new Date(data)).format('DD MMM YYYY');
   }
+
+  function downloadDeptReport(format) {
+        const deptId = $('#id_dept').val();
+        const timeRange = $('#timeRange').val();
+        let fromDate = '';
+        let toDate = '';
+        
+        // Set date range based on selection
+        const today = moment();
+        switch(timeRange) {
+            case 'today':
+                fromDate = today.format('YYYY-MM-DD');
+                toDate = today.format('YYYY-MM-DD');
+                break;
+            case 'last_week':
+                fromDate = today.clone().subtract(1, 'weeks').startOf('week').format('YYYY-MM-DD');
+                toDate = today.clone().subtract(1, 'weeks').endOf('week').format('YYYY-MM-DD');
+                break;
+            case 'current_week':
+                fromDate = today.clone().startOf('week').format('YYYY-MM-DD');
+                toDate = today.clone().endOf('week').format('YYYY-MM-DD');
+                break;
+            case 'current_month':
+                fromDate = today.clone().startOf('month').format('YYYY-MM-DD');
+                toDate = today.clone().endOf('month').format('YYYY-MM-DD');
+                break;
+            case 'custom':
+                fromDate = $('#fromDate').val();
+                toDate = $('#toDate').val();
+                if (!fromDate || !toDate) {
+                    showError('Please select both from and to dates');
+                    return;
+                }
+                break;
+        }
+        
+        if (!deptId) {
+            showError('Please select a department');
+            return;
+        }
+        
+        // Show loading indicator
+        const $btn = $(`button:contains('Download ${format.toUpperCase()}')`);
+        const originalText = $btn.html();
+        $btn.html('<i class="fas fa-spinner fa-spin"></i> Downloading...').prop('disabled', true);
+        
+        // Prepare request data
+        const requestData = {
+            access_token: '<?php echo $_SESSION["access_token"]; ?>',
+            dept_id: deptId,
+            from_date: fromDate,
+            to_date: toDate,
+            download_report_in: format
+        };
+        
+        // Make API request with JSON
+        fetch('<?php echo API_URL; ?>dept-report', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/octet-stream' // Important for file download
+            },
+            body: JSON.stringify(requestData)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.blob();
+        })
+        .then(blob => {
+            // Create a download link and trigger download
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            
+            // Set the filename based on format
+            const fileName = `employee_report_${fromDate}_to_${toDate}.${format}`;
+            a.download = fileName;
+            
+            document.body.appendChild(a);
+            a.click();
+            
+            // Clean up
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        })
+        .catch(error => {
+            console.error('Error downloading report:', error);
+            showError('Failed to download report. Please try again.');
+        })
+        .finally(() => {
+            // Reset button state
+            $btn.html(originalText).prop('disabled', false);
+        });
+    }
 
   function drawDonut(chartData) {
     const ctx = document.getElementById("donutChart").getContext("2d");
