@@ -84,7 +84,7 @@ if (!defined('API_URL')) {
                                         <div class="form-group">
                                             <label for="project_type_id" class="required-label">Project Type:</label>
                                             <select id="project_type_id" name="project_type_id" class="form-control select2" required>
-                                                <option value="">Select Project Type</option>
+                                                <option value="">-- Select Project Type --</option>
                                                 <!-- Options will be loaded from API -->
                                             </select>
                                             <div class="error-feedback" id="project_type_id_error"></div>
@@ -117,7 +117,7 @@ if (!defined('API_URL')) {
                                         <div class="form-group">
                                             <label for="job_no" class="required-label">Job No:</label>
                                             <input type="text" class="form-control" id="job_no" name="job_no" 
-                                                placeholder="Enter job number">
+                                                placeholder="Enter job number" required>
                                             <div class="error-feedback" id="job_no_error"></div>
                                         </div>
                                     </div>
@@ -127,7 +127,7 @@ if (!defined('API_URL')) {
                                         <div class="form-group">
                                             <label for="project_code" class="required-label">Project Code:</label>
                                             <input type="text" class="form-control" id="project_code" name="project_code" 
-                                                placeholder="Enter project code">
+                                                placeholder="Enter project code" required>
                                             <div class="error-feedback" id="project_code_error"></div>
                                         </div>
                                     </div>
@@ -162,7 +162,7 @@ if (!defined('API_URL')) {
                                         <div class="form-group">
                                             <label for="client_name" class="required-label">Client Name:</label>
                                             <input type="text" class="form-control" id="client_name" name="client_name" 
-                                                placeholder="Enter client name">
+                                                placeholder="Enter client name" required>
                                             <div class="error-feedback" id="client_name_error"></div>
                                         </div>
                                     </div>
@@ -196,7 +196,7 @@ if (!defined('API_URL')) {
                                   <!-- // by defult today date -->
                                         <div class="form-group">
                                             <label for="start_date" class="required-label">Start Date:</label>
-                                            <input type="date" class="form-control" id="start_date" name="start_date" data-date-format="YYYY-MM-DD">
+                                            <input type="date" class="form-control" id="start_date" name="start_date" data-date-format="YYYY-MM-DD" required>
                                             <div class="error-feedback" id="start_date_error"></div>
                                         </div>
                                     </div>
@@ -214,7 +214,7 @@ if (!defined('API_URL')) {
                                     <div class="col-md-12">
                                         <div class="form-group">
                                             <label for="id_circle" class="required-label">Circle:</label>
-                                            <select id="id_circle" name="circle_id" class="form-control select2">
+                                            <select id="id_circle" name="circle_id" class="form-control select2" required>
                                                 <option value="">Select Circle</option>
                                                 <!-- Options will be loaded from API -->
                                             </select>
@@ -226,7 +226,7 @@ if (!defined('API_URL')) {
                                     <div class="col-md-12">
                                         <div class="form-group">
                                             <label for="id_division" class="required-label">Division:</label>
-                                            <select id="id_division" name="division_id" class="form-control select2">
+                                            <select id="id_division" name="division_id" class="form-control select2" required>
                                                 <option value="">Select Division</option>
                                                 <!-- Options will be loaded from API -->
                                             </select>
@@ -394,7 +394,7 @@ if (!defined('API_URL')) {
 <script>
 // Define API_URL for JavaScript
 const API_URL = '<?php echo API_URL; ?>';
-</script></script>
+</script>
 
 <script>
 
@@ -666,7 +666,43 @@ function loadEmployees() {
     console.log('Loading employees...');
 }
 
+function validateForm() {
+    let isValid = true;
+    
+    // Reset error messages
+    $('.error-feedback').text('');
+    // Project Type:Project Name:Job No:Project Code:Priority:Client Name:Division:Circle:Start Date:
+    // Check required fields
+    const requiredFields = [
+       {id: 'project_type_id', name: 'Project Type'},
+       {id: 'project_name', name: 'Project Name'},
+       {id: 'job_no', name: 'Job No'},
+       {id: 'project_code', name: 'Project Code'},
+       {id: 'priority', name: 'Priority'},
+       {id: 'client_name', name: 'Client Name'},
+       {id: 'division_id', name: 'Division'},
+       {id: 'circle_id', name: 'Circle'},
+       {id: 'start_date', name: 'Start Date'},
+    ];
+    
+    requiredFields.forEach(field => {
+        const $field = $('#' + field.id);
+        if (!$field.val()) {
+            $('#' + field.id + '_error').text(field.name + ' is required');
+            isValid = false;
+        }
+    });
+    
+    return isValid;
+}
+
 function submitProjectForm() {
+    // Validate form before submission
+    if (!validateForm()) {
+        showToast( 'Please fill in all required fields' , false);
+        return false;
+    }
+    
     $('#saveProject').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Saving...');
 
     const projectData = {
@@ -986,6 +1022,14 @@ $(document).ready(function() {
     // Add active class to navigation
     $('#projects-menu').addClass('active');
     
+    // Clear validation errors when user starts typing
+    $('input, select, textarea').on('input change', function() {
+        const fieldId = $(this).attr('id');
+        if (fieldId) {
+            $(`#${fieldId}_error`).text('');
+        }
+    });
+    
     // Load initial data
     console.log('Loading initial data...');
     loadProjectTypes();
@@ -999,4 +1043,5 @@ $(document).ready(function() {
 </script>
 
 <?php include 'common/footer.php'; ?>
+
 <script src="common/common.js"></script>

@@ -134,14 +134,16 @@ $(document).ready(function() {
     const selectedOption = $(this).find('option:selected');
     if (selectedOption.val()) {
       // Get the phone number from the data attribute
-      const phoneNumber = selectedOption.data('phone') || '';
-      // Remove any non-digit characters and ensure we don't have a leading 91
-      const cleanNumber = phoneNumber.toString().replace(/\D/g, '').replace(/^91/, '');
-      // Update the phone number field
-      $('#phone_number').val(cleanNumber);
+      let phoneNumber = selectedOption.data('phone') || '';
+      // Remove any non-digit characters
+      phoneNumber = phoneNumber.toString().replace(/\D/g, '');
+      // Ensure we don't have a leading 91 for display purposes
+      const displayNumber = phoneNumber.startsWith('91') ? phoneNumber.substring(2) : phoneNumber;
+      // Update the phone number field with display number
+      $('#phone_number').val(displayNumber);
       
       // Debug log (you can remove this after confirming it works)
-      console.log('Selected user phone:', phoneNumber, 'Cleaned number:', cleanNumber);
+      console.log('Selected user phone:', phoneNumber, 'Display number:', displayNumber);
     } else {
       // Clear the field if no user is selected
       $('#phone_number').val('');
@@ -185,10 +187,14 @@ $(document).ready(function() {
     if (selectedUser) {
       // Get the selected user's phone number from the dropdown
       const selectedOption = $('#user_select option:selected');
-      const userPhone = String(selectedOption.data('phone') || '');
-      requestData.phone_number = userPhone.replace(/^91/, ''); // Remove country code if present
+      let userPhone = String(selectedOption.data('phone') || '');
+      // Ensure the number starts with 91
+      userPhone = userPhone.startsWith('91') ? userPhone : '91' + userPhone;
+      requestData.phone_number = userPhone;
     } else {
-      requestData.phone_number = '91' + phoneNumber; // Use custom phone number if provided
+      // For custom input, ensure it starts with 91 and has 12 digits total (91 + 10 digit number)
+      const cleanNumber = phoneNumber.replace(/\D/g, '');
+      requestData.phone_number = cleanNumber.startsWith('91') ? cleanNumber : '91' + cleanNumber;
     }
     
     // Add schedule time if provided
