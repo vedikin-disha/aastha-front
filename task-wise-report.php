@@ -23,6 +23,9 @@
         text-align: center;
         cursor: pointer;
     }
+    /* .flex-wrap {
+      bottom: -30px;
+    } */
     td.details-control::before {
         content: '+';
         color: white;
@@ -400,14 +403,16 @@
                 { data: 'ongoing_task', render: function(data) { return `<span class="badge badge-info">${data || 0}</span>`; } }
             ],
             order: [[1, 'asc']],
-            dom: 'Bfrtip',
+            dom: "<'row'<'col-sm-12 col-md-6'B><'col-sm-12 col-md-6'f>>" +
+                 "<'row'<'col-sm-12'tr>>" +
+                 "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
             buttons: [
-                {
-                    extend: 'copy',
-                    text: '<i class="fas fa-copy"></i> Copy',
-                    className: 'btn btn-sm btn-primary',
-                    exportOptions: { columns: ':visible' }
-                },
+                // {
+                //     extend: 'copy',
+                //     text: '<i class="fas fa-copy"></i> Copy',
+                //     className: 'btn btn-sm btn-primary',
+                //     exportOptions: { columns: ':visible' }
+                // },
                 {
                     text: '<i class="fas fa-file-csv"></i> CSV',
                     className: 'btn btn-sm btn-primary',
@@ -431,13 +436,14 @@
                     orientation: 'landscape',
                     pageSize: 'A4',
                     exportOptions: { columns: ':visible' }
-                },
-                {
-                    extend: 'print',
-                    text: '<i class="fas fa-print"></i> Print',
-                    className:'btn btn-sm btn-primary',
-                    exportOptions: { columns: ':visible' }
                 }
+                // ,
+                // {
+                //     extend: 'print',
+                //     text: '<i class="fas fa-print"></i> Print',
+                //     className:'btn btn-sm btn-primary',
+                //     exportOptions: { columns: ':visible' }
+                // }
             ],
             responsive: true
         });

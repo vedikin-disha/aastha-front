@@ -469,7 +469,42 @@ $(document).ready(function() {
         "processing": true,
         "data": [],
         "buttons": [
-            'copy', 'csv', 'excel', 'pdf', 'print', 'colvis'
+            {
+                extend: 'copy',
+                text: '<i class="fas fa-copy"></i> Copy',
+                className: 'btn btn-primary',
+                exportOptions: { columns: ':visible' }
+            },
+            {
+                extend: 'csv',
+                text: '<i class="fas fa-file-csv"></i> CSV',
+                className: 'btn btn-primary',
+                exportOptions: { columns: ':visible' }
+            },
+            {
+                extend: 'excel',
+                text: '<i class="fas fa-file-excel"></i> Excel',
+                className: 'btn btn-primary',
+                exportOptions: { columns: ':visible' }
+            },
+            {
+                extend: 'pdf',
+                text: '<i class="fas fa-file-pdf"></i> PDF',
+                className: 'btn btn-primary',
+                exportOptions: { columns: ':visible' }
+            },
+            {
+                extend: 'print',
+                text: '<i class="fas fa-print"></i> Print',
+                className: 'btn btn-primary',
+                exportOptions: { columns: ':visible' }
+            },
+            {
+                extend: 'colvis',
+                text: '<i class="fas fa-columns"></i> Column Visibility',
+                className: 'btn btn-primary',
+                exportOptions: { columns: ':visible' }
+            }
         ],
         "columns": [
             { "data": "job_no" },

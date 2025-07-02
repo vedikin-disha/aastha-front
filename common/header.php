@@ -62,6 +62,9 @@ if (!isUserHasRights($request_uri)) {
     color: #0056b3;
     text-decoration: underline;
 }
+.dropdown-item.position-relative{
+  background-color: white !important;
+}
     .toast-success {
       background-color: #28a745 !important;
     }
@@ -313,8 +316,14 @@ if (!isUserHasRights($request_uri)) {
 
   </nav>
 
+  <!-- Notification Sound -->
+  <audio id="notification-sound" preload="auto">
+    <source src="./assets/sounds/notification.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+
   <!-- Notification Handling JavaScript -->
-<script>
+  <script>
 $(document).ready(function() {
   // Initialize tooltips
   $('[data-toggle="tooltip"]').tooltip();
@@ -413,6 +422,10 @@ $(document).ready(function() {
       },
       error: function(xhr, status, error) {
         console.error('Error fetching notifications:', error);
+
+        if (xhr.status === 401) {
+          window.location.href = 'login.php'; // Update with your actual login page
+        }
         $('#notification-list').html('<div class="dropdown-item text-danger">Error loading notifications</div>');
       }
     });
@@ -532,7 +545,15 @@ $(document).ready(function() {
       contentType: 'application/json',
       success: function(response) {
         if (response.is_successful === '1' && response.data && response.data.length > 0) {
-          $('#notification-count').text(response.data.length).show();
+          // Play sound if there are new notifications
+          const currentCount = parseInt($('#notification-count').text()) || 0;
+          if (response.data.length > currentCount) {
+            // playNotificationSound();
+          }
+          
+          // Update notification count
+          $('#notification-count').text(response.data.length);
+          $('#notification-count').show();
         } else {
           $('#notification-count').hide();
         }
@@ -546,8 +567,21 @@ $(document).ready(function() {
   // Initial count update
   updateNotificationCount();
   
-  // Update count every 5 minutes
-  setInterval(updateNotificationCount, 5 * 60 * 1000);
+ // Update count at regular interval
+setInterval(updateNotificationCount, <?php echo NOTIFICATION_POLLING_INTERVAL; ?> * 1000);
+
+  
+  // Function to play notification sound
+  function playNotificationSound() {
+    const notificationSound = document.getElementById('notification-sound');
+    if (notificationSound) {
+      notificationSound.currentTime = 0; // Reset audio to start
+      notificationSound.play().catch(e => console.log('Audio play failed:', e));
+    }
+  }
+
+  // Track the last seen notification ID
+  let lastSeenNotificationId = localStorage.getItem('lastSeenNotificationId') || 0;
   
   // Function to check for new notifications
   function checkForNewNotifications() {
@@ -565,6 +599,21 @@ $(document).ready(function() {
       contentType: 'application/json',
       success: function(response) {
         if (response.is_successful === '1' && response.data && response.data.length > 0) {
+          // Find the latest notification ID
+          const latestNotification = response.data.reduce((latest, current) => {
+            return (latest.notification_id > current.notification_id) ? latest : current;
+          });
+          
+          // Check if we have new notifications
+          if (latestNotification.notification_id > lastSeenNotificationId) {
+            // Play sound only for new notifications
+            playNotificationSound();
+            // Update the last seen notification ID
+            lastSeenNotificationId = latestNotification.notification_id;
+            localStorage.setItem('lastSeenNotificationId', lastSeenNotificationId);
+          }
+          
+          // Show each notification
           response.data.forEach(function(notification) {
             // Only show if notification has content
             if (notification.notification) {
@@ -646,8 +695,8 @@ $(document).ready(function() {
     $(toast).css('width', '350px');
   }
   
-  // Start polling for notifications (every 35 seconds)
-  setInterval(checkForNewNotifications, 35000);
+  // Start polling for notifications
+  setInterval(checkForNewNotifications, <?php echo NOTIFICATION_POLLING_INTERVAL; ?>);
   
   // Initial check
   checkForNewNotifications();

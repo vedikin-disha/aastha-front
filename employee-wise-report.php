@@ -450,14 +450,16 @@ $(document).ready(function() {
                 infoEmpty: 'No entries to show',
                 infoFiltered: '(filtered from _MAX_ total entries)'
             },
-            dom: 'Bfrtip',
+            dom: "<'row'<'col-sm-12 col-md-6'B><'col-sm-12 col-md-6'f>>" +
+                 "<'row'<'col-sm-12'tr>>" +
+                 "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
             buttons: [
-                {
-                    extend: 'copy',
-                    text: '<i class="fas fa-copy"></i> Copy',
-                    className: 'btn btn-primary',
-                    exportOptions: { columns: ':visible' }
-                },
+                // {
+                //     extend: 'copy',
+                //     text: '<i class="fas fa-copy"></i> Copy',
+                //     className: 'btn btn-primary',
+                //     exportOptions: { columns: ':visible' }
+                // },
                 {
                     text: '<i class="fas fa-file-csv"></i> CSV',
                     className: 'btn btn-primary',
@@ -479,17 +481,17 @@ $(document).ready(function() {
                         downloadReport('pdf');
                     }
                 },
-                {
-                    extend: 'print',
-                    text: '<i class="fas fa-print"></i> Print',
-                    className: 'btn btn-primary',
-                    exportOptions: { columns: ':visible' }
-                },
-                {
-                    extend: 'colvis',
-                    text: '<i class="fas fa-columns"></i> Columns',
-                    className: 'btn btn-primary',
-                }
+                // {
+                //     extend: 'print',
+                //     text: '<i class="fas fa-print"></i> Print',
+                //     className: 'btn btn-primary',
+                //     exportOptions: { columns: ':visible' }
+                // },
+                // {
+                //     extend: 'colvis',
+                //     text: '<i class="fas fa-columns"></i> Columns',
+                //     className: 'btn btn-primary',
+                // }
             ],
             columnDefs: [
                 { orderable: false, targets: 0 },

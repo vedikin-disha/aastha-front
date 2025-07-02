@@ -689,6 +689,7 @@ function submitProjectForm() {
         length: $('#length').val() || '0.00',
         status: 'In Progress',
         priority: $('#priority').val(),
+        budget_head: $('#budget_head').val(),
     };
 
     console.log('Submitting project data:', projectData);
@@ -706,13 +707,7 @@ function submitProjectForm() {
 
                 uploadAttachments(projectId, function(uploadedUUIDs) {
                     updateProjectWithAttachments(projectId, uploadedUUIDs);
-                    $(document).Toasts('create', {
-                    class: 'bg-success',
-                    title: 'success',
-                    body: response.success_message,
-                    autohide: true,
-                    delay: 3000
-                });
+                   showToast(response.success_message , true);
                     setTimeout(() => {
                         window.location.href = 'projects.php';
                     }, 10000);
@@ -725,13 +720,7 @@ function submitProjectForm() {
         error: function(xhr, status, error) {
             console.error('Error saving project:', error);
             $('#saveProject').prop('disabled', false).html('<i class="fas fa-save"></i> Save Project');
-            $(document).Toasts('create', {
-                    class: 'bg-denger',
-                    title: 'denger',
-                    body: response.success_message,
-                    autohide: true,
-                    delay: 3000
-                });
+            showToast('Failed to save project. Please try again.', false);
                   
 
 
@@ -820,8 +809,10 @@ function updateProjectWithAttachments(projectId, uploadedUUIDs) {
         taluka_id: $('#id_taluka').val(),
         estimated_amount: $('#estimated_amount').val() || '0.00',
         length: $('#length').val() || '0.00',
-        status: 'Pending',
+        status: 'In Progress',
+        project_code: $('#project_code').val(),
         priority: $('#priority').val(),
+        budget_head: $('#budget_head').val(),
         project_id: projectId,
         administrative_approval: uploadedUUIDs['administrative_approval'] || '',
         dtp_section: uploadedUUIDs['dtp_section'] || '',
@@ -1008,3 +999,4 @@ $(document).ready(function() {
 </script>
 
 <?php include 'common/footer.php'; ?>
+<script src="common/common.js"></script>

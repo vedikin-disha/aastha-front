@@ -31,9 +31,11 @@
         </div>
 
         <!-- Right side: Add New Task -->
+
+        <!-- reditect to the  /add-project-task -->
         <div>
           <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2 || $_SESSION['emp_role_id'] == 3): ?>
-            <button type="button" class="btn btn-sm btn-success" data-toggle="modal" data-target="#addTaskModal">
+            <button type="button" class="btn btn-sm btn-success" data-toggle="modal" onclick="window.location.href = '<?php echo BASE_URL; ?>add-project-task';">
               <i class="fas fa-plus"></i> Add New Task
             </button>
           <?php endif; ?>

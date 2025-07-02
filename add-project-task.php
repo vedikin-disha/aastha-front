@@ -42,17 +42,7 @@
           <div class="invalid-feedback" style="display: none;"></div>
         </div>
 
-        <!-- Task Name -->
-        <div class="form-group mb-3">
-          <label for="task_name" class="form-label">Task Name</label>
-          <div class="input-group">
-            <input type="text" class="form-control" id="task_name" name="task_name" required>
-            <div class="input-group-append">
-              <span class="input-group-text"><i class="fas fa-tasks"></i></span>
-            </div>
-          </div>
-          <div class="invalid-feedback" style="display: none;"></div>
-        </div>
+       
 
         <div class="form-group mb-3">
           <label for="id_assign" class="form-label">Assign To</label>
@@ -62,6 +52,18 @@
             </select>
             <div class="input-group-append">
               <span class="input-group-text"><i class="fas fa-user"></i></span>
+            </div>
+          </div>
+          <div class="invalid-feedback" style="display: none;"></div>
+        </div>
+
+         <!-- Task Name -->
+         <div class="form-group mb-3">
+          <label for="task_name" class="form-label">Task Name</label>
+          <div class="input-group">
+            <input type="text" class="form-control" id="task_name" name="task_name" required>
+            <div class="input-group-append">
+              <span class="input-group-text"><i class="fas fa-tasks"></i></span>
             </div>
           </div>
           <div class="invalid-feedback" style="display: none;"></div>
@@ -182,7 +184,7 @@ $(document).ready(function() {
       task_name: $('#task_name').val(),
       assigned_emp_id: $('#id_assign').val(),
       start_date: $('#start_date').val(),
-      end_date: $('#end_date').val(),
+      end_date: $('#end_date').val() || null,
       task_priority: $('#priority').val(),
       task_status: 0
     };
@@ -313,6 +315,12 @@ $(document).ready(function() {
 });
 
 function loadEmployees() {
+    var deptId = $('#id_dept').val();
+    if (!deptId) {
+      $('#id_assign').empty().append('<option value="">Select a department first</option>').prop('disabled', true);
+      return;
+    }
+
     var apiUrl = '<?php echo API_URL; ?>user';
     var accessToken = "<?php echo $_SESSION['access_token']; ?>";
 
@@ -328,7 +336,7 @@ function loadEmployees() {
       },
       data: JSON.stringify({ 
         access_token: accessToken,
-        dept_id: <?php echo $_SESSION['dept_id']; ?>
+        dept_id: deptId
       }),
       success: function (response) {
         $select.empty().append('<option value="">Select an Employee</option>');

@@ -1420,9 +1420,7 @@ loadUsers();
 
 
 
-    // Handle comment form submission
-
-    $('#comment-form').on('submit', function (e) {
+ $('#comment-form').on('submit', function (e) {
     e.preventDefault();
 
     const commentHtml = $('#comment-editor').html();
@@ -1439,7 +1437,6 @@ loadUsers();
     const originalBtnText = $submitBtn.html();
     $submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Posting...');
 
-    // First API call: activity-add
     const requestData = {
         access_token: '<?php echo $_SESSION['access_token']; ?>',
         project_id: <?php echo $project_id; ?>,
@@ -1453,67 +1450,69 @@ loadUsers();
         contentType: 'application/json',
         data: JSON.stringify(requestData),
         success: function (response) {
-            console.log('Comment added:', response);
-
             if (response.is_successful === '1') {
                 const activityId = response.data.activity_id;
-                const uploadPromises = [];
-             
+
                 
+                // Start uploading files in background
+                if (files.length > 0) {
 
-                showSuccessPopupAndRedirect("now you can continue worked", '#timeline');
+                    // Show success popup immediately
+                    showSuccessPopupAndRedirect("Uploading attachments in background. Do not close this tab/browser. <a href='view-project?id=<?php echo base64_encode($project_id); ?>' target='_blank'>It may take some time. In the mean time, you can continue to use the application. Click here to use application. </a>", '#timeline');
 
-                // If no files to upload, show success immediately
-                if (files.length === 0) {
-                    $submitBtn.prop('disabled', false).html(originalBtnText); 
-                    loadProjectTimeline();
-                    return;
-                }
+                    const uploadPromises = [];
 
-                // Upload each file
-                for (let i = 0; i < files.length; i++) {
-                    const formData = new FormData();
-                    formData.append('activity_id', activityId);
-                    formData.append('access_token', '<?php echo $_SESSION['access_token']; ?>');
-                    formData.append('attachment', files[i]);
+                    for (let i = 0; i < files.length; i++) {
+                        const formData = new FormData();
+                        formData.append('activity_id', activityId);
+                        formData.append('access_token', '<?php echo $_SESSION['access_token']; ?>');
+                        formData.append('attachment', files[i]);
 
-                    uploadPromises.push(
-                        $.ajax({
-                            url: '<?php echo API_URL; ?>attachment-add',
-                            type: 'POST',
-                            data: formData,
-                            processData: false,
-                            contentType: false
+                        uploadPromises.push(
+                            $.ajax({
+                                url: '<?php echo API_URL; ?>attachment-add',
+                                type: 'POST',
+                                data: formData,
+                                processData: false,
+                                contentType: false
+                            })
+                        );
+                    }
+
+                    // When all uploads complete
+                    Promise.all(uploadPromises)
+                        .then(function () {
+                            // Hide the popup first
+                            hideSuccessPopup();
+                            
+                            // Show success toast after popup is hidden
+                            showToast("Activity added successfully.", true);
                         })
-                    );
+                        .catch(function () {
+                            // Hide the popup first
+                            hideSuccessPopup();
+                            
+                            // Show error toast after popup is hidden
+                            showToast("Some attachments failed to upload.", false);
+                        });
+
+                } else {
+                    hideSuccessPopup();
                 }
 
-                // Handle file upload results
-                Promise.all(uploadPromises)
-                    .then(function (results) {
-                        console.log('All attachments uploaded successfully', results);
-                        showToast(response.success_message);
-                        resetForm();
-                    })
-                    .catch(function (error) {
-                        console.error('Attachment upload failed', error);
-                        showToast('Comment added but one or more attachments failed to upload.', 'error');
-                        resetForm();
-                    });
-
+                resetForm();
             } else {
-                showToast(response.errors || 'Failed to add comment', 'error');
+                showToast(response.errors || 'Failed to add comment', false);
                 $submitBtn.prop('disabled', false).html(originalBtnText);
             }
         },
         error: function (xhr, status, error) {
             console.error('Comment API error:', error);
-            showToast('Failed to add comment. Please try again.', 'error');
+            showToast('Failed to add comment. Please try again.', false);
             $submitBtn.prop('disabled', false).html(originalBtnText);
         }
     });
 
-    // Helper functions
     function resetForm() {
         $('#comment-editor').html('');
         $('#comment-text').val('');
@@ -1522,6 +1521,24 @@ loadUsers();
         loadProjectTimeline();
     }
 });
+
+// Show popup immediately after comment added
+// function showSuccessPopupAndRedirect(message, redirectTarget) {
+//     $('#success-popup .popup-message').text(message);
+//     $('#success-popup').modal('show');
+
+//     // Optional: redirect if needed
+//     // setTimeout(() => {
+//     //     window.location.href = redirectTarget;
+//     // }, 3000);
+// }
+
+// Hide popup when uploads are done
+function hideSuccessPopup() {
+    $('#successModal').modal('hide');
+}
+
+
     // Function to update the file list display
 
     function updateFileList() {
@@ -1625,46 +1642,48 @@ loadUsers();
     // Show alert message
 
     function showSuccessPopupAndRedirect(message, redirectUrl) {
-    // Create modal HTML
-    const modalHtml = `
-    <div class="modal fade" id="successModal" tabindex="-1" role="dialog" aria-labelledby="successModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title" id="successModalLabel">Success</h5>
-                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <p>${message}</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" id="okButton">OK</button>
+        // Remove any existing modals first
+        $('.modal').remove();
+        
+        // Create modal HTML
+        const modalHtml = `
+        <div class="modal fade" id="successModal" tabindex="-1" role="dialog" aria-labelledby="successModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title" id="successModalLabel">Success</h5>
+                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>${message}</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>`;
+        </div>`;
     
-    // Add modal to body
-    $('body').append(modalHtml);
-    
-    // Show modal
-    $('#successModal').modal('show');
-    
-    // Handle OK button click
-    $('#okButton').on('click', function() {
-        $('#successModal').modal('hide');
-        if (redirectUrl) {
-            // Open in new tab
-            window.open(redirectUrl, '_blank');
-        }
-        // Remove modal from DOM after hiding
-        $('#successModal').on('hidden.bs.modal', function() {
+        // Add modal to body
+        $('body').append(modalHtml);
+        
+        // Initialize and show modal
+        const $modal = $('#successModal');
+        $modal.modal({backdrop: 'static', keyboard: false});
+        
+        // Handle modal close events
+        $modal.on('hidden.bs.modal', function() {
             $(this).remove();
+            if (redirectUrl) {
+                window.open(redirectUrl, '_blank');
+            }
         });
-    });
-}
+        
+        // Show the modal
+        $modal.modal('show');
+    }
 
     function showAlert(message, type = 'success') {
         const alertHtml = `

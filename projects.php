@@ -448,34 +448,40 @@ $(document).ready(function() {
         "buttons": [
             {
                 extend: 'copy',
-                className: 'btn btn-secondary',
-                text: 'Copy'
+                text: '<i class="fas fa-copy"></i> Copy',
+                className: 'btn btn-primary',
+                exportOptions: { columns: ':visible' }
             },
             {
                 extend: 'csv',
-                className: 'btn btn-secondary',
-                text: 'CSV'
+                text: '<i class="fas fa-file-csv"></i> CSV',
+                className: 'btn btn-primary',
+                exportOptions: { columns: ':visible' }
             },
             {
                 extend: 'excel',
-                className: 'btn btn-secondary',
-                text: 'Excel'
+                text: '<i class="fas fa-file-excel"></i> Excel',
+                className: 'btn btn-primary',
+                exportOptions: { columns: ':visible' }
             },
             {
                 extend: 'pdf',
-                className: 'btn btn-secondary',
-                text: 'PDF'
+                text: '<i class="fas fa-file-pdf"></i> PDF',
+                className: 'btn btn-primary',
+                exportOptions: { columns: ':visible' }
             },
             {
                 extend: 'print',
-                className: 'btn btn-secondary',
-                text: 'Print'
+                text: '<i class="fas fa-print"></i> Print',
+                className: 'btn btn-primary',
+                exportOptions: { columns: ':visible' }
             },
             {
                
                 extend: 'colvis',
-                className: 'btn btn-secondary',
-                text: 'Column Visibility'
+                text: '<i class="fas fa-columns"></i> Column Visibility',
+                className: 'btn btn-primary',
+                exportOptions: { columns: ':visible' }
             }
         ],
         "initComplete": function() {

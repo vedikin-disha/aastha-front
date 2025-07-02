@@ -331,7 +331,7 @@ $(document).ready(function() {
                     // Create task list HTML
                     let taskList = `
                         <div class="p-3">
-                            <h6>Tasks for ${project.project_name || 'Project'}</h6>
+                           
                             <div class="table-responsive">
                                 <table class="table table-sm table-bordered">
                                     <thead class="table-light">

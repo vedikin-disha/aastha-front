@@ -68,48 +68,36 @@ if ($task_id) {
     </div>
     <div class="card-body">
       <form id="projectTaskForm" method="POST" action="">
-        <input type="hidden" name="task_id" value="<?php echo $task_id; ?>">
-<input type="hidden" id="encoded_task_id" value="<?php echo base64_encode($task_id); ?>">
-<?php if (isset($task_data)): ?>
-<input type="hidden" name="project_id" id="project_id" value="<?php echo $task_data['project_id']; ?>">
-<input type="hidden" name="dept_id" id="dept_id" value="<?php echo $task_data['dept_id']; ?>">
-<?php endif; ?>
-        <!-- Project Selection -->
+      <input type="hidden" name="task_id" value="<?php echo $task_id; ?>">
+      <input type="hidden" id="encoded_task_id" value="<?php echo base64_encode($task_id); ?>">
+      <?php if (isset($task_data)): ?>
+      <input type="hidden" name="project_id" id="project_id" value="<?php echo $task_data['project_id']; ?>">
+      <input type="hidden" name="dept_id" id="dept_id" value="<?php echo $task_data['dept_id']; ?>">
+      <?php endif; ?>
+        <!-- Project Display -->
         <div class="form-group mb-3">
-          <label for="id_project" class="form-label">Project</label>
+          <label for="project_display" class="form-label">Project</label>
           <div class="input-group">
-            <select class="form-select" id="id_project" name="project" required disabled>
-              <option value="">Select a Project</option>
-              <?php if (isset($task_data)): ?>
-              <option value="<?php echo $task_data['project_id']; ?>" disabled>
-                <?php echo htmlspecialchars($task_data['project_name']); ?>
-              </option>
-              <?php endif; ?>
-            </select>
+            <input type="text" class="form-control" id="project_display" 
+                   value="<?php echo isset($task_data) ? htmlspecialchars($task_data['project_name']) : ''; ?>" 
+                   readonly>
             <div class="input-group-append">
               <span class="input-group-text"><i class="fas fa-project-diagram"></i></span>
             </div>
           </div>
-          <div class="invalid-feedback" style="display: none;"></div>
         </div>
 
-        <!-- Department Selection -->
+        <!-- Department Display -->
         <div class="form-group mb-3">
-          <label for="id_dept" class="form-label">Department</label>
+          <label for="dept_display" class="form-label">Department</label>
           <div class="input-group">
-            <select class="form-select" id="id_dept" name="department" required disabled>
-              <option value="">Select a Department</option>
-              <?php if (isset($task_data)): ?>
-              <option value="<?php echo $task_data['dept_id']; ?>"  disabled>
-                <?php echo htmlspecialchars($task_data['dept_name']); ?>
-              </option>
-              <?php endif; ?>
-            </select>
+            <input type="text" class="form-control" id="dept_display" 
+                   value="<?php echo isset($task_data) ? htmlspecialchars($task_data['dept_name']) : ''; ?>" 
+                   readonly>
             <div class="input-group-append">
               <span class="input-group-text"><i class="fas fa-building"></i></span>
             </div>
           </div>
-          <div class="invalid-feedback" style="display: none;"></div>
         </div>
 
         <!-- Task Name -->
@@ -165,7 +153,7 @@ if ($task_id) {
         <div class="form-group mb-3 col-md-6">
           <label for="start_date" class="form-label">Start Date</label>
           <div class="input-group">
-            <input type="date" class="form-control" id="start_date" name="start_date" value="<?php echo isset($task_data['start_date']) ? formatDateForInput($task_data['start_date']) : ''; ?>" >
+            <input type="date" class="form-control" id="start_date" name="start_date" value="<?php echo isset($task_data['assigned_start_date']) ? formatDateForInput($task_data['assigned_start_date']) : ''; ?>" >
             <div class="input-group-append">
            
             </div>
@@ -177,7 +165,7 @@ if ($task_id) {
         <div class="form-group mb-3 col-md-6">
           <label for="end_date" class="form-label">End Date</label>
           <div class="input-group">
-            <input type="date" class="form-control" id="end_date" name="end_date" value="<?php echo isset($task_data['end_date']) ? formatDateForInput($task_data['end_date']) : ''; ?>" >
+            <input type="date" class="form-control" id="end_date" name="end_date" value="<?php echo isset($task_data['assigned_end_Date']) ? formatDateForInput($task_data['assigned_end_Date']) : ''; ?>" >
             <div class="input-group-append">
               
             </div>
