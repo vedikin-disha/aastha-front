@@ -311,233 +311,113 @@ $(document).ready(function() {
         row.child(loadingRow).show();
 
         // Fetch task details
-        $.ajax({
-    url: '<?php echo API_URL; ?>project-task-listing',
-    type: 'POST',
-    dataType: 'json',
-    contentType: 'application/json', // Add this
-    data: JSON.stringify({ // Stringify the data
-        access_token: '<?php echo $_SESSION["access_token"]; ?>',
-        project_id: rowId
-    }),
-            success: function(response) {
-                loadingStates.set(rowId, false);
-                expandButton.removeClass('loading').addClass('expanded');
+        const tasks = rowData.tasks || [];
+
+loadingStates.set(rowId, false);
+expandButton.removeClass('loading').addClass('expanded');
+
+if (tasks.length > 0) {
+    let taskList = `
+        <div class="p-3">
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Task</th>
+                            <th>Assigned To</th>
+                            <th>Assigned Duration</th>
+                            <th>Completed Duration</th>
+                            <th>Task Statu</th>
+                            <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2): ?>
+                            <th>Department</th>
+                            <?php endif; ?>
+                            <th>Actions</th>
+                            <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2): ?>
+                            <th>More</th>
+                            <?php endif; ?>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+    function formatDate(dateStr) {
+        if (!dateStr) return '';
+        const [day, month, year] = dateStr.split('-');
+        if (!day || !month || !year) return '';
+        return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
+    }
+
+    tasks.forEach(task => {
+        const assignedDuration = task.assigned_start_date && task.assigned_end_date
+            ? `${formatDate(task.assigned_start_date)} to ${formatDate(task.assigned_end_date)}`
+            : '';
+
+        const completedDuration = task.completed_duration
+            ? formatDate(task.completed_duration)
+            : '';
+
+        taskList += `
+            <tr data-task-id="${task.task_id}"
+                data-project-id="${rowData.project_id || ''}"
+                data-assigned-emp="${task.assigned_emp_id || ''}"
+                data-start-date="${task.assigned_start_date || ''}"
+                data-end-date="${task.assigned_end_date || ''}"
+                data-dept-id="${task.dept_id || ''}">
+                <td class="task-name">
+                    ${task.task_priority?.toLowerCase() === 'high' ? '<span class="badge bg-danger me-1">!</span>' : ''}
+                    ${task.task_name || ''}
+                </td>
+                <td>
+                    <div class="d-flex align-items-center">
+                        ${task.assigned_emp_profile
+                            ? `<img src="${task.assigned_emp_profile}" class="rounded-circle mr-2" width="32" height="32" alt="${task.assigned_emp_name || 'User'}" />`
+                            : ''}
+                        <span>${task.assigned_emp_name || ''}</span>
+                    </div>
+                </td>
+                <td align="center">${task.assigned_duration}</td>
+                <td align="center">${task.completed_duration}</td>
+                <td>${task.task_status || ''}</td>
+                <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2): ?>
+                <td>${task.dept_name || ''}</td>
+                <?php endif; ?>
                 
-                if (response && response.data && response.data.projects && response.data.projects.length > 0) {
-                    const project = response.data.projects[0];
-                    const tasks = project.tasks || [];
-                    
-                    // Create task list HTML
-                    let taskList = `
-                        <div class="p-3">
-                           
-                            <div class="table-responsive">
-                                <table class="table table-sm table-bordered">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Task</th>
-                               
-                                <th>Assigned To</th>
-                                <th>Assigned Duration</th>
-                                <th>Completed Duration</th>
-                                <th>task_status</th>
-                                <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2): ?>
-                                <th>Department</th>
-                               
-                             
-                                <?php endif; ?>
-                                   <th>Actions</th>
-                                <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2): ?>
-                                <th>More</th>
-                                <?php endif; ?>
-                                        </tr>
-                                    </thead>
-                                    <tbody>`;
-                    
-                    // Function to format date to dd/mm/yyyy
-                    function formatDate(dateStr) {
-                        if (!dateStr) return '';
-                        const date = new Date(dateStr);
-                        if (isNaN(date.getTime())) return '';
-                        return date.toLocaleDateString('en-GB'); // dd/mm/yyyy format
-                    }
+               
+                <td>
+                    <div class="btn-group btn-group-sm" style="gap: 5px;">
+                        <button class="btn btn-success btn-sm mark-done-btn rounded" data-task-id="${task.task_id}" ${task.task_status === 'Completed' ? 'disabled' : ''}>
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button class="btn btn-primary btn-sm start-task-btn rounded" data-task-id="${task.task_id}" ${task.task_status === 'In Progress' || task.task_status === 'Completed' ? 'disabled' : ''}>
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </div>
+                </td>
+                
+                <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2): ?>
+                <td>
+                    <div class="btn-group btn-group-sm" style="gap: 5px;">
+                        <a href="edit-project-task.php?id=${btoa(task.task_id)}" class="btn btn-info btn-sm rounded">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <button class="btn btn-warning btn-sm text-white reminder-btn rounded" data-task-id="${task.task_id}">
+                            <i class="fas fa-bell"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm delete-task-btn rounded" data-task-id="${task.task_id}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+                <?php endif; ?>
+            </tr>`;
+    });
 
-                    tasks.forEach(task => {
-                        // Format assigned duration - use assigned_duration if available, otherwise use individual dates
-                        let assignedDuration = '';
-                        if (task.assigned_duration) {
-                            try {
-                                const [start, end] = task.assigned_duration.split(' - ');
-                                if (start && end) {
-                                    assignedDuration = `${formatDate(start.trim())} to ${formatDate(end.trim())}`;
-                                }
-                            } catch (e) {
-                                console.error('Error formatting assigned_duration:', e);
-                            }
-                        } else if (task.assigned_start_date && task.assigned_end_date) {
-                            assignedDuration = `${formatDate(task.assigned_start_date)} to ${formatDate(task.assigned_end_date)}`;
-                        }
+    taskList += `</tbody></table></div></div>`;
+    row.child($(taskList)).show();
 
-                        // Format completed duration - use completed_duration if available, otherwise use task_duration
-                        let completedDuration = '';
-                        if (task.completed_duration) {
-                            try {
-                                // Check if it's a range or single date
-                                if (task.completed_duration.includes(' - ')) {
-                                    // Handle date range
-                                    const [start, end] = task.completed_duration.split(' - ');
-                                    if (start && end) {
-                                        completedDuration = `${formatDate(start.trim())} to ${formatDate(end.trim())}`;
-                                    }
-                                } else {
-                                    // Handle single date
-                                    completedDuration = formatDate(task.completed_duration.trim());
-                                }
-                            } catch (e) {
-                                console.error('Error formatting completed_duration:', e);
-                            }
-                        } else if (task.task_duration) {
-                            try {
-                                const [start, end] = task.task_duration.split(' - ');
-                                if (start && end) {
-                                    completedDuration = `${formatDate(start.trim())} to ${formatDate(end.trim())}`;
-                                }
-                            } catch (e) {
-                                console.error('Error formatting task_duration:', e);
-                            }
-                        }
+} else {
+    row.child('<div class="text-center p-3">No tasks found for this project.</div>').show();
+}
 
-                        taskList += `
-                            <tr data-task-id="${task.task_id}"
-                                data-project-id="${project.project_id || ''}"
-                                data-assigned-emp="${task.assigned_emp_id || ''}"
-                                data-start-date="${task.assigned_start_date || ''}"
-                                data-end-date="${task.assigned_end_date || ''}"
-                                data-dept-id="${task.dept_id || ''}">
-                                <td class="task-name">
-                                    ${task.task_priority && task.task_priority.toLowerCase() === 'high' 
-                                        ? '<span class="badge bg-danger me-1">!</span>' 
-                                        : ''
-                                    }${task.task_name || ''}
-                                </td>
-                              
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        ${task.assigned_emp_profile 
-                                            ? `<img src="${task.assigned_emp_profile}" class="rounded-circle mr-2" width="32" height="32" alt="${task.assigned_emp_name || 'User'}" />`
-                                            : ''
-                                        }
-                                        <span>${task.assigned_emp_name || ''}</span>
-                                    </div>
-                                </td>
-                                <td align="center">${task.task_duration}</td>
-                                <td align="center">${task.completed_duration}</td>
-                                <td>${task.task_status || ''}</td>
-                                <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2): ?>
-                                <td>${task.dept_name || ''}</td>
-                                <?php endif; ?>
-                            
-                                <td>
-                                    <div class="btn-group btn-group-sm" style="gap: 5px; border-radius: 5px; border:none">
-                                        <button class="btn btn-success btn-sm mark-done-btn rounded" data-task-id="${task.task_id}" ${task.task_status === 'Done' ? 'disabled' : ''}>
-                                            <i class="fas fa-check"></i> 
-                                        </button>
-                                        <button class="btn btn-primary btn-sm start-task-btn rounded" data-task-id="${task.task_id}" ${task.task_status === 'On Going' || task.task_status === 'Done' ? 'disabled' : ''}>
-                                            <i class="fas fa-play"></i> 
-                                        </button>
-                                       
-                                    </div>
-                                </td>
-
-                                <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2): ?>
-                                <td>
-                                    <div class="btn-group btn-group-sm" style="gap: 5px; border-radius: 5px; border:none">
-                                        <a href="edit-project-task.php?id=${btoa(task.task_id)}" class="btn btn-info btn-sm rounded">
-                                            <i class="fas fa-edit"></i> 
-                                        </a>
-                                         <button class="btn btn-warning btn-sm text-white reminder-btn rounded" data-task-id="${task.task_id}">
-                                            <i class="fas fa-bell"></i> 
-                                        </button>
-                                        <button class="btn btn-danger btn-sm delete-task-btn rounded" data-task-id="${task.task_id}">
-                                            <i class="fas fa-trash"></i> 
-                                        </button>
-                                    </div>
-                                </td>
-                                <?php endif; ?>
-                        </tr>`;
-                    
-                    // Add click handlers after the row is added to DOM
-                    setTimeout(() => {
-                        // Mark as Done handler
-                     
-                        
-                        // Start Task handler
-                        $(`#${rowId} .start-task-btn`).on('click', function() {
-                            const taskId = $(this).data('task-id');
-                            updateTaskStatus(taskId, 'In Progress');
-                        });
-                        
-                        // Edit Task handler
-                        $(`#${rowId} .edit-task-btn`).on('click', function() {
-                            const taskId = $(this).data('task-id');
-                            // Redirect to edit page with task ID
-                            window.location.href = `edit-project-task.php?task_id=${taskId}`;
-                        });
-                        
-                        // Delete Task handler
-                        $(`#${rowId} .delete-task-btn`).on('click', function() {
-                            const taskId = $(this).data('task-id');
-                            if(confirm('Are you sure you want to delete this task?')) {
-                                // Add your delete task logic here
-                                showToast('Delete task ' + taskId);
-                            }
-                        });
-                    }, 0);
-                    });
-                    
-                    taskList += `</tbody></table></div></div>`;
-                    
-                    // Add updateTaskStatus function if not exists
-                    if (typeof updateTaskStatus !== 'function') {
-                        window.updateTaskStatus = function(taskId, status) {
-                            // Find the task to get its details
-                            const task = tasks.find(t => t.task_id == taskId);
-                            if (!task) {
-                                console.error('Task not found:', taskId);
-                                return;
-                            }
-                            
-                            // Prepare the data for the API
-                            const postData = {
-                                access_token: '<?php echo $_SESSION["access_token"]; ?>',
-                                task_id: taskId,
-                                task_name: task.task_name || '',
-                                assigned_emp_id: task.assigned_emp_id || '',
-                                start_date: task.start_date ? new Date(task.start_date).toISOString().split('T')[0] : '',
-                                end_date: task.end_date ? new Date(task.end_date).toISOString().split('T')[0] : '',
-                                dept_id: task.dept_id || 1,
-                                task_status: status === 'Done' ? 2 : (status === 'In Progress' ? 1 : 0),
-                                project_id: project.project_id
-                            };
-                            
-                            console.log('Updating task:', postData);
-                            
-                        
-                        };
-                    }
-                    row.child($(taskList)).show();
-                } else {
-                    row.child('<div class="text-center p-3">No tasks found for this project.</div>').show();
-                }
-            },
-            error: function(xhr, status, error) {
-                loadingStates.set(rowId, false);
-                expandButton.removeClass('loading');
-                console.error('Error loading tasks:', error);
-                row.child('<div class="text-center p-3 text-danger">Error loading tasks. Please try again.</div>').show();
-            }
-        });
     });
 
     $(document).on('click', '.start-task-btn', function () {
@@ -586,11 +466,11 @@ $(document).ready(function() {
                 button.prop('disabled', true); // disable the button
                 // Optionally refresh the row or task status
             } else {
-                showToast(response.success_message);
+                showToast(response.errors.error , false);
             }
         },
         error: function () {
-            showToast("Error calling API.");
+            showToast("Failed to update task.", false);
         }
     });
 });

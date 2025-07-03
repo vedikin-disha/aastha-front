@@ -241,7 +241,7 @@ $.ajax({
                                         <?php endif; ?>
                                        
                                         <button type="button" class="btn btn-primary btn-sm text-white task-play-btn rounded"
-                                        data-task-id="${task.task_id}" ${task.task_status === 'On Going' || task.task_status === 'Done' ? 'disabled' : ''}
+                                        data-task-id="${task.task_id}" ${task.task_status === 'In Progress' || task.task_status === 'Completed' ? 'disabled' : ''}
                                             data-task-name="${task.task_name}"
                                             data-dept-id="${task.dept_id}"
                                             data-project-id="${task.project_id}"
@@ -249,6 +249,7 @@ $.ajax({
                                             <i class="fas fa-play"></i>
                                         </button>
                                         <button type="button" class="btn ${isDone ? '' : 'btn-success'} btn-sm task-status-btn rounded"
+                                        ${task.task_status === 'In Progress' || task.task_status === 'Completed' ? 'disabled' : ''}
                                             data-task-id="${task.task_id}"
                                             data-task-name="${task.task_name}"
                                             data-dept-id="${task.dept_id}"

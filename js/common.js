@@ -5,7 +5,7 @@ function showToast(message, isSuccess=true) {
       position: 'bottomRight',
       body: message,
       autohide: true,
-      delay: 3000
+      delay: 6000
     });
 }
 

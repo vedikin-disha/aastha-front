@@ -7,7 +7,9 @@ function isUserLoggedIn() {
     }
     
     if (!isset($_SESSION['access_token'])) {
-        header("Location: ".BASE_URL . "login");
+        echo "You are not logged in. Please login to access this page.";
+        echo "<script> window.location.href = ".BASE_URL."login; </script>";
+        // header("Location: ".BASE_URL . "login");
         exit();
     }
     // get all javascript sessionstorage data to php session

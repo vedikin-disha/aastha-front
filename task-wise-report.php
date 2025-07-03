@@ -194,7 +194,7 @@
                                     <span class="badge badge-secondary mr-1">Total: ${dept.tasks.length}</span>
                                     <span class="badge badge-success mr-1">Completed: ${dept.counts.completed}</span>
                                     <span class="badge badge-warning mr-1">To Do: ${dept.counts.pending}</span>
-                                    <span class="badge badge-info">Ongoing: ${dept.counts.ongoing}</span>
+                                    <span class="badge badge-info">In Progress: ${dept.counts.ongoing}</span>
                                 </div>
                             </div>`;
             const tasksHtml = formatTasks(dept.tasks);
