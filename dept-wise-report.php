@@ -567,6 +567,11 @@ $(function () {
       deptTable.destroy();
       $('.dt-buttons').remove();
     }
+
+    if ($.fn.DataTable.isDataTable('#deptTable')) {
+    $('#deptTable').DataTable().clear().destroy();
+    $('#deptTable').empty();
+  }
     
     deptTable = $('#deptTable').DataTable({
       pageLength: 10,

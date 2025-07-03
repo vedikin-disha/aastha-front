@@ -87,7 +87,7 @@ if (!defined('API_URL')) {
                                                 <option value="">-- Select Project Type --</option>
                                                 <!-- Options will be loaded from API -->
                                             </select>
-                                            <div class="error-feedback" id="project_type_id_error"></div>
+                                            <!-- <div class="error-feedback" id="project_type_id_error"></div> -->
                                         </div>
                                     </div>
                                     
@@ -98,7 +98,7 @@ if (!defined('API_URL')) {
                                             <select id="proposed_work_id" name="proposed_work_id" class="form-control select2">
                                                 <option value="">-- Select Proposed Work --</option>
                                             </select>
-                                            <div class="error-feedback" id="proposed_work_id_error"></div>
+                                            <!-- <div class="error-feedback" id="proposed_work_id_error"></div> -->
                                         </div>
                                     </div>
                                     
@@ -108,7 +108,7 @@ if (!defined('API_URL')) {
                                             <label for="project_name" class="required-label">Project Name:</label>
                                             <input type="text" class="form-control" id="project_name" name="project_name" 
                                                 placeholder="Enter project name" required>
-                                            <div class="error-feedback" id="project_name_error"></div>
+                                            <!-- <div class="error-feedback" id="project_name_error"></div> -->
                                         </div>
                                     </div>
                                     
@@ -128,7 +128,7 @@ if (!defined('API_URL')) {
                                             <label for="project_code" class="required-label">Project Code:</label>
                                             <input type="text" class="form-control" id="project_code" name="project_code" 
                                                 placeholder="Enter project code" required>
-                                            <div class="error-feedback" id="project_code_error"></div>
+                                            <!-- <div class="error-feedback" id="project_code_error"></div> -->
                                         </div>
                                     </div>
                                     
@@ -137,7 +137,7 @@ if (!defined('API_URL')) {
                                     <div class="form-group">
                                         <label for="job_no_reference_date">Job No Reference Date:</label>
                                         <input type="date" class="form-control" id="job_no_reference_date" name="job_no_reference_date" data-date-format="YYYY-MM-DD">
-                                        <div class="error-feedback" id="job_no_reference_date_error"></div>
+                                        <!-- <div class="error-feedback" id="job_no_reference_date_error"></div> -->
                                     </div>
                                     </div>
                                     
@@ -149,7 +149,7 @@ if (!defined('API_URL')) {
                                                 <option value="Regular">Regular</option>
                                                 <option value="High">High</option>
                                             </select>
-                                            <div class="error-feedback" id="priority_error"></div>
+                                            <!-- <div class="error-feedback" id="priority_error"></div> -->
                                         </div>
                                     </div>
 
@@ -163,7 +163,7 @@ if (!defined('API_URL')) {
                                             <label for="client_name" class="required-label">Client Name:</label>
                                             <input type="text" class="form-control" id="client_name" name="client_name" 
                                                 placeholder="Enter client name" required>
-                                            <div class="error-feedback" id="client_name_error"></div>
+                                            <!-- <div class="error-feedback" id="client_name_error"></div> -->
                                         </div>
                                     </div>
                                     
@@ -173,7 +173,7 @@ if (!defined('API_URL')) {
                                             <label for="description">Description:</label>
                                             <textarea class="form-control" id="description" name="description" rows="3" 
                                                 placeholder="Enter project description"></textarea>
-                                            <div class="error-feedback" id="description_error"></div>
+                                            <!-- <div class="error-feedback" id="description_error"></div> -->
                                         </div>
                                     </div>
                                 </div>
@@ -197,7 +197,7 @@ if (!defined('API_URL')) {
                                         <div class="form-group">
                                             <label for="start_date" class="required-label">Start Date:</label>
                                             <input type="date" class="form-control" id="start_date" name="start_date" data-date-format="YYYY-MM-DD" required>
-                                            <div class="error-feedback" id="start_date_error"></div>
+                                            <!-- <div class="error-feedback" id="start_date_error"></div> -->
                                         </div>
                                     </div>
                                     
@@ -206,7 +206,7 @@ if (!defined('API_URL')) {
                                         <div class="form-group">
                                             <label for="end_date">End Date:</label>
                                             <input type="date" class="form-control" id="end_date" name="end_date" data-date-format="YYYY-MM-DD">
-                                            <div class="error-feedback" id="end_date_error"></div>
+                                            <!-- <div class="error-feedback" id="end_date_error"></div> -->
                                         </div>
                                     </div>
                                     
@@ -218,7 +218,7 @@ if (!defined('API_URL')) {
                                                 <option value="">Select Circle</option>
                                                 <!-- Options will be loaded from API -->
                                             </select>
-                                            <div class="error-feedback" id="circle_id_error"></div>
+                                            <!-- <div class="error-feedback" id="circle_id_error"></div> -->
                                         </div>
                                     </div>
                                     
@@ -230,7 +230,7 @@ if (!defined('API_URL')) {
                                                 <option value="">Select Division</option>
                                                 <!-- Options will be loaded from API -->
                                             </select>
-                                            <div class="error-feedback" id="division_id_error"></div>
+                                            <!-- <div class="error-feedback" id="division_id_error"></div> -->
                                         </div>
                                     </div>
                                     
@@ -242,7 +242,7 @@ if (!defined('API_URL')) {
                                                 <option value="">Select Subdivision</option>
                                                 <!-- Options will be loaded from API -->
                                             </select>
-                                            <div class="error-feedback" id="sub_id_error"></div>
+                                            <!-- <div class="error-feedback" id="sub_id_error"></div> -->
                                         </div>
                                     </div>
                                     
@@ -254,7 +254,7 @@ if (!defined('API_URL')) {
                                                 <option value="">Select Taluka</option>
                                                 <!-- Options will be loaded from API -->
                                             </select>
-                                            <div class="error-feedback" id="taluka_id_error"></div>
+                                            <!-- <div class="error-feedback" id="taluka_id_error"></div> -->
                                         </div>
                                     </div>
                                 </div>
@@ -284,7 +284,7 @@ if (!defined('API_URL')) {
                                                 <input type="number" class="form-control" id="estimated_amount" name="estimated_amount" 
                                                     step="0.01" min="0" value="0.00" placeholder="0.00">
                                             </div>
-                                            <div class="error-feedback" id="estimated_amount_error"></div>
+                                            <!-- <div class="error-feedback" id="estimated_amount_error"></div> -->
                                         </div>
                                     </div>
                                     
@@ -294,7 +294,7 @@ if (!defined('API_URL')) {
                                             <label for="budget_head">Budget Head:</label>
                                             <input type="text" class="form-control" id="budget_head" name="budget_head" 
                                                 placeholder="Enter budget head">
-                                            <div class="error-feedback" id="budget_head_error"></div>
+                                            <!-- <div class="error-feedback" id="budget_head_error"></div> -->
                                         </div>
                                     </div>
                                     
@@ -309,7 +309,7 @@ if (!defined('API_URL')) {
                                                     <span class="input-group-text">m</span>
                                                 </div>
                                             </div>
-                                            <div class="error-feedback" id="length_error"></div>
+                                            <!-- <div class="error-feedback" id="length_error"></div> -->
                                         </div>
                                     </div>
                                 </div>
@@ -652,56 +652,16 @@ function showToast(type, title, message) {
     });
 }
 
-// Update file input labels when files are selected
-$(document).on('change', '.custom-file-input', function() {
-    const fileName = $(this).val().split('\\').pop();
-    if (fileName) {
-        $(this).siblings('.custom-file-label')
-            .addClass('selected')
-            .html(fileName);
-    }
-});
+
 
 function loadEmployees() {
     console.log('Loading employees...');
 }
 
-function validateForm() {
-    let isValid = true;
-    
-    // Reset error messages
-    $('.error-feedback').text('');
-    // Project Type:Project Name:Job No:Project Code:Priority:Client Name:Division:Circle:Start Date:
-    // Check required fields
-    const requiredFields = [
-       {id: 'project_type_id', name: 'Project Type'},
-       {id: 'project_name', name: 'Project Name'},
-       {id: 'job_no', name: 'Job No'},
-       {id: 'project_code', name: 'Project Code'},
-       {id: 'priority', name: 'Priority'},
-       {id: 'client_name', name: 'Client Name'},
-       {id: 'division_id', name: 'Division'},
-       {id: 'circle_id', name: 'Circle'},
-       {id: 'start_date', name: 'Start Date'},
-    ];
-    
-    requiredFields.forEach(field => {
-        const $field = $('#' + field.id);
-        if (!$field.val()) {
-            $('#' + field.id + '_error').text(field.name + ' is required');
-            isValid = false;
-        }
-    });
-    
-    return isValid;
-}
+
 
 function submitProjectForm() {
-    // Validate form before submission
-    if (!validateForm()) {
-        showToast( 'Please fill in all required fields' , false);
-        return false;
-    }
+ 
     
     $('#saveProject').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Saving...');
 
@@ -753,15 +713,47 @@ function submitProjectForm() {
                 throw new Error(response.errors || 'Failed to save project');
             }
         },
-        error: function(xhr, status, error) {
-            console.error('Error saving project:', error);
-            $('#saveProject').prop('disabled', false).html('<i class="fas fa-save"></i> Save Project');
-            showToast('Failed to save project. Please try again.', false);
-                  
+        error: function(xhr) {
+    try {
+        const response = xhr.responseJSON || {};
 
+        if (xhr.status === 400 && response.errors) {
+            const errors = response.errors;
 
-            // showToast('danger', 'Error', 'Failed to save project. Please try again.');
+            // Case 1: single error string in `errors.error`
+            if (typeof errors.error === 'string') {
+                showToast(errors.error, false);
+            }
+            // Case 2: multiple field-specific errors
+            else {
+                for (const [field, messages] of Object.entries(errors)) {
+                    const message = Array.isArray(messages) ? messages[0] : messages;
+
+                    showToast(`${field.replace('_', ' ')}: ${message}`, false);
+
+                    // Show next to field if exists
+                    const errorSelector = `#${field}_error`;
+                    if ($(errorSelector).length) {
+                        $(errorSelector).text(message).show();
+                    } else {
+                        const fieldSelector = `#${field}`;
+                        if ($(fieldSelector).length) {
+                            // $(fieldSelector).addClass('is-invalid');
+                            // const feedback = `<div class="invalid-feedback">${message}</div>`;
+                            // $(fieldSelector).after(feedback);
+                        }
+                    }
+                }
+            }
+        } else {
+            showToast('Something went wrong. Please try again.', false);
         }
+    } catch (e) {
+        showToast('Unexpected error occurred. Please try again.', false);
+    } finally {
+        $('#saveProject').prop('disabled', false).html('Save Project');
+    }
+}
     });
 }
 
@@ -1021,14 +1013,8 @@ $(document).ready(function() {
     
     // Add active class to navigation
     $('#projects-menu').addClass('active');
-    
-    // Clear validation errors when user starts typing
-    $('input, select, textarea').on('input change', function() {
-        const fieldId = $(this).attr('id');
-        if (fieldId) {
-            $(`#${fieldId}_error`).text('');
-        }
-    });
+
+
     
     // Load initial data
     console.log('Loading initial data...');

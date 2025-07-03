@@ -213,7 +213,7 @@ function validateDates() {
   var startDate = new Date($('#start_date').val());
   var endDate = new Date($('#end_date').val());
   
-  if (endDate <= startDate) {
+  if (endDate <startDate) {
     $('#end_date').addClass('is-invalid');
     $('<div class="invalid-feedback">End date must be greater than start date</div>').insertAfter($('#end_date').parent());
     return false;
@@ -487,28 +487,41 @@ $('#id_dept').on('change', function() {
 // Set up date validation
 if (taskData && taskData.start_date) {
   var startDate = new Date(taskData.start_date);
-  var nextDay = new Date(startDate);
-  nextDay.setDate(nextDay.getDate() + 1);
-  var nextDayFormatted = nextDay.toISOString().split('T')[0];
-  $('#end_date').attr('min', nextDayFormatted);
+  var startDateFormatted = startDate.toISOString().split('T')[0];
+  $('#end_date').attr('min', startDateFormatted);
 }
 
 // Update end date min attribute when start date changes
 $('#start_date').on('change', function() {
   var startDate = $(this).val();
   if (startDate) {
-    var nextDay = new Date(startDate);
-    nextDay.setDate(nextDay.getDate() + 1);
-    var nextDayFormatted = nextDay.toISOString().split('T')[0];
-    $('#end_date').attr('min', nextDayFormatted);
+    // Set the minimum end date to be the same as start date
+    $('#end_date').attr('min', startDate);
     
-    // If end date is before or equal to start date, update it to next day
+    // If end date is before start date, update it to start date
     var endDate = $('#end_date').val();
-    if (endDate && new Date(endDate) <= new Date(startDate)) {
-      $('#end_date').val(nextDayFormatted);
+    if (endDate && new Date(endDate) < new Date(startDate)) {
+      $('#end_date').val(startDate);
     }
   }
 });
+
+// Date validation function
+function validateDates() {
+  var startDate = new Date($('#start_date').val());
+  var endDate = new Date($('#end_date').val());
+  
+  if (endDate < startDate) {
+    $('#end_date').addClass('is-invalid');
+    $('<div class="invalid-feedback">End date cannot be before start date</div>').insertAfter($('#end_date').parent());
+    return false;
+  }
+  
+  // If we get here, dates are valid
+  $('#end_date').removeClass('is-invalid');
+  $('.invalid-feedback').remove();
+  return true;
+}
 
 // Validate end date when it changes
 $('#end_date').on('change', function() {

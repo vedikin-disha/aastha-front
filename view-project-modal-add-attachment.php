@@ -149,9 +149,11 @@ $("document").ready(function() {
             <td>
                 <a href="${attachment.file_path}" target="_blank"><i class="${icon} fa-2x"></i></a>
             </td>
+             <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2 ): ?>
             <td>
             <button class="btn btn-danger btn-sm" onclick="deleteAttachment(${attachment.attachment_id})"><i class="fas fa-trash"> </i> Delete </button>
             </td>
+            <?php endif; ?>
         </tr>
     `;
                             $('#attachments-table-body').append(attachmentHtml);
@@ -168,7 +170,10 @@ $("document").ready(function() {
         });
     }
 
-    function deleteAttachment(attachmentId) {
+});
+
+
+function deleteAttachment(attachmentId) {
         if (!confirm("Are you sure you want to delete this attachment?")) return;
 
         $.ajax({
@@ -194,7 +199,8 @@ $("document").ready(function() {
                         delay: 3000
 
                     });
-                    loadProjectAttachments(); // Reload the table
+                        // reload the [view-project-modal-add-attachment.php]
+                        location.reload();
                 } else {
                     $(document).Toasts('create', {
 
@@ -229,6 +235,5 @@ $("document").ready(function() {
             }
         });
     }
-});
 
 </script>

@@ -334,6 +334,10 @@
         showToast('Please select a Status', false);
         return;
       }
+      if (!whatsapp) {
+        showToast('Please enter WhatsApp Number', false);
+        return;
+      }
       
       const formData = {
         access_token: "<?php echo $_SESSION['access_token']; ?>",
@@ -363,7 +367,7 @@
         success: function(response) {
           if (response.is_successful === '1') {
             // Show success message using showToast
-            showToast(response.success_message || 'Failed to update user', true);
+            showToast(response.success_message , true);
             
             // Redirect after showing message
             setTimeout(function() {
@@ -371,11 +375,37 @@
             }, 1500);
           } else {
             // Show error message if API returns unsuccessful
-            showToast(response.success_message || 'Failed to update user', false);
+            const errorMessage = response.errors.error || 'Failed to update user';
+            showToast(errorMessage, false);
+            
+            // If there's a specific field error, show it next to the field
+            if (response.errors.field) {
+              const fieldError = response.errors.error;
+              $(`#${response.errors.field}_error`).text(fieldError).show();
+            }
           }
         },
-        error: function(xhr) {
-          showToast('Error updating user. Please try again.', false);
+        error: function(xhr, status, error) {
+          try {
+            // Try to parse the error response
+            const response = xhr.responseJSON || {};
+            if (xhr.status === 400 && response.errors) {
+              // For 400 errors with error details
+              const errorMessage = response.errors.error || 'Validation error';
+              showToast(errorMessage, false);
+              
+              // If there's a specific field error, show it next to the field
+              if (response.errors.field) {
+                $(`#${response.errors.field}_error`).text(errorMessage).show();
+              }
+            } else {
+              // For other types of errors
+              showToast('Error updating user. Please try again.', false);
+            }
+          } catch (e) {
+            // If error parsing fails, show generic error
+            showToast('Error updating user. Please try again.', false);
+          }
         }
       });
     });

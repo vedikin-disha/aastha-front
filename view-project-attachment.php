@@ -57,5 +57,71 @@ $(document).ready(function() {
     $('#attachmentsModal').on('hidden.bs.modal', function () {
         $('.modal-backdrop').remove();
     });
+
+    
+
+    
+    function deleteAttachment(attachmentId) {
+        if (!confirm("Are you sure you want to delete this attachment?")) return;
+
+        $.ajax({
+            url: '<?php echo API_URL; ?>attachment-delete',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                access_token: '<?php echo $_SESSION['access_token']; ?>',
+                attachment_id: attachmentId
+            }),
+            success: function(response) {
+                if (response.is_successful === "1") {
+                    $(document).Toasts('create', {
+
+                        class: 'bg-success',
+
+                        title: 'Success',
+
+                        body: 'Attachment deleted successfully!',
+
+                        autohide: true,
+
+                        delay: 3000
+
+                    });
+                  // reload the [view-project-attachment.php]
+                  location.reload();
+                } else {
+                    $(document).Toasts('create', {
+
+                        class: 'bg-danger',
+
+                        title: 'Error',
+
+                        body: 'Failed to delete attachment: ' + (response.errors || "Unknown error"),
+
+                        autohide: true,
+
+                        delay: 3000
+
+                    });
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("AJAX error:", error);
+                $(document).Toasts('create', {
+
+                    class: 'bg-danger',
+
+                    title: 'Error',
+
+                    body: 'An error occurred while deleting the attachment.',
+
+                    autohide: true,
+
+                    delay: 3000
+
+                });
+            }
+        });
+    }
 });
 </script>

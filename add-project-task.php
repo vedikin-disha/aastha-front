@@ -156,7 +156,7 @@ $(document).ready(function() {
     var startDate = new Date($('#start_date').val());
     var endDate = new Date($('#end_date').val());
     
-    if (endDate <= startDate) {
+    if (endDate < startDate) {
       $('#end_date').addClass('is-invalid');
       $('<div class="invalid-feedback">End date must be greater than start date</div>').insertAfter($('#end_date').parent());
       return false;

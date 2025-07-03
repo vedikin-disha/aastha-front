@@ -62,6 +62,7 @@ if (!isUserHasRights($request_uri)) {
     color: #0056b3;
     text-decoration: underline;
 }
+
 .dropdown-item.position-relative{
   background-color: white !important;
 }
@@ -77,6 +78,10 @@ if (!isUserHasRights($request_uri)) {
     .toast-error {
       background-color: #dc3545 !important;
     }
+    .dropdown-item {
+    min-width: 300px; /* Adjust as needed */
+    white-space: normal; /* Allow text to wrap within the item */
+}
   </style>
 
   <!-- Font Awesome -->
@@ -239,6 +244,24 @@ if (!isUserHasRights($request_uri)) {
     .toast-message a, .toast-message label{
       color: #007bff !important;
     }
+
+    /* Default: responsive width */
+.notification-dropdown{
+    width: 90vw;        /* 90 % of viewport */
+    max-width: 426px;   /* cap on larger screens */
+    min-width: 0 !important;   /* override Bootstrap’s default */
+    max-height: 500px;
+    overflow-y: auto;
+    overflow-x: auto;   /* horizontal scroll if needed */
+}
+
+/* Very small screens */
+@media (max-width: 576px){
+    .notification-dropdown{
+        width: 95vw;    /* almost full width */
+        max-width: 95vw;
+    }
+}
   </style>
 
 </head>
@@ -284,7 +307,7 @@ if (!isUserHasRights($request_uri)) {
           <i class="far fa-bell" style="width: 40px; height: 40px;"></i>
           <span class="badge badge-warning navbar-badge" id="notification-count">0</span>
         </a>
-        <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right" style="min-width: 426px; max-height: 500px; overflow-y: auto;">
+        <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right notification-dropdown">
           <div class="dropdown-header d-flex justify-content-between align-items-center">
             <span>Notifications</span>
             <button type="button" class="close" onclick="event.stopPropagation(); $('.dropdown-menu').removeClass('show');" aria-label="Close" style="font-size: 1.5rem; line-height: 1; outline: none;">
@@ -422,12 +445,24 @@ $(document).ready(function() {
       },
       error: function(xhr, status, error) {
         console.error('Error fetching notifications:', error);
-
-        if (xhr.status === 401) {
-          window.location.href = 'login.php'; // Update with your actual login page
+        
+        try {
+            const response = JSON.parse(xhr.responseText);
+            if (xhr.status === 401 || (response && response.msg && response.msg.includes('Missing or invalid token'))) {
+                // Clear any existing session data
+                sessionStorage.clear();
+                localStorage.clear();
+                // Redirect to login page
+                window.location.href = 'login';
+                return;
+            }
+        } catch (e) {
+            console.error('Error parsing error response:', e);
         }
+        
+        // For other errors, show error message
         $('#notification-list').html('<div class="dropdown-item text-danger">Error loading notifications</div>');
-      }
+    }
     });
     
     // Toggle dropdown
@@ -491,47 +526,7 @@ $(document).ready(function() {
     }
   });
 
-  // Handle notification close button click
-  $(document).on('click', '.close[data-notification-id]', function(e) {
-    e.stopPropagation();
-    const $btn = $(this);
-    const notificationId = $btn.data('notification-id');
-    
-    // Make the API call to mark notification as read
-    $.ajax({
-      url: '<?php echo API_URL; ?>inactive-notification',
-      type: 'POST',
-      dataType: 'json',
-      data: JSON.stringify({
-        access_token: '<?php echo isset($_SESSION["access_token"]) ? $_SESSION["access_token"] : ""; ?>',
-        notification_id: notificationId
-      }),
-      contentType: 'application/json',
-      success: function(response) {
-        if (response.is_successful === '1') {
-          // Remove the notification from the UI
-          $btn.closest('.dropdown-item').next('.dropdown-divider').remove();
-          $btn.closest('.dropdown-item').remove();
-          
-          // Update the notification count
-          const currentCount = parseInt($('#notification-count').text()) || 0;
-          const newCount = Math.max(0, currentCount - 1);
-          
-          if (newCount > 0) {
-            $('#notification-count').text(newCount);
-          } else {
-            $('#notification-count').hide();
-            $('#notification-list').html('<div class="dropdown-item">No notifications found</div>');
-          }
-        } else {
-          console.error('Failed to mark notification as read');
-        }
-      },
-      error: function(xhr, status, error) {
-        console.error('Error marking notification as read:', error);
-      }
-    });
-  });
+  
   
   // Load notification count on page load
   function updateNotificationCount() {
@@ -540,7 +535,8 @@ $(document).ready(function() {
       type: 'POST',
       dataType: 'json',
       data: JSON.stringify({
-        access_token: '<?php echo isset($_SESSION["access_token"]) ? $_SESSION["access_token"] : ""; ?>'
+        access_token: '<?php echo isset($_SESSION["access_token"]) ? $_SESSION["access_token"] : ""; ?>',
+        limit: 10
       }),
       contentType: 'application/json',
       success: function(response) {

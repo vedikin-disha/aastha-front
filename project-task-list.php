@@ -567,8 +567,8 @@ $(document).ready(function() {
         task_id: taskId,
         task_name: taskName,
         assigned_emp_id: assignedEmpId,
-        start_date: startDate,
-        end_date: endDate,
+        // start_date: startDate,
+        // end_date: endDate,
         dept_id: deptId,
         task_status: 1, // 1 = In Progress
         project_id: projectId
@@ -648,8 +648,8 @@ $(document).ready(function() {
         task_id: parseInt(taskId) || 0,
         task_name: taskName,
         assigned_emp_id: assignedEmpId,
-        start_date: startDate,
-        end_date: endDate,
+        // start_date: startDate,
+        // end_date: endDate,
         dept_id: deptId,
         task_status: 2, // 'Done'
         project_id: projectId

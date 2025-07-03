@@ -174,7 +174,7 @@
                         </table>
                     </div>
                 </div>
-                <div class="card-footer bg-white border-top-0">
+                <!-- <div class="card-footer bg-white border-top-0">
                     <div class="d-flex justify-content-between">
                         <button id="clear-all-notifications" class="btn btn-danger">
                             <i class="fas fa-trash-alt mr-2"></i>Clear All Notifications
@@ -185,7 +185,7 @@
                             </a>
                         </div>
                     </div>
-                </div>
+                </div> -->
             </div>
                 </div>
             </div>
@@ -238,7 +238,8 @@ $(document).ready(function() {
                         const userImage = notification.creator_profile || './assets/img/default-avatar.png';
                         
                         notificationsHtml += `
-                            <tr class="notification-row ${notification.is_active === '1' ? 'font-weight-bold' : ''}" data-notification-id="${notification.notification_id}">
+                            <tr class="notification-row ${notification.is_active === 1 ? 'font-weight-bold' : 'text-muted'}" data-notification-id="${notification.notification_id}">
+
                                 <td class="align-middle">
                                     <div class="d-flex align-items-center">
                                         <div class="position-relative" style="width: 40px; height: 40px; min-width: 40px;">
@@ -274,7 +275,8 @@ $(document).ready(function() {
                                     <button type="button" 
                                             class="btn btn-sm btn-outline-danger delete-notification" 
                                             data-notification-id="${notification.notification_id}"
-                                            title="Mark as read">
+                                            title="Mark as read"
+                                            ${notification.is_active === 0 ? 'disabled' : ''}>
                                         <i class="far fa-trash-alt"></i>
                                     </button>
                                 </td>

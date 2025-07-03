@@ -197,8 +197,8 @@ include 'common/header.php';
                                         <tr>
                                             <th>Task Name</th>
                                             <th>Assigned To</th>
-                                            <th>Start Date</th>
-                                            <th>End Date</th>
+                                            <th>Assigned Duration</th>
+                                            <th>Completed Duration</th>
                                             <th>Status</th>
                                         </tr>
                                     </thead>
@@ -324,8 +324,8 @@ $(document).ready(function() {
                             <tr>
                                 <th>Task Name</th>
                                 <th class="text-center">Priority</th>
-                                <th class="text-center">Start Date</th>
-                                <th class="text-center">End Date</th>
+                                <th class="text-center">Assigned Duration</th>
+                                <th class="text-center">Completed Duration</th>
                                 <th class="text-center">Status</th>
                                 <th class="text-center">Today's Status</th>
                             </tr>
@@ -346,12 +346,14 @@ $(document).ready(function() {
             
             html += `
                             <tr>
+                        
                                 <td><strong>${task.task_name || '-'}</strong></td>
-                                <td class="text-center"><span class="${priorityClass}">${task.task_priority || 'Regular'}</span></td>
-                                <td class="text-center">${formatDate(task.start_date) || '-'}</td>
-                                <td class="text-center">${formatDate(task.end_date) || '-'}</td>
-                                <td class="text-center"><span class="badge bg-${statusClass[frameStatus] || 'secondary'}">${task.date_frame_status || '-'}</span></td>
-                                <td class="text-center"><span class="badge bg-${statusClass[todayStatus] || 'secondary'}">${task.today_status || '-'}</span></td>
+
+                                <td class="text-center"><span class="${priorityClass}">${task.task_priority.charAt(0).toUpperCase() + task.task_priority.slice(1) || 'Regular'}</span></td>
+                                <td class="text-center">${task.assigned_duration || '-'}</td>
+                                <td class="text-center">${task.completed_duration || '-'}</td>
+                                <td class="text-center"><span class="badge bg-${statusClass[frameStatus] || 'secondary'}">${task.date_frame_status.charAt(0).toUpperCase() + task.date_frame_status.slice(1) || '-'}</span></td>
+                                <td class="text-center"><span class="badge bg-${statusClass[todayStatus] || 'secondary'}">${task.today_status.charAt(0).toUpperCase() + task.today_status.slice(1) || '-'}</span></td>
                             </tr>`;
         });
         

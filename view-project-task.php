@@ -32,10 +32,10 @@
 
         <!-- Right side: Add New Task -->
 
-        <!-- reditect to the  /add-project-task -->
+        <!-- reditect to the  /add-project-task and open the new tab -->
         <div>
           <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2 || $_SESSION['emp_role_id'] == 3): ?>
-            <button type="button" class="btn btn-sm btn-success" data-toggle="modal" onclick="window.location.href = '<?php echo BASE_URL; ?>add-project-task';">
+            <button type="button" class="btn btn-sm btn-success" data-toggle="modal" onclick="window.open('<?php echo BASE_URL; ?>add-project-task', '_blank');">
               <i class="fas fa-plus"></i> Add New Task
             </button>
           <?php endif; ?>
@@ -90,7 +90,7 @@
                     </div>
 
 <script>
-// $("document").ready(function() {
+
 function loadUsers(id="#timeline-user-filter") {
 
 $.ajax({
@@ -275,6 +275,9 @@ $.ajax({
                         $('#projectTabsContent').find('div').removeClass('active show');
 
                         $('#project-task-tab-content').addClass('active show');
+
+                        // Add active class to navigation
+                        
 
                     });
 
