@@ -387,7 +387,7 @@ $(document).ready(function() {
             }
         },
         {
-            extend: 'excel',
+            extend: 'xlsx',
             text: '<i class="fas fa-file-excel"></i> Excel',
             className: 'btn btn-primary',
             title: 'Department Wise Summary',
@@ -450,7 +450,7 @@ $(document).ready(function() {
                 }
             },
             {
-                extend: 'excel',
+                extend: 'xlsx',
                 text: '<i class="fas fa-file-excel"></i> Excel',
                 className: 'btn btn-primary',
                 title: 'Department Wise Summary',
@@ -529,7 +529,7 @@ $(document).ready(function() {
                         className: 'btn-info',
                         buttons: [
                             { extend: 'copy', className: 'btn-sm' },
-                            { extend: 'excel', className: 'btn-sm' },
+                            { extend: 'xlsx', className: 'btn-sm' },
                             { extend: 'csv', className: 'btn-sm' },
                             { extend: 'pdf', className: 'btn-sm' },
                             { extend: 'print', className: 'btn-sm' }

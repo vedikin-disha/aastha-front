@@ -473,7 +473,7 @@ $(document).ready(function() {
                     text: '<i class="fas fa-file-excel"></i> Excel',
                     className: 'btn btn-primary',
                     action: function() {
-                        downloadReport('excel');
+                        downloadReport('xlsx');
                     }
                 },
                 {
