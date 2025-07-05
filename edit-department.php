@@ -8,11 +8,11 @@ $dept_id = '';
 if ($encoded_id) {
     $dept_id = base64_decode($encoded_id);
     if (!$dept_id || !is_numeric($dept_id)) {
-        echo "<script>showToast('Invalid department ID', false); setTimeout(() => { window.location.href = 'department-list.php'; }, 2000);</script>";
+        echo "<script>showToast('Invalid department ID', false); setTimeout(() => { window.location.href = 'department-list'; }, 2000);</script>";
         exit();
     }
 } else {
-    echo "<script>showToast('No department ID provided', false); setTimeout(() => { window.location.href = 'department-list.php'; }, 2000);</script>";
+    echo "<script>showToast('No department ID provided', false); setTimeout(() => { window.location.href = 'department-list'; }, 2000);</script>";
     exit();
 }
 ?>
@@ -39,7 +39,7 @@ if ($encoded_id) {
         <button type="submit" class="btn btn-primary" style="background-color: #30b8b9; border: 1px solid #30b8b9;">
           <i class="fas fa-save"></i> Update
         </button>
-        <a href="department-list.php" class="btn btn-secondary">
+        <a href="department-list" class="btn btn-secondary">
           <i class="fas fa-times"></i> Cancel
         </a>
       </div>
@@ -79,7 +79,7 @@ $(document).ready(function() {
           const errorMsg = response.message || response.errors || 'Failed to load department data';
           console.error('Load department failed:', errorMsg);
           showToast(errorMsg, false);
-          setTimeout(() => window.location.href = 'department-list.php', 1500);
+          setTimeout(() => window.location.href = 'department-list', 1500);
         }
       },
       error: function(xhr, status, error) {
@@ -90,7 +90,7 @@ $(document).ready(function() {
           error: error
         });
         showToast('An error occurred while loading department data', false);
-        setTimeout(() => window.location.href = 'department-list.php', 1500);
+        setTimeout(() => window.location.href = 'department-list', 1500);
       }
     });
   }
@@ -124,7 +124,7 @@ $(document).ready(function() {
         console.log('Update API Response:', response);
         if (response.is_successful === "1") {
           showToast('Department updated successfully!', true);
-          setTimeout(() => window.location.href = 'department-list.php', 1500);
+          setTimeout(() => window.location.href = 'department-list', 1500);
         } else {
           const errorMsg = response.message || response.errors || 'Failed to update department. Please try again.';
           console.error('Update failed:', errorMsg);

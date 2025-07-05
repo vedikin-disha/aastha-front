@@ -475,6 +475,48 @@ $(document).ready(function() {
       $('.dropdown-menu').removeClass('show');
     }
   });
+
+   // Handle notification close button click
+   $(document).on('click', '.close[data-notification-id]', function(e) {
+    e.stopPropagation();
+    const $btn = $(this);
+    const notificationId = $btn.data('notification-id');
+    
+    // Make the API call to mark notification as read
+    $.ajax({
+      url: '<?php echo API_URL; ?>inactive-notification',
+      type: 'POST',
+      dataType: 'json',
+      data: JSON.stringify({
+        access_token: '<?php echo isset($_SESSION["access_token"]) ? $_SESSION["access_token"] : ""; ?>',
+        notification_id: notificationId
+      }),
+      contentType: 'application/json',
+      success: function(response) {
+        if (response.is_successful === '1') {
+          // Remove the notification from the UI
+          $btn.closest('.dropdown-item').next('.dropdown-divider').remove();
+          $btn.closest('.dropdown-item').remove();
+          
+          // Update the notification count
+          const currentCount = parseInt($('#notification-count').text()) || 0;
+          const newCount = Math.max(0, currentCount - 1);
+          
+          if (newCount > 0) {
+            $('#notification-count').text(newCount);
+          } else {
+            $('#notification-count').hide();
+            $('#notification-list').html('<div class="dropdown-item">No notifications found</div>');
+          }
+        } else {
+          console.error('Failed to mark notification as read');
+        }
+      },
+      error: function(xhr, status, error) {
+        console.error('Error marking notification as read:', error);
+      }
+    });
+  });
   
   // Handle Clear All Notifications
   $(document).on('click', '#clear-all-notifications', function(e) {

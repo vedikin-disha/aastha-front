@@ -2,6 +2,7 @@
 
 // Get schedule ID from URL and decode it
 $scheduleId = isset($_GET['id']) ? base64_decode($_GET['id']) : null;
+
 if (!$scheduleId) {
     header('Location: whatsapp-message-list.php');
     exit();
@@ -171,6 +172,7 @@ $(document).ready(function() {
     
     // Convert the schedule ID to a number if it's a string
     const scheduleIdNum = isNaN(scheduleId) ? scheduleId : parseInt(scheduleId, 10);
+    console.log(scheduleIdNum);
     
     $.ajax({
       url: '<?php echo API_URL; ?>schedule-message-list',
@@ -182,82 +184,72 @@ $(document).ready(function() {
         shed_id: scheduleIdNum
       }),
       success: function(response) {
-        if (response.is_successful === "1" && response.data && response.data.length > 0) {
-          const message = response.data[0];
-          
-          // Set form values
-          $('#phone_number').val(message.phone_number.replace(/^91/, ''));
-          $('#message').val(message.message);
-          
-          // Set the selected user in dropdown if emp_id exists
-          if (message.emp_id) {
+    console.log('API Response:', response);
+    
+    if (response.is_successful === "1" && response.data && response.data.records && response.data.records.length > 0) {
+        const message = response.data.records[0];
+        console.log('Message data:', message);
+        
+        // Set form values
+        $('#phone_number').val(message.phone_number ? message.phone_number.replace(/^91/, '') : '');
+        $('#message').val(message.message || '');
+        
+        // Handle user selection in the dropdown
+        if (message.emp_id) {
             const $userSelect = $('#user_select');
-            // Clear previous selection
-            $userSelect.val(null).trigger('change');
             
-            // Check if the user exists in the dropdown
-            const $option = $userSelect.find(`option[value="${message.emp_id}"]`);
-            if ($option.length > 0) {
-              // User exists in dropdown, select it
-              $userSelect.val(message.emp_id).trigger('change');
-            } else if (message.emp_name) {
-              // User doesn't exist, add it to the dropdown
-              const newOption = new Option(
-                message.emp_name,
-                message.emp_id,
-                true,
-                true
-              );
-              newOption.dataset.phone = message.phone_number.replace(/^91/, '');
-              newOption.dataset.name = message.emp_name;
-              $userSelect.append(newOption).trigger('change');
+            // Check if the user already exists in the dropdown
+            const $existingOption = $userSelect.find(`option[value="${message.emp_id}"]`);
+            
+            if ($existingOption.length === 0) {
+                // If user doesn't exist in dropdown, add them
+                const newOption = new Option(
+                    message.emp_name.trim(),
+                    message.emp_id,
+                    true,
+                    true
+                );
+                // Add any additional data attributes if needed
+                $(newOption).data('phone', message.phone_number);
+                $userSelect.append(newOption);
             }
-          }
-          
-          // Set character count
-          $('#charCount').text(message.message.length);
-          
-          // Set user in dropdown if emp_id exists
-          if (message.emp_id) {
-            $('#user_select').val(message.emp_id).trigger('change');
-          }
-          
-          // Set schedule time if available
-          if (message.schedule_time) {
-            // Parse the GMT time string directly without timezone conversion
-            const dateStr = message.schedule_time; // e.g., "Sat, 21 Jun 2025 00:00:00 GMT"
-            const dateParts = dateStr.split(' ');
-            if (dateParts.length >= 6) {
-              const months = {
-                'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04', 'May': '05', 'Jun': '06',
-                'Jul': '07', 'Aug': '08', 'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
-              };
-              
-              const day = dateParts[1].padStart(2, '0');
-              const month = months[dateParts[2]];
-              const year = dateParts[3];
-              const time = dateParts[4];
-              
-              // Format: YYYY-MM-DDTHH:MM
-              const formattedDate = `${year}-${month}-${day}T${time}`.slice(0, 16);
-              
-              // Set the value
-              const $scheduleTime = $('#schedule_time');
-              $scheduleTime.val(formattedDate);
-              
-              // Set min time to current time
-              const now = new Date();
-              const currentFormatted = now.toISOString().slice(0, 16);
-              $scheduleTime.attr('min', currentFormatted);
+            
+            // Set the selected value
+            $userSelect.val(message.emp_id);
+            
+            // If using Select2, refresh it
+            if ($.fn.select2) {
+                $userSelect.trigger('change');
             }
-          }
-        } else {
-          showToast('Failed to load message details', false);
-          setTimeout(() => {
-            window.location.href = 'whatsapp-message-list.php';
-          }, 1500);
+            // Handle schedule time
+             // Handle schedule time
+if (message.schedule_time) {
+    // Parse the GMT time string to a Date object
+    const scheduleDate = new Date(message.schedule_time);
+    
+    // Format the date for datetime-local input (YYYY-MM-DDTHH:MM)
+    const year = scheduleDate.getUTCFullYear();
+    const month = String(scheduleDate.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(scheduleDate.getUTCDate()).padStart(2, '0');
+    const hours = String(scheduleDate.getUTCHours()).padStart(2, '0');
+    const minutes = String(scheduleDate.getUTCMinutes()).padStart(2, '0');
+    
+    const formattedDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+    $('#schedule_time').val(formattedDateTime);
+}
+
+// Handle is_sent status if needed
+if (message.is_sent === 1) {
+    $('#is_sent').prop('checked', true);
+}
         }
-      },
+        
+        // Rest of your code for other fields...
+    } else {
+        console.error('Invalid response format or no data:', response);
+        showToast('Failed to load message details', false);
+    }
+},
       error: function(xhr, status, error) {
         console.error('Error loading schedule data:', error);
         showToast('Error loading message details', false);
@@ -311,12 +303,21 @@ $(document).ready(function() {
     
     // Add schedule time if provided
     if (scheduleTime) {
-      // Convert datetime-local format to ISO string
-      const date = new Date(scheduleTime);
-      // Format as: 'YYYY-MM-DD HH:mm:ss' (MySQL DATETIME format)
-      const formattedDateTime = date.toISOString().replace('T', ' ').slice(0, 19);
-      requestData.schedule_time = formattedDateTime;
-    }
+    // Create a date object from the input
+    const date = new Date(scheduleTime);
+    
+    // Get local date components
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = '00';
+    
+    // Format as: 'YYYY-MM-DD HH:mm:ss'
+    const formattedDateTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    requestData.schedule_time = formattedDateTime;
+}
     
     const submitBtn = $('#submitBtn');
     const originalBtnText = submitBtn.html();

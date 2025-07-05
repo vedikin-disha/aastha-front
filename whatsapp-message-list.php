@@ -45,86 +45,137 @@
 <script src="js/dataTables.bootstrap4.min.js"></script>
 
 <script>
+
+  
 $(document).ready(function () {
-  var table = $('#whatsappMessageTable').DataTable({
-    "processing": true,
-    "serverSide": true,
-    "ajax": {
-      "url": "<?php echo API_URL; ?>schedule-message-list",
-      "type": "POST",
-      "contentType": "application/json",
-      "data": function (d) {
-        return JSON.stringify({
-          access_token: '<?php echo $_SESSION['access_token']; ?>',
-          sort_column: d.columns[d.order[0].column].data,
-          sort_order: d.order[0].dir,
-          limit: d.length,
-          page: Math.floor(d.start / d.length) + 1,
-          search: d.search.value
-        });
-      },
-      "dataSrc": function (json) {
-        if (json.is_successful === "1") {
-          json.recordsTotal = json.data.meta.total;
-          json.recordsFiltered = json.data.meta.total;
-          return json.data.records || [];
-        } else {
-          showToast(json.errors || 'Failed to load scheduled messages', false);
-          return [];
+    // Format function outside the DataTable initialization
+    function formatScheduleTime(gmtTimeString) {
+        if (!gmtTimeString) return '';
+        
+        try {
+            const date = new Date(gmtTimeString);
+            if (isNaN(date.getTime())) return gmtTimeString; // Return original if invalid date
+            
+            const day = String(date.getUTCDate()).padStart(2, '0');
+            const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+            const year = date.getUTCFullYear();
+            let hours = date.getUTCHours();
+            const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12 || 12; // Convert 0 to 12 for 12-hour format
+            
+            return `${day}/${month}/${year}, ${hours}:${minutes} ${ampm}`;
+        } catch (e) {
+            console.error('Error formatting date:', e);
+            return gmtTimeString; // Return original string if there's an error
         }
-      },
-      "error": function (xhr, error, thrown) {
-        console.error('Error loading scheduled messages:', error);
-        showToast('Error loading scheduled messages', false);
-      }
-    },
-    "columns": [
-      {
-        "data": "emp_name",
-        "render": function (data, type, row) {
-          let name = row.emp_name || 'N/A';
-          let phone = row.phone_number || '';
-          return `${name}<br><small class="text-muted">${phone}</small>`;
-        }
-      },
-      { "data": "message" },
-      {
-        "data": "is_sent",
-        "render": function (data) {
-          return data == 1
-            ? '<span class="badge badge-success">Sent</span>'
-            : '<span class="badge badge-warning">Pending</span>';
-        }
-      },
-      {
-        "data": "schedule_time",
-        "render": function (data) {
-          return data ? new Date(data).toLocaleString() : 'N/A';
-        }
-      },
-      {
-        "data": "shed_id",
-        "orderable": false,
-        "render": function (data) {
-          return `
-            <div class="btn-group">
-              <a href="whatsapp-message-edit?id=${btoa(data)}" class="btn btn-sm btn-primary" style="background-color: #30b8b9;border:none;">
-                <i class="fas fa-edit"></i> Edit
-              </a>
-            </div>
-          `;
-        }
-      }
-    ],
-    "responsive": true,
-    "autoWidth": false,
-    "order": [[0, 'desc']],
-    "pageLength": 10,
-    "language": {
-      "emptyTable": "No scheduled messages found",
-      "loadingRecords": "Loading...",
-      "processing": "Processing..."
     }
-  });
+
+    var table = $('#whatsappMessageTable').DataTable({
+        "processing": true,
+        "serverSide": true,
+        "ajax": {
+            "url": "<?php echo API_URL; ?>schedule-message-list",
+            "type": "POST",
+            "contentType": "application/json",
+            "data": function (d) {
+                // Add null checks to prevent errors
+                const sortCol = d.columns && d.order && d.order[0] && d.columns[d.order[0].column] 
+                    ? d.columns[d.order[0].column].data 
+                    : 'emp_name';
+                const sortDir = d.order && d.order[0] 
+                    ? d.order[0].dir 
+                    : 'desc';
+                    
+                return JSON.stringify({
+                    access_token: '<?php echo $_SESSION['access_token']; ?>',
+                    sort_column: sortCol,
+                    sort_order: sortDir,
+                    limit: d.length || 10,
+                    page: d.start && d.length ? Math.floor(d.start / d.length) + 1 : 1,
+                    search: d.search ? d.search.value || '' : ''
+                });
+            },
+            "dataSrc": function (json) {
+                if (json && json.is_successful === "1") {
+                    json.recordsTotal = json.data && json.data.meta ? json.data.meta.total : 0;
+                    json.recordsFiltered = json.data && json.data.meta ? json.data.meta.total : 0;
+                    return json.data && json.data.records ? json.data.records : [];
+                } else {
+                    const errorMsg = json && json.errors ? json.errors : 'Failed to load scheduled messages';
+                    showToast(errorMsg, false);
+                    return [];
+                }
+            },
+            "error": function (xhr, error, thrown) {
+                console.error('Error loading scheduled messages:', error, thrown);
+                showToast('Error loading scheduled messages', false);
+            }
+        },
+        "columns": [
+            {
+                "data": "emp_name",
+                "render": function (data, type, row) {
+                    const name = data || 'N/A';
+                    const phone = row.phone_number || '';
+                    return `${name}<br><small class="text-muted">${phone}</small>`;
+                }
+            },
+            { 
+                "data": "message",
+                "render": function (data) {
+                    return data || '';
+                }
+            },
+            {
+                "data": "is_sent",
+                "render": function (data) {
+                    return data == 1
+                        ? '<span class="badge badge-success">Sent</span>'
+                        : '<span class="badge badge-warning">Pending</span>';
+                }
+            },
+            {
+                "data": "schedule_time",
+                "render": function (data) {
+                    return data ? formatScheduleTime(data) : '';
+                }
+            },
+            {
+                "data": "shed_id",
+                "orderable": false,
+                "render": function (data) {
+                    if (!data) return '';
+                    try {
+                        return `
+                            <div class="btn-group">
+                                <a href="whatsapp-message-edit?id=${btoa(String(data))}" 
+                                   class="btn btn-sm btn-primary" 
+                                   style="background-color: #30b8b9; border: none;">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                            </div>
+                        `;
+                    } catch (e) {
+                        console.error('Error generating edit link:', e);
+                        return '';
+                    }
+                }
+            }
+        ],
+        "responsive": true,
+        "autoWidth": false,
+        "order": [[0, 'desc']],
+        "pageLength": 10,
+        "language": {
+            "emptyTable": "No scheduled messages found",
+            "loadingRecords": "Loading...",
+            "processing": "Processing...",
+            "zeroRecords": "No matching records found",
+            "info": "Showing _START_ to _END_ of _TOTAL_ entries",
+            "infoEmpty": "Showing 0 to 0 of 0 entries",
+            "infoFiltered": "(filtered from _MAX_ total entries)"
+        }
+    });
 });
 </script>

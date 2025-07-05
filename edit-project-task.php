@@ -41,6 +41,9 @@ if ($task_id) {
     
     if ($http_code == 200) {
         $result = json_decode($response, true);
+        // echo "<pre>";
+        // print_r($result);
+        // echo "</pre>";
         if ($result['is_successful'] == '1') {
             $task_data = $result['data'];
         } else {
@@ -128,14 +131,12 @@ if ($task_id) {
         <?php
         // Function to convert date from 'D, d M Y H:i:s T' to 'Y-m-d' format for date input
         function formatDateForInput($dateString) {
-            if (empty($dateString)) return '';
-            try {
-                $date = new DateTime($dateString);
-                return $date->format('Y-m-d');
-            } catch (Exception $e) {
-                return '';
-            }
-        }
+          if ($dateString && preg_match('/^\d{2}-\d{2}-\d{4}$/', $dateString)) {
+              $date = DateTime::createFromFormat('d-m-Y', $dateString);
+              return $date ? $date->format('Y-m-d') : '';
+          }
+          return $dateString;
+      }
         ?>
         <!-- priority -->
         <div class="form-group mb-3">
@@ -147,13 +148,14 @@ if ($task_id) {
                 </select>
                 <div class="error-feedback" id="priority_error"></div>
         </div>
-        
-        <!-- Start Date -->
-         <div class='row'>
+
+                <!-- Assigned Start Date -->
+                <div class='row'>
         <div class="form-group mb-3 col-md-6">
-          <label for="start_date" class="form-label">Start Date</label>
+          <label for="start_date" class="form-label">Assigned Start Date</label>
           <div class="input-group">
-            <input type="date" class="form-control" id="start_date" name="start_date" value="<?php echo isset($task_data['assigned_start_date']) ? formatDateForInput($task_data['assigned_start_date']) : ''; ?>" >
+          <input type="date" class="form-control" id="assigned_start_date" name="assigned_start_date"
+          value="<?php echo isset($task_data['assigned_start_date']) ? formatDateForInput($task_data['assigned_start_date']) : ''; ?>">
             <div class="input-group-append">
            
             </div>
@@ -163,9 +165,11 @@ if ($task_id) {
 
         <!-- End Date -->
         <div class="form-group mb-3 col-md-6">
-          <label for="end_date" class="form-label">End Date</label>
+          <label for="end_date" class="form-label">Assigned End Date</label>
           <div class="input-group">
-            <input type="date" class="form-control" id="end_date" name="end_date" value="<?php echo isset($task_data['assigned_end_Date']) ? formatDateForInput($task_data['assigned_end_Date']) : ''; ?>" >
+          <input type="date" class="form-control" id="assigned_end_date" name="assigned_end_date"
+  value="<?php echo isset($task_data['assigned_end_date']) ? formatDateForInput($task_data['assigned_end_date']) : ''; ?>">
+
             <div class="input-group-append">
               
             </div>
@@ -173,6 +177,37 @@ if ($task_id) {
           <div class="invalid-feedback" style="display: none;"></div>
         </div>
         </div>
+
+        
+        <!-- Start Date -->
+         <div class='row'>
+        <div class="form-group mb-3 col-md-6">
+          <label for="start_date" class="form-label">Actual Start Date</label>
+          <div class="input-group">
+          <input type="date" class="form-control" id="start_date" name="start_date"
+          value="<?php echo isset($task_data['start_date']) ? formatDateForInput($task_data['start_date']) : ''; ?>" readonly>
+            <div class="input-group-append">
+           
+            </div>
+          </div>
+          <div class="invalid-feedback" style="display: none;"></div>
+        </div>
+
+        <!-- End Date -->
+        <div class="form-group mb-3 col-md-6">
+          <label for="end_date" class="form-label">Actual End Date</label>
+          <div class="input-group">
+          <input type="date" class="form-control" id="end_date" name="end_date"
+          value="<?php echo isset($task_data['end_date']) ? formatDateForInput($task_data['end_date']) : ''; ?>" readonly>
+            <div class="input-group-append">
+              
+            </div>
+          </div>
+          <div class="invalid-feedback" style="display: none;"></div>
+        </div>
+        </div>
+
+
 
         <!-- Task Status -->
         <!-- <div class="form-group mb-3">
@@ -193,7 +228,7 @@ if ($task_id) {
 
         <div class="mt-3">
           <button type="submit" class="btn btn-primary" style="background-color: #30b8b9;border:none;">Update</button>
-          <a href="project-task-list.php" class="btn btn-secondary">Cancel</a>
+          <a href="project-task-list" class="btn btn-secondary">Cancel</a>
         </div>
       </form>
     </div>
@@ -273,8 +308,8 @@ $('#projectTaskForm').on('submit', function(e) {
     dept_id: $('#dept_id').val(),
     task_name: $('#task_name').val(),
     assigned_emp_id: selectedEmployee,
-    start_date: $('#start_date').val(),
-    end_date: $('#end_date').val(),
+    start_date: $('#assigned_start_date').val(),
+    end_date: $('#assigned_end_date').val(),
     task_status: $('#id_task_status').val(),
     task_priority: $('#priority').val()
   };
@@ -311,7 +346,7 @@ $('#projectTaskForm').on('submit', function(e) {
           delay: 3000
         });
         setTimeout(function() {
-          window.location.href = 'project-task-list.php';
+          window.location.href = 'project-task-list';
         }, 1000);
       } else {
         $(document).Toasts('create', {

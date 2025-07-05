@@ -7,8 +7,8 @@ function isUserLoggedIn() {
     }
     
     if (!isset($_SESSION['access_token'])) {
-        echo "You are not logged in. Please login to access this page.";
-        echo "<script> window.location.href = ".BASE_URL."login; </script>";
+        // echo "You are not logged in. Please login to access this page.";
+        echo "<script> window.location.href = 'login'; </script>";
         // header("Location: ".BASE_URL . "login");
         exit();
     }
@@ -89,6 +89,7 @@ if (!isset($_SESSION['emp_role_id'])) {
         $access_rights[2][] = "view-all-notifications";
         $access_rights[2][] = "license-edit";
         $access_rights[2][] = "license-list";
+        $access_rights[2][] = "project-task-view";
 
     $access_rights[3] = array();
     $access_rights[3][] = "dashboard-user";
@@ -102,6 +103,7 @@ if (!isset($_SESSION['emp_role_id'])) {
     $access_rights[3][] = "view-project";
     $access_rights[3][] = "change-password";
     $access_rights[3][] = "view-all-notifications";
+    $access_rights[3][] = "project-task-view";
 
     $access_rights[4] = array();
     $access_rights[4][] = "dashboard-user";
@@ -114,6 +116,7 @@ if (!isset($_SESSION['emp_role_id'])) {
     $access_rights[4][] = "view-project";
     $access_rights[4][] = "change-password";    
     $access_rights[4][] = "view-all-notifications";
+    $access_rights[4][] = "project-task-view";
 
     if (in_array($page, $access_rights[$_SESSION['emp_role_id']])) {
         return true;

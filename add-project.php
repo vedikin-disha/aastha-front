@@ -652,6 +652,14 @@ function showToast(type, title, message) {
     });
 }
 
+$(document).on('change', '.custom-file-input', function() {
+    const fileName = $(this).val().split('\\').pop();
+    if (fileName) {
+        $(this).siblings('.custom-file-label')
+            .addClass('selected')
+            .html(fileName);
+    }
+});
 
 
 function loadEmployees() {

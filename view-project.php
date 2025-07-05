@@ -78,7 +78,7 @@ function formatDateTime(dateTimeStr) {
 <div class="container-fluid">
     <div class="row mb-2">
         <div class="col-sm-6">
-            <h1>Project Details</h1>
+            <h3 style="margin-top: 20px;">Project Details</h3>
         </div>
         <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
@@ -95,7 +95,7 @@ function formatDateTime(dateTimeStr) {
                 <h3 class="project-title"><?php echo htmlspecialchars($project['project_name']); ?></h3>
                 <div class="btn-group">
                 <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2): ?>
-                    <a href="edit-project.php?id=<?php echo base64_encode($project['project_id']); ?>" class="btn btn-primary" style="background-color: #30b8b9;border:none;">
+                    <a href="edit-project?id=<?php echo base64_encode($project['project_id']); ?>" class="btn btn-primary" style="background-color: #30b8b9;border:none;">
                         <i class="fas fa-edit"></i> Edit Project
                     </a>
                 <?php endif; ?>

@@ -1806,53 +1806,44 @@ function hideSuccessPopup() {
     });
 
 
-    $('#markAsDoneBtn').click(function() {
-
-        if (confirm('Are you sure you want to mark this project as done?')) {
-
-            $.ajax({
-
-                url: '<?php echo API_URL; ?>mark-done',
-
-                type: 'POST',
-
-                contentType: 'application/json',
-
-                data: JSON.stringify({
-
-                    access_token: '<?php echo $_SESSION['access_token']; ?>',
-
-                    project_id: <?php echo $project_id; ?>
-
-                }),
-
-                success: function(response) {
-
-                    if (response.is_successful === '1') {
-
-                        alert('Project marked as done successfully!');
-
-                        location.reload(); // Reload to show updated status
-
-                    } else {
-
-                        alert('Error: ' + (response.errors || 'Unknown error occurred'));
-
-                    }
-
-                },
-
-                error: function() {
-
-                    alert('Error: Could not connect to the server');
-
+    $('#markAsDoneBtn').click(function () {
+    if (confirm('Are you sure you want to mark this project as done?')) {
+        $.ajax({
+            url: '<?php echo API_URL; ?>mark-done',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                access_token: '<?php echo $_SESSION['access_token']; ?>',
+                project_id: <?php echo $project_id; ?>
+            }),
+            success: function (response) {
+                if (response.is_successful === '1') {
+                    console.log(response.success_message);
+                    showToast(response.success_message, true);
+                    location.reload(); // Reload to show updated status
+                } else {
+                    // Check deeper error message if success_message is empty
+                    const errorMsg = response.error_message || 
+                                     (response.errors && response.errors.error) || 
+                                     'An unknown error occurred.';
+                    showToast('Error: ' + errorMsg, false);
                 }
+            },
+            error: function (xhr) {
+                try {
+                    const response = xhr.responseJSON || JSON.parse(xhr.responseText);
+                    const errorMsg = (response.errors && response.errors.error) ||
+                                     response.error_message ||
+                                     'Unexpected error occurred.';
+                    showToast('Error: ' + errorMsg, false);
+                } catch (e) {
+                    showToast('Error: Could not process the server response', false);
+                }
+            }
+        });
+    }
+});
 
-            });
-
-        }
-
-    });
 
 });
 

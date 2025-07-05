@@ -10,7 +10,7 @@ include 'common/header.php';
         <h1 class="m-0">Schedule New WhatsApp Message</h1>
       </div>
       <div class="col-sm-6 text-right">
-        <a href="whatsapp-message-list.php" class="btn btn-secondary">
+        <a href="whatsapp-message-list" class="btn btn-secondary">
           <i class="fas fa-arrow-left"></i> Back to List
         </a>
       </div>
@@ -73,7 +73,7 @@ include 'common/header.php';
                 <button type="submit" class="btn btn-primary" id="submitBtn" style="background-color: #30b8b9;border:none;">
                   <i class="fas fa-paper-plane"></i> Schedule Message
                 </button>
-                <a href="whatsapp-message-list.php" class="btn btn-secondary">
+                <a href="whatsapp-message-list" class="btn btn-secondary">
                   <i class="fas fa-times"></i> Cancel
                 </a>
               </div>
@@ -199,12 +199,20 @@ $(document).ready(function() {
     
     // Add schedule time if provided
     if (scheduleTime) {
-      // Convert datetime-local format to ISO string
-      const date = new Date(scheduleTime);
-      // Format as: 'YYYY-MM-DD HH:mm:ss' (MySQL DATETIME format)
-      const formattedDateTime = date.toISOString().replace('T', ' ').slice(0, 19);
-      requestData.schedule_time = formattedDateTime;
-    }
+    // Create a Date object from the input
+    const date = new Date(scheduleTime);
+    
+    // Format as: 'YYYY-MM-DD HH:mm:ss' (MySQL DATETIME format)
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = '00'; // Since we're not collecting seconds in the input
+    
+    const formattedDateTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    requestData.schedule_time = formattedDateTime;
+}
     
     const submitBtn = $('#submitBtn');
     const originalBtnText = submitBtn.html();
@@ -223,7 +231,7 @@ $(document).ready(function() {
           showToast('Message scheduled successfully!', true);
           // Redirect to list page after 1.5 seconds
           setTimeout(() => {
-            window.location.href = 'whatsapp-message-list.php';
+            window.location.href = 'whatsapp-message-list';
           }, 1500);
         } else {
           showToast(response.errors || 'Failed to schedule message', false);

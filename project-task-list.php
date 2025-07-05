@@ -333,7 +333,7 @@ if (tasks.length > 0) {
                             <?php endif; ?>
                             <th>Actions</th>
                             <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2): ?>
-                            <th>More</th>
+                            <th>  </th>
                             <?php endif; ?>
                         </tr>
                     </thead>
@@ -341,9 +341,33 @@ if (tasks.length > 0) {
 
     function formatDate(dateStr) {
         if (!dateStr) return '';
-        const [day, month, year] = dateStr.split('-');
-        if (!day || !month || !year) return '';
-        return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
+        
+        try {
+            // Handle case where dateStr is already a Date object
+            const date = new Date(dateStr);
+            
+            // If date is invalid, try to parse as string
+            if (isNaN(date.getTime())) {
+                // Try different date formats
+                const parts = String(dateStr).split(/[-/]/);
+                if (parts.length === 3) {
+                    const [day, month, year] = parts;
+                    if (day && month && year) {
+                        return `${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year}`;
+                    }
+                }
+                return ''; // Return empty string if can't parse
+            }
+            
+            // Format the date as DD/MM/YYYY
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}/${month}/${year}`;
+        } catch (e) {
+            console.error('Error formatting date:', e);
+            return '';
+        }
     }
 
     tasks.forEach(task => {
@@ -384,11 +408,15 @@ if (tasks.length > 0) {
                
                 <td>
                     <div class="btn-group btn-group-sm" style="gap: 5px;">
+                     <button class="btn btn-primary btn-sm start-task-btn rounded" data-task-id="${task.task_id}" ${task.task_status === 'In Progress' || task.task_status === 'Completed' ? 'disabled' : ''}>
+                            <i class="fas fa-play"></i>
+                        </button>
                         <button class="btn btn-success btn-sm mark-done-btn rounded" data-task-id="${task.task_id}" ${task.task_status === 'Completed' ? 'disabled' : ''}>
                             <i class="fas fa-check"></i>
                         </button>
-                        <button class="btn btn-primary btn-sm start-task-btn rounded" data-task-id="${task.task_id}" ${task.task_status === 'In Progress' || task.task_status === 'Completed' ? 'disabled' : ''}>
-                            <i class="fas fa-play"></i>
+                       
+                        <button class="btn btn-info btn-sm view-task-btn rounded" data-task-id="${task.task_id}" onclick="window.location.href='project-task-view?id=' + btoa(${task.task_id})">
+                            <i class="fas fa-eye"></i>
                         </button>
                     </div>
                 </td>
@@ -396,7 +424,7 @@ if (tasks.length > 0) {
                 <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2): ?>
                 <td>
                     <div class="btn-group btn-group-sm" style="gap: 5px;">
-                        <a href="edit-project-task.php?id=${btoa(task.task_id)}" class="btn btn-info btn-sm rounded">
+                        <a href="edit-project-task?id=${btoa(task.task_id)}" class="btn btn-info btn-sm rounded">
                             <i class="fas fa-edit"></i>
                         </a>
                         <button class="btn btn-warning btn-sm text-white reminder-btn rounded" data-task-id="${task.task_id}">
@@ -543,7 +571,7 @@ if (tasks.length > 0) {
         success: function (response) {
             if (response.is_successful === "1") {
                     showToast(response.success_message);
-                location.reload();
+                // location.reload();
                 button.prop('disabled', true); // disable Done button
                 // Optionally update task status text or reload table
             } else {

@@ -87,7 +87,7 @@ if (!$project_id) {
         </div>
         <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
-            <a href="projects.php" class="btn btn-secondary">
+            <a href="projects" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Back to Projects
             </a>
             </ol>
@@ -683,7 +683,7 @@ if (!$project_id) {
                                 <i class="fas fa-spinner fa-spin"></i> Saving...
                             </span>
                         </button>
-                        <a href="projects.php" class="btn btn-secondary ml-2">Cancel</a>
+                        <a href="projects" class="btn btn-secondary ml-2">Cancel</a>
                     </div>
                 </div>
             </form>
@@ -1718,7 +1718,7 @@ function updateProject() {
                 showToast(successMessage, true);
                 // Redirect after a short delay to show the toast
                 setTimeout(function() {
-                    window.location.href = 'projects.php';
+                    window.location.href = 'projects';
                 }, 1000);
             } else {
                 // Reset button state on error

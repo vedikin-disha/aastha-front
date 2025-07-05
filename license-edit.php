@@ -121,7 +121,17 @@ $(document).ready(function() {
     // Function to format date for input field (YYYY-MM-DD)
     function formatDateForInput(dateString) {
         if (!dateString) return '';
+        
+        // Check if date is in DD-MM-YYYY format
+        if (/^\d{2}-\d{2}-\d{4}$/.test(dateString)) {
+            const [day, month, year] = dateString.split('-');
+            return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        }
+        
+        // For other formats, try creating a Date object
         const date = new Date(dateString);
+        if (isNaN(date)) return ''; // Return empty if date is invalid
+        
         return date.toISOString().split('T')[0];
     }
 
@@ -238,18 +248,52 @@ $(document).ready(function() {
                         window.location.href = 'license-list.php';
                     }, 1500);
                 } else {
-                    const errorMsg = response.errors || 'Failed to update license';
+                    // Handle different error response formats
+                    let errorMsg = 'Failed to update license';
+                    if (typeof response.errors === 'object' && response.errors !== null) {
+                        // If errors is an object, extract the first error message
+                        const errorKeys = Object.keys(response.errors);
+                        if (errorKeys.length > 0) {
+                            errorMsg = response.errors[errorKeys[0]];
+                        }
+                    } else if (response.errors) {
+                        errorMsg = response.errors;
+                    }
                     showToast(errorMsg, false);
                     $submitBtn.prop('disabled', false).html('<i class="fas fa-save"></i> Save License');
                 }
             },
             error: function(xhr, status, error) {
                 let errorMessage = 'Failed to update license. Please try again.';
-                if (xhr.responseJSON) {
-                    errorMessage = xhr.responseJSON.errors || 
-                                xhr.responseJSON.error || 
-                                JSON.stringify(xhr.responseJSON);
+                try {
+                    if (xhr.responseJSON) {
+                        if (xhr.responseJSON.errors) {
+                            if (typeof xhr.responseJSON.errors === 'string') {
+                                errorMessage = xhr.responseJSON.errors;
+                            } else if (typeof xhr.responseJSON.errors === 'object') {
+                                // Get the first error message from the errors object
+                                const errorKeys = Object.keys(xhr.responseJSON.errors);
+                                if (errorKeys.length > 0) {
+                                    errorMessage = xhr.responseJSON.errors[errorKeys[0]];
+                                }
+                            }
+                        } else if (xhr.responseJSON.error) {
+                            errorMessage = xhr.responseJSON.error;
+                        } else {
+                            errorMessage = JSON.stringify(xhr.responseJSON);
+                        }
+                    } else if (xhr.status === 404) {
+                        errorMessage = 'License not found. It may have been deleted or you may not have permission to access it.';
+                    } else if (xhr.status === 403) {
+                        errorMessage = 'You do not have permission to update this license.';
+                    } else if (xhr.status === 401) {
+                        errorMessage = 'Session expired. Please login again.';
+                        setTimeout(() => { window.location.href = 'login.php'; }, 1500);
+                    }
+                } catch (e) {
+                    console.error('Error parsing error response:', e);
                 }
+                
                 showToast(errorMessage, false);
                 console.error('Update Error:', error, 'Status:', status);
                 console.error('Response:', xhr.responseText);

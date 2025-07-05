@@ -220,7 +220,7 @@ $.ajax({
                               <td>${task.task_name} </td>
 
                                 <td>${task.assigned_emp_name}<br>${task.dept_name}</td>
-                                <td>${task.task_duration}</td>
+                                <td>${task.assigned_duration}</td>
                                 <td>${task.completed_duration }</td>
 
                                
@@ -241,7 +241,7 @@ $.ajax({
                                         <?php endif; ?>
                                        
                                         <button type="button" class="btn btn-primary btn-sm text-white task-play-btn rounded"
-                                        data-task-id="${task.task_id}" ${task.task_status === 'In Progress' || task.task_status === 'Completed' ? 'disabled' : ''}
+                                        data-task-id="${task.task_id}" ${task.task_status_value === 2 || task.task_status_value ===    1 ? 'disabled' : ''}
                                             data-task-name="${task.task_name}"
                                             data-dept-id="${task.dept_id}"
                                             data-project-id="${task.project_id}"
@@ -249,7 +249,7 @@ $.ajax({
                                             <i class="fas fa-play"></i>
                                         </button>
                                         <button type="button" class="btn ${isDone ? '' : 'btn-success'} btn-sm task-status-btn rounded"
-                                        ${task.task_status === 'In Progress' || task.task_status === 'Completed' ? 'disabled' : ''}
+                                        ${task.task_status_value === 2? 'disabled' : ''}
                                             data-task-id="${task.task_id}"
                                             data-task-name="${task.task_name}"
                                             data-dept-id="${task.dept_id}"
