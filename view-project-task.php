@@ -249,7 +249,7 @@ $.ajax({
                                             <i class="fas fa-play"></i>
                                         </button>
                                         <button type="button" class="btn ${isDone ? '' : 'btn-success'} btn-sm task-status-btn rounded"
-                                        ${task.task_status_value === 2? 'disabled' : ''}
+                                        ${task.task_status_value === 2 || task.task_status_value === 0 ? 'disabled' : ''}
                                             data-task-id="${task.task_id}"
                                             data-task-name="${task.task_name}"
                                             data-dept-id="${task.dept_id}"

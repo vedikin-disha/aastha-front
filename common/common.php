@@ -33,7 +33,7 @@ if (session_status() == PHP_SESSION_NONE) {
 
 // check key is set or not
 if (!isset($_SESSION['emp_role_id'])) {
-    header("Location: " . BASE_URL . "login");
+    echo "<script> window.location.href = 'login'; </script>";
     exit();
 }
 

@@ -93,7 +93,7 @@
 
                 <button type="button" class="btn btn-secondary mr-2" id="cancel-comment">Cancel</button>
 
-                <button type="button" class="btn btn-primary" id="submit-qna">Post Comment</button>
+                <button type="button" class="btn btn-primary" id="submit-qna" style="background-color: #30b8b9; border:1px solid #30b8b9;">Post Comment</button>
 
             </div>
 

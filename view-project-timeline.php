@@ -299,12 +299,27 @@
         <div class="form-group mt-2">
 
             <label for="attachment">Attachment (Optional)</label>
+            <!-- ADDED ONE LINE  ALLOW  allowed_extensions = {
+        # Documents
+        '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx',
+        '.txt', '.csv',
+        # Images
+        '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff',
+        # Archives
+        '.zip', '.rar',
+        # CAD
+        '.dwg',
+        # Videos
+        '.mp4', '.mov', '.avi', '.wmv', '.flv', '.mkv', '.webm', '.mpeg', '.mpg', '.3gp'
+    }  and allow 2 gb file size --> 
+        <input type="hidden" name="allowed_extensions" value=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.jpg,.jpeg,.png,.gif,.bmp,.tiff,.zip,.rar,.dwg,.mp4,.mov,.avi,.wmv,.flv,.mkv,.webm,.mpeg,.mpg,.3gp">
+        <input type="hidden" name="max_file_size" value="2">
 
             <input type="file" class="form-control-file" id="attachment" name="attachment" multiple>
 
         </div>
 
-        <button type="submit" class="btn btn-primary float-right mt-2">Post Comment</button>
+        <button type="submit" class="btn btn-primary float-right mt-2" style="background-color: #30b8b9; border:1px solid #30b8b9;">Post Comment</button>
 
         <!-- <button type="button" class="btn btn-primary float-right mt-2">Add Attachment</button> -->
 

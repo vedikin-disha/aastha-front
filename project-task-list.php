@@ -332,7 +332,7 @@ if (tasks.length > 0) {
                             <th>Department</th>
                             <?php endif; ?>
                             <th>Actions</th>
-                            <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2): ?>
+                            <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2 || $_SESSION['emp_role_id'] == 3): ?>
                             <th>  </th>
                             <?php endif; ?>
                         </tr>
@@ -408,10 +408,10 @@ if (tasks.length > 0) {
                
                 <td>
                     <div class="btn-group btn-group-sm" style="gap: 5px;">
-                     <button class="btn btn-primary btn-sm start-task-btn rounded" data-task-id="${task.task_id}" ${task.task_status === 'In Progress' || task.task_status === 'Completed' ? 'disabled' : ''}>
+                     <button class="btn btn-primary btn-sm start-task-btn rounded" data-task-id="${task.task_id}" ${task.task_status_value === 1 || task.task_status_value === 2 ? 'disabled' : ''}>
                             <i class="fas fa-play"></i>
                         </button>
-                        <button class="btn btn-success btn-sm mark-done-btn rounded" data-task-id="${task.task_id}" ${task.task_status === 'Completed' ? 'disabled' : ''}>
+                        <button class="btn btn-success btn-sm mark-done-btn rounded" data-task-id="${task.task_id}" ${task.task_status_value === 2 || task.task_status_value === 0 ? 'disabled' : ''}>
                             <i class="fas fa-check"></i>
                         </button>
                        
@@ -421,7 +421,7 @@ if (tasks.length > 0) {
                     </div>
                 </td>
                 
-                <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2): ?>
+                <?php if ($_SESSION['emp_role_id'] == 1 || $_SESSION['emp_role_id'] == 2 || $_SESSION['emp_role_id'] == 3): ?>
                 <td>
                     <div class="btn-group btn-group-sm" style="gap: 5px;">
                         <a href="edit-project-task?id=${btoa(task.task_id)}" class="btn btn-info btn-sm rounded">

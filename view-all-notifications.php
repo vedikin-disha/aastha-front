@@ -260,8 +260,9 @@ $(document).ready(function() {
                                         <div class="mr-2">
                                             <i class="fas ${notification.is_important ? 'fa-exclamation-circle text-danger' : 'fa-info-circle text-primary'}"></i>
                                         </div>
+                                        
                                         <div>
-                                           <div class="text-dark">${formatNotificationText(notification.notification)}</div>
+                                           <div class="text-dark">${notification.notification}</div>
                                             ${notification.project_name ? `<small class="text-muted">Project: ${notification.project_name}</small>` : ''}
                                         </div>
                                     </div>
@@ -363,6 +364,8 @@ $(document).ready(function() {
                         if ($('.notification-row').length === 0) {
                             loadAllNotifications();
                         }
+                        // load the page
+                        window.location.reload();
                     });
                 } else {
                     alert('Failed to delete notification. Please try again.');
@@ -429,13 +432,7 @@ $(document).ready(function() {
     // Initial load of all notifications
     loadAllNotifications();
 });
-function formatNotificationText(text) {
-    if (!text) return '';
-    return text.replace(
-        /(https?:\/\/[^\s]+)/g, 
-        '<a href="$1" target="_blank" class="notification-link">$1</a>'
-    );
-}
+
 </script>
 
 <?php include 'common/footer.php'; ?>

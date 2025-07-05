@@ -95,7 +95,7 @@ $(document).ready(function() {
                                 <button class="btn btn-primary btn-sm start-task-btn rounded ml-2" ${task.task_status == 2 || task.task_status == 1 ? 'disabled' : ''}>
                                     <i class="fas fa-play"> </i> Start
                                 </button>
-                                <button class="btn btn-success btn-sm mark-done-btn rounded ml-2" ${task.task_status == 2 ? 'disabled' : ''}>
+                                <button class="btn btn-success btn-sm mark-done-btn rounded ml-2" ${task.task_status == 2 || task.task_status == 0 ? 'disabled' : ''}>
                                     <i class="fas fa-check"> </i> Complete
                                 </button>
                                 <a href="project-task-list.php" class="btn btn-default btn-sm ml-2" style="background-color: #6c757d; color: #fff;">
@@ -199,14 +199,7 @@ $(document).on('click', '.mark-done-btn', function () {
 });
 
 
-    function showToast(message, success = true) {
-        const type = success ? 'success' : 'danger';
-        const alertBox = `<div class="alert alert-${type} alert-dismissible fade show" role="alert">
-                            ${message}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                          </div>`;
-        $('#errorMessage').html(alertBox).fadeIn();
-    }
+    
 });
 </script>
 
