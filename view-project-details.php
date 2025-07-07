@@ -77,7 +77,9 @@ function getFileIcon($filename) {
 
                                 <div class="col-md-4 info-label">Job No Reference Date</div>
 
-                                <div class="col-md-8"><?php echo date('d/m/Y', strtotime($project['job_no_reference_date'])); ?></div>
+                                <div class="col-md-8">
+                                <?php echo !empty($project['job_no_reference_date']) ? date('d/m/Y', strtotime($project['job_no_reference_date'])) : '00/00/0000'; ?>
+                                </div>
 
                             </div>
 

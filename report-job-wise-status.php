@@ -8,11 +8,19 @@
         }
     }
     .new-pms-ap {
-
         width: 100% !important;
-        /* overflow-x: auto !important;
-        overflow-y: hidden !important; */
+        overflow-x: unset !important;
+        overflow-y: unset !important;
     }
+    .div.dataTables_wrapper {
+    overflow: visible !important;
+    position: relative;
+}
+
+/* Raise z-index of dropdown */
+    .div.dt-button-collection {
+    z-index: 9999 !important;
+}
     .select2-container--bootstrap4 .select2-results__option--highlighted {
         background-color: #30b8b9 !important;
         color: #212529 !important;
@@ -26,6 +34,7 @@
         background-color: #30b8b9 !important;
         color: #212529 !important;
     }
+    
     
 </style>
 

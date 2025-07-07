@@ -570,7 +570,7 @@ $(function () {
 
     if ($.fn.DataTable.isDataTable('#deptTable')) {
     $('#deptTable').DataTable().clear().destroy();
-    $('#deptTable').empty();
+    // $('#deptTable').empty();
   }
     
     deptTable = $('#deptTable').DataTable({

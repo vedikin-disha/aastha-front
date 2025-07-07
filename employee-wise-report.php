@@ -350,10 +350,19 @@ $(document).ready(function() {
                                 <td><strong>${task.task_name || '-'}</strong></td>
 
                                 <td class="text-center"><span class="${priorityClass}">${task.task_priority.charAt(0).toUpperCase() + task.task_priority.slice(1) || 'Regular'}</span></td>
-                                <td class="text-center">${task.assigned_duration || '-'}</td>
-                                <td class="text-center">${task.completed_duration || '-'}</td>
-                                <td class="text-center"><span class="badge bg-${statusClass[frameStatus] || 'secondary'}">${task.date_frame_status.charAt(0).toUpperCase() + task.date_frame_status.slice(1) || '-'}</span></td>
-                                <td class="text-center"><span class="badge bg-${statusClass[todayStatus] || 'secondary'}">${task.today_status.charAt(0).toUpperCase() + task.today_status.slice(1) || '-'}</span></td>
+                                <td class="text-center">${task.assigned_duration}</td>
+                                <td class="text-center">${task.completed_duration}</td>
+                               <td class="text-center">
+                                    <span class="badge bg-${statusClass[frameStatus] || 'secondary'}">
+                                        ${(task.date_frame_status ? task.date_frame_status.charAt(0).toUpperCase() + task.date_frame_status.slice(1) : '-')}
+                                    </span>
+                                    </td>
+
+                                    <td class="text-center">
+                                    <span class="badge bg-${statusClass[todayStatus] || 'secondary'}">
+                                        ${(task.today_status ? task.today_status.charAt(0).toUpperCase() + task.today_status.slice(1) : '-')}
+                                    </span>
+                                    </td>
                             </tr>`;
         });
         
@@ -501,7 +510,7 @@ $(document).ready(function() {
                 { className: 'text-center', targets: 3 },
                 { width: '5%', targets: 0 } // Set width for expand/collapse column
             ],
-            order: [[2, 'asc']], // Sort by project name by default
+            order: [], // Disable default sorting to maintain API response order
             drawCallback: function() {
                 // Re-bind event handlers after table is drawn
                 setupDetailsHandlers();
@@ -547,8 +556,8 @@ $(document).ready(function() {
             };
         });
         
-        // Add all rows at once
-        projectsTable.rows.add(rows).draw();
+        // Add all rows at once and maintain the original order
+        projectsTable.rows.add(rows).draw(false); // false prevents re-sorting
         
         // Set up event handlers after the table is drawn
         setupDetailsHandlers();

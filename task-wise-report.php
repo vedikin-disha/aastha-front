@@ -211,13 +211,13 @@
         }
 
         let tasksHtml = '<div class="p-3"><table class="table table-bordered table-sm">';
-        tasksHtml += '<thead class="thead-light"><tr><th>Task</th><th>Assigned To</th><th>Task Duration</th><th>Completed Duration</th><th>Status</th></tr></thead><tbody>';
+        tasksHtml += '<thead class="thead-light"><tr><th>Task</th><th>Assigned To</th><th>Assigned Duration</th><th>Completed Duration</th><th>Status</th></tr></thead><tbody>';
         tasks.forEach(task => {
             const statusClass = getStatusClass(task.task_status);
             tasksHtml += `<tr>
                             <td>${task.task_name || 'N/A'}</td>
                             <td>${task.assigned_emp_name || 'Unassigned'}</td>
-                            <td>${task.task_duration}</td>
+                            <td>${task.assigned_duration}</td>
                             <td>${task.completed_duration}</td>
                             <td><span class="badge ${statusClass}">${task.task_status || 'N/A'}</span></td>
                            
